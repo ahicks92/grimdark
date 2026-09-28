@@ -90,6 +90,8 @@ int find_path(const Vec3& dest_world, float f1, float f2, Vec3* out_world);  // 
 // NavManager::FindPath -> the navmesh straight-path corridor from the player to dest, as absolute world points
 // (empty on failure). Used to test whether a nearby room is a DIRECT exit; on-demand (V / room change) only.
 bool find_path_corridor(const Vec3& dest_world, std::vector<Vec3>& out);
+std::string path_probe(float x, float z, float snap);   // dev: snap (x,z) onto the navmesh, NavManager::FindPath to it, timed
+std::string fog_dump(int n, float range, bool grid, float unsee = 0);           // dev: the player region's fog-of-war grid + nearest reachable frontier cells
 std::string teleport(float x, float z, bool check_only);
 std::string set_paused(int want);                                      // dev: -1 = report, 0/1 = GAME::UnpauseGameTime/PauseGameTime (a hot reload in the world pauses the game)                 // dev: Entity::SetCoords on the player (floored); refuses unloaded chunks
 std::string project_points(const std::vector<Vec3>& pts);                // dev: world ground points -> screen

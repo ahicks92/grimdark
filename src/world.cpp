@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <intrin.h>
 #include <algorithm>
+#include <unordered_map>
 #include <cmath>
 #include <limits>
 #include <map>
@@ -835,6 +836,156 @@ bool find_path_corridor(const Vec3& dest_world, std::vector<Vec3>& out) {
     out.push_back(world_pos_of(wv));
   }
   return !out.empty();
+}
+
+// dev: how far the navmesh pathfinder reaches (2026-09-28). The target is built in the region that contains it,
+// floored, snapped onto the mesh (FindClosestPointOnPathMesh within `snap`), then NavManager::FindPath runs from the
+// player with every out-param: the reached endpoint, the path length and the corridor. One line per call, timed.
+namespace {
+int seh_closest_on_mesh(void* nav, const void* from, void* out, float r) {
+  __try { return g_api.FindClosestPointOnPathMesh(nav, from, out, r); } __except (EXCEPTION_EXECUTE_HANDLER) { return -1000; }
+}
+bool seh_find_path_probe(void* nav, const void* from, const void* to, void* out, unsigned* poly, float* len, void* corridor) {
+  __try { return g_api.NavManager_FindPath(nav, from, to, kNavSnapRadius, out, poly, len, corridor, nullptr, false); }
+  __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
+}
+}  // namespace
+std::string path_probe(float x, float z, float snap) {
+  load_api();
+  void* nav = g_api.NavManager_Get ? g_api.NavManager_Get() : nullptr;
+  Buf base; void* region = nullptr;
+  if (!nav || !g_api.NavManager_FindPath || !g_api.FindClosestPointOnPathMesh || !g_api.WorldVec3_PutOnFloor || !player_world_vec(base, &region))
+    return "no player or exports\n";
+  Buf dest{};
+  if (!world_vec3_at(Vec3{x, world_pos_of(base).y, z}, &dest)) return "no target region\n";
+  g_api.WorldVec3_PutOnFloor(&dest);
+  Buf snapped = dest;
+  int nr = seh_closest_on_mesh(nav, &dest, &snapped, snap);
+  Vec3 sw = world_pos_of(snapped);
+  static MemVec corridor{};
+  corridor.end = corridor.begin;
+  Buf end = snapped; unsigned poly = 0; float len = -1.0f;
+  LARGE_INTEGER f, t0, t1; QueryPerformanceFrequency(&f); QueryPerformanceCounter(&t0);
+  bool ok = seh_find_path_probe(nav, &base, &snapped, &end, &poly, &len, &corridor);
+  QueryPerformanceCounter(&t1);
+  size_t n = corridor.begin && corridor.end > corridor.begin ? (size_t)((char*)corridor.end - (char*)corridor.begin) / 0x18 : 0;
+  Vec3 ew = world_pos_of(end);
+  return std::format("snap={} snapped=({:.1f},{:.1f},{:.1f}) snap_off={:.1f} found={} len={:.1f} end=({:.1f},{:.1f},{:.1f}) end_miss={:.1f} corridor={} us={:.0f}\n",
+                     nr, sw.x, sw.y, sw.z, std::hypot(sw.x - x, sw.z - z), ok, len, ew.x, ew.y, ew.z, std::hypot(ew.x - sw.x, ew.z - sw.z), n,
+                     (double)(t1.QuadPart - t0.QuadPart) * 1e6 / (double)f.QuadPart);
+}
+
+// dev: fog of war (the map's explored mask; Engine FogOfWar, read 2026-09-28): a byte per 8x8-unit cell of a region at
+// +0x10, width +0x18, height +0x1c (16 cells per 128-u region plus a one-cell ring); cell (c, r) of region-relative
+// (x, z) is c = int(x/8 + 1), r = height - int(z/8 + 1) - 1 (FogOfWar::IsInFog), and a byte > 150 is fogged (Initialize
+// fills 0xff). A frontier cell is fogged with a seen 4-neighbour. Every loaded region within `range` of the player is
+// read (found by sampling World::GetRegionContainingXZ on a 32-u grid); frontier cells are taken nearest first, snapped
+// onto the navmesh (within 6 u of the cell centre) and pathed to with NavManager::FindPath, until `n` reachable ones are
+// listed. `grid` draws the player's own region.
+namespace {
+struct FogView { const unsigned char* data = nullptr; int w = 0, h = 0; };
+FogView seh_fog(void* region) {
+  FogView v;
+  __try {
+    void* fog = g_api.Region_GetFogOfWar(region, false);
+    if (!fog) return v;
+    v.data = *(const unsigned char**)((char*)fog + 0x10);
+    v.w = *(int*)((char*)fog + 0x18);
+    v.h = *(int*)((char*)fog + 0x1c);
+  } __except (EXCEPTION_EXECUTE_HANDLER) { v = FogView{}; }
+  return v;
+}
+bool seh_copy(void* dst, const void* src, size_t n) { __try { memcpy(dst, src, n); return true; } __except (EXCEPTION_EXECUTE_HANDLER) { return false; } }
+}  // namespace
+std::string region_label(const void* r);   // defined with the world-structure dumps below
+std::string fog_dump(int n, float range, bool grid, float unsee) {
+  load_api();
+  void* nav = g_api.NavManager_Get ? g_api.NavManager_Get() : nullptr;
+  Buf base; void* region = nullptr;
+  if (!nav || !g_api.Region_GetFogOfWar || !g_api.Region_GetOffsetFromWorld || !player_world_vec(base, &region)) return "no player or exports\n";
+  const Vec3 me = world_pos_of(base);
+  std::vector<void*> regions{region};
+  for (float dx = -range; dx <= range; dx += 32.0f)
+    for (float dz = -range; dz <= range; dz += 32.0f) {
+      void* r = region_containing_xz(region, me.x + dx, me.z + dz);
+      if (r && std::find(regions.begin(), regions.end(), r) == regions.end()) regions.push_back(r);
+    }
+  // One world-level map of 8-u cells from every region's inner 16x16 (the ring overlaps the neighbours): key = world
+  // cell index pair, value = fogged. A frontier cell is fogged with a seen 4-neighbour in ANY region.
+  std::unordered_map<long long, bool> world_cells;
+  auto key = [](int cx, int cz) { return ((long long)cx << 32) ^ (unsigned)cz; };
+  std::string out, per;
+  int total_fog = 0, total_seen = 0;
+  for (void* reg : regions) {
+    FogView v = seh_fog(reg);
+    if (!v.data || v.w <= 2 || v.h <= 2 || v.w > 4096 || v.h > 4096) { per += std::format("  {}: no fog data\n", region_label(reg)); continue; }
+    std::vector<unsigned char> cells((size_t)v.w * v.h);
+    if (!seh_copy(cells.data(), v.data, cells.size())) continue;
+    const int* off = g_api.Region_GetOffsetFromWorld(reg);
+    int nf = 0, ns = 0;
+    for (int r = 1; r + 1 < v.h; ++r)
+      for (int c = 1; c + 1 < v.w; ++c) {
+        bool fg = cells[(size_t)r * v.w + c] > 150;
+        (fg ? nf : ns)++;
+        // cell (c, r) covers region-relative x in [(c-1)*8, c*8), z in [(h-r-2)*8, (h-r-1)*8)
+        int cx = (int)std::floor(((c - 1) * 8.0f + (float)off[0]) / 8.0f), cz = (int)std::floor(((v.h - r - 2) * 8.0f + (float)off[2]) / 8.0f);
+        // dev: `unsee` > 0 treats seen cells farther than that from the player as fogged (analysis copy only, no game write)
+        if (unsee > 0 && !fg && std::hypot(cx * 8.0f + 4.0f - me.x, cz * 8.0f + 4.0f - me.z) > unsee) fg = true;
+        world_cells[key(cx, cz)] = fg;
+      }
+    total_fog += nf; total_seen += ns;
+    per += std::format("  {}: {} fogged, {} seen\n", region_label(reg), nf, ns);
+    if (grid && reg == region) {   // '#' fogged, '.' seen, '@' the player's cell; row 0 is the region's far-z edge
+      int pc = (int)((me.x - off[0]) / 8.0f + 1.0f), pr = v.h - (int)((me.z - off[2]) / 8.0f + 1.0f) - 1;
+      for (int r = 0; r < v.h; ++r) {
+        std::string row;
+        for (int c = 0; c < v.w; ++c) row += (c == pc && r == pr) ? '@' : cells[(size_t)r * v.w + c] > 150 ? '#' : '.';
+        per += "    " + row + "\n";
+      }
+    }
+  }
+  struct F { float d; Vec3 w; bool edge; };
+  std::vector<F> frontier;   // every fogged cell; `edge` = a frontier cell
+  for (const auto& [k, fg] : world_cells) {
+    if (!fg) continue;
+    int cx = (int)(k >> 32), cz = (int)(unsigned)(k & 0xffffffff);
+    bool edge = false;
+    for (auto [dx, dz] : {std::pair{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+      auto it = world_cells.find(key(cx + dx, cz + dz));
+      if (it != world_cells.end() && !it->second) edge = true;
+    }
+    Vec3 w{cx * 8.0f + 4.0f, me.y + 20.0f, cz * 8.0f + 4.0f};   // floored from above, so a higher floor is found too
+    frontier.push_back({std::hypot(w.x - me.x, w.z - me.z), w, edge});
+  }
+  std::sort(frontier.begin(), frontier.end(), [](const F& a, const F& b) { return a.d < b.d; });
+  int listed = 0, off_mesh = 0, no_path = 0, tried = 0, n_edge = 0;
+  for (const F& f : frontier) n_edge += f.edge;
+  static MemVec corridor{};
+  LARGE_INTEGER qf, t0, t1; QueryPerformanceFrequency(&qf); QueryPerformanceCounter(&t0);
+  std::string list;
+  for (const F& f : frontier) {
+    if (listed >= n || tried >= 5000) break;
+    ++tried;
+    Buf dest{};
+    if (!world_vec3_at(f.w, &dest)) continue;
+    g_api.WorldVec3_PutOnFloor(&dest);
+    Buf snapped = dest;
+    if (seh_closest_on_mesh(nav, &dest, &snapped, 6.0f) != 1) {   // NavResult 1 = found, 2 = no mesh within the radius (measured)
+      if (off_mesh++ < 8) list += std::format("  off mesh: ({:.0f},{:.0f}) straight {:.0f}, floored y {:.1f}\n", f.w.x, f.w.z, f.d, world_pos_of(dest).y);
+      continue;
+    }
+    corridor.end = corridor.begin;
+    Buf end = snapped; unsigned poly = 0; float len = -1.0f;
+    if (!seh_find_path_probe(nav, &base, &snapped, &end, &poly, &len, &corridor)) { ++no_path; continue; }
+    Vec3 s = world_pos_of(snapped);
+    list += std::format("  ({:.0f},{:.0f},{:.0f}) straight {:.0f}, path {:.0f}{}\n", s.x, s.y, s.z, f.d, len, f.edge ? ", frontier" : "");
+    ++listed;
+  }
+  QueryPerformanceCounter(&t1);
+  out = std::format("{} regions within {:.0f}: {} fogged cells, {} seen, {} frontier cells\n", regions.size(), range, total_fog, total_seen, n_edge) + per;
+  out += std::format("nearest reachable fogged cells ({} tried: {} off the navmesh, {} no path; {:.1f} ms):\n", tried, off_mesh, no_path,
+                     (double)(t1.QuadPart - t0.QuadPart) * 1e3 / (double)qf.QuadPart);
+  return out + list;
 }
 
 // ---- dev dumps of the world structure (chunks = engine Regions; tools/gdmap reads the same data offline) ----

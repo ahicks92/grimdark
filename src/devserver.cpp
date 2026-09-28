@@ -395,6 +395,11 @@ static std::string handle(const std::string& path, const std::map<std::string, s
     auto f = [&](const char* k, float d) { return q.count(k) ? (float)atof(q.at(k).c_str()) : d; };
     return world::navprobe(f("x0", 0), f("z0", 0), f("x1", 0), f("z1", 0), f("step", 0.5f));
   }
+  if (path == "/pathprobe") {  // /pathprobe?x=&z=[&snap=8] -- the navmesh pathfinder's reach to a snapped point
+    auto f = [&](const char* k, float d) { return q.count(k) ? (float)atof(q.at(k).c_str()) : d; };
+    return world::path_probe(f("x", 0), f("z", 0), f("snap", 8.0f));
+  }
+  if (path == "/fogmap") return world::fog_dump(q.count("n") ? parse_int(q.at("n"), 10) : 10, q.count("range") ? (float)atof(q.at("range").c_str()) : 200.0f, q.count("grid") > 0, q.count("unsee") ? (float)atof(q.at("unsee").c_str()) : 0.0f);   // ?n=&range=&grid=1&unsee=<r>
   if (path == "/findpath") {  // /findpath?x=&z=[&y=][&f1=][&f2=] -- Player::FindPath from the player to (x,z); raw PathResult + endpoint
     auto f = [&](const char* k, float d) { return q.count(k) ? (float)atof(q.at(k).c_str()) : d; };
     if (!q.count("x") || !q.count("z")) { status = 400; return "need x and z\n"; }

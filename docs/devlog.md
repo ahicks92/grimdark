@@ -1011,3 +1011,26 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   rows as the row's columns.
 - Open: belts are region 7 (waist), which `PickRegion` never rolls, so belt armor looks unused in combat; the sheet
   counts the belt's location as flat armor. Unverified which is right. Not verified live yet.
+
+## 2026-09-28 -- navmesh reach and finding unexplored ground (dev routes /pathprobe, /fogmap; measured live)
+- **Reach**: the live navmesh only exists for the regions streamed in around the player. At Vanguard of the Three
+  (regions are 128 u squares), points snapped onto the mesh out to ~220 u straight / ~270 u of path; past ~300 u
+  `FindClosestPointOnPathMesh` finds nothing in any direction. Across region borders `NavManager::FindPath` works
+  (143 of the reached targets in a 200-u sweep were in other regions). Cost: ~0.15 ms per query (max 0.35 ms), a
+  failure ~0.15 ms. Detour's own caps in `NavManager::FindPath` (Engine+0x10c2c0): 1024 path polygons (0x400), 2048
+  straight-path points (0x800); the streaming radius binds long before them. Anything farther needs our offline data
+  (the rooms grids / `tools/gdmap` navmesh tiles), not the live mesh.
+- `FindClosestPointOnPathMesh` returns NavResult 1 = found, 2 = no mesh within the radius (and leaves the out
+  WorldVec3 garbage). `/pathprobe?x=&z=[&snap=]` = snap, then `NavManager::FindPath` with length + corridor, timed.
+- **Fog of war** (`Region::GetFogOfWar(false)`, Engine `FogOfWar`): a byte per 8x8-u cell, data +0x10, width +0x18,
+  height +0x1c = 18x18 per region (16 inner cells + a ring overlapping the neighbours); cell of region-relative (x, z)
+  is c = int(x/8 + 1), r = h - int(z/8 + 1) - 1; > 150 = fogged, 0xff = never seen (`FogOfWar::IsInFog`, `Initialize`).
+  `/fogmap?n=&range=&grid=1&unsee=` merges every loaded region's inner cells into one world map, takes fogged cells
+  nearest first, snaps each (6 u) and paths to it: all 22 regions within 300 u in 2-30 ms.
+- Live result at the hub: all ~2200 fogged cells in range were OFF the navmesh (cliffs, drops, rock) -- walking reveals
+  every walkable cell within sight, so the fog left near an explored area is over unwalkable ground and "nearest
+  unexplored" is often "none within the loaded range". With `unsee=60` / `120` (seen cells beyond that treated as fog,
+  analysis copy only) the finder returned the walkable edge at that radius with real path lengths (96-174 u) in
+  2.4 / 6.2 ms. Candidates are ordered by straight distance; nearest by PATH needs pathing the top few and taking the
+  shortest.
+- Trap: `/teleport` into Basalt Crags left the test character dead and then back at the hub; check a spot first.
