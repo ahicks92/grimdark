@@ -1,3 +1,7 @@
+# Unreleased
+
+- Fix: attaching a component or augment only offers items in your bags or equipped, no longer items in your personal and shared stashes.
+
 # 0.4.0 (2026-09-27)
 
 - Wall tones are now smoother.  When hugging a wall the wall will seem flatter/straighter.

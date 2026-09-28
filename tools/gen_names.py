@@ -356,7 +356,7 @@ ENTRIES = [
     ("ControllerPlayer_UseItem", "Game", r"GAME::ControllerPlayer::UseItem\(unsigned int,enum"),
     # attach a component/augment to an item (a pure inventory op, no blacksmith). Character::UseItemOn looks up
     # both items by id, is-a-checks the used item (ItemRelic/ItemEnchantment) and applies it. GetCompatibleItems
-    # enumerates every item (bags + equipped + stash) a given component can attach to.
+    # enumerates every item (bags + equipped + both stashes + the reagent slot) a given component can attach to.
     ("Player_GetCompatibleItems", "Game", r"GAME::Player::GetCompatibleItems\("),
     ("Character_UseItemOn", "Game", r"GAME::Character::UseItemOn\("),
     ("ControllerCharacter_SendDropItemRandom", "Game", r"GAME::ControllerCharacter::SendDropItemRandom\("),

@@ -343,6 +343,11 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
 - **Every player-facing KEY goes in README.md** (its Controls tables) in the same change that adds or rebinds it,
   alongside `docs/controls.md`. The README is the player's document: keys and what they do, not every sound or
   internal detail. (Pets and the vendor's Ctrl+Enter both shipped without a README line, 2026-08-26.)
+- **CHANGES.md is the player-facing changelog**: every player-visible change (feature, fix, key, option) gets a line under
+  `# Unreleased` at the top in the same change -- create that heading if the top section is a released version. Match the
+  existing style: plain player language, one `- ` bullet per change, `Fix: ...` / `Untested fix: ...` prefixes, keys in
+  backticks as spoken (`alt comma`, `ctrl t`), sub-bullets for caveats; no internals. A release renames the heading to
+  `# <version> (<date>)`.
 - Hook by exported name, never by signature scan. Member functions: `this` first; class-by-value returns
   (`std::basic_string`) use a hidden return pointer as the 2nd argument. The game uses
   `basic_string<unsigned short>` (not char16_t) — see `src/msvc_string.h`.

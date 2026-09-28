@@ -117,7 +117,7 @@ bool equip(unsigned id, int loc);                // EquipmentCtrl::PlaceItem(loc
 bool pickup_item(unsigned id);                   // ControllerCharacter::PickupItem (the game's pickup command; no range check)
 // Components/augments (records/items/materia): activating one in a bag opens the attach picker.
 bool is_component(unsigned id);                                    // is this bag item a component/augment?
-std::vector<unsigned> compatible_items(unsigned component_id);     // Player::GetCompatibleItems -- item ids it fits (bags+equipped+stash)
+std::vector<unsigned> compatible_items(unsigned component_id);     // Player::GetCompatibleItems filtered to bags+equipped (the game's list adds the stashes)
 bool attach_component(unsigned component_id, unsigned target_id, int source);   // Character::UseItemOn (attach + consume)
 
 // ---- merchants and the caravan ----

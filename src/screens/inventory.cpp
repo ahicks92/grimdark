@@ -87,7 +87,7 @@ class InventoryScreen : public WindowScreen, public AssignSource {
   void open_component_picker(unsigned comp_id) {
     std::string comp_name = gameapi::item_name(gameapi::object_by_id(comp_id));
     std::vector<PickerItem> items;
-    // The game's list spans bags, equipped items and the stash; say "equipped" on the ones you are wearing.
+    // Bag and equipped items only (compatible_items drops the stashes); say "equipped" on the ones you are wearing.
     std::set<unsigned> worn;
     for (const gameapi::EquipSlot& sl : gameapi::equipment()) if (sl.item_id) worn.insert(sl.item_id);
     for (unsigned tid : gameapi::compatible_items(comp_id)) {

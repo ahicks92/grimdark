@@ -6,6 +6,7 @@
 #include "core/strings.h"
 #include <algorithm>
 #include <format>
+#include <set>
 
 namespace gd::gameapi {
 using namespace gd::names;
@@ -46,7 +47,7 @@ struct Api {
   void (*AddMoney)(void*, unsigned) = nullptr;   // dev: Character::AddMoney (iron bits)
   void (*SendDropItemRandom)(void*, unsigned) = nullptr;
   void (*PickupItem)(void*, unsigned) = nullptr;               // virtual on the controller; the export is the implementation
-  void (*GetCompatibleItems)(void*, unsigned, MemVec*) = nullptr;   // Player: item ids a component can attach to (bags+equipped+stash)
+  void (*GetCompatibleItems)(void*, unsigned, MemVec*) = nullptr;   // Player: item ids a component can attach to (bags+equipped+stashes+reagent slot)
   void (*Character_UseItemOn)(void*, unsigned, unsigned, int, unsigned, unsigned, bool) = nullptr;  // attach used->target (ItemSource)
   // merchants / caravan
   const void* (*GetMarketInventorySack)(const void*, unsigned, int) = nullptr;
@@ -456,7 +457,6 @@ std::vector<Bag> bags() {
         it.p = object_by_id(it.id);
         it.name = item_name(it.p);
         it.stack = item_stack(it.p);
-      it.component = has_component(it.p);
         it.component = has_component(it.p);
         b.items.push_back(std::move(it));
       }
@@ -602,8 +602,11 @@ bool is_component(unsigned id) {
   if (aug) return true;
   return object_record(p).find("/items/materia/") != std::string::npos;
 }
-// The item ids this component can attach to (the game's own union of bags + equipped + stash), via
-// Player::GetCompatibleItems -- do not re-implement the per-target type test.
+// The item ids in the character's bags or equipment this component can attach to. Player::GetCompatibleItems is
+// the game's union of bags (Inventory::GetCompatible), equipment (EquipManager::GetCompatible) and, for the main
+// player, the reagent slot, the shared stash and the personal stash; we keep only what the character holds (the
+// stash is not open in the inventory screen, and UseItemOn on a stash target is unverified). Filtering the export's
+// result keeps the game's per-target type test without hardcoding the Inventory/EquipManager offsets.
 std::vector<unsigned> compatible_items(unsigned component_id) {
   load_items();
   std::vector<unsigned> out;
@@ -611,7 +614,10 @@ std::vector<unsigned> compatible_items(unsigned component_id) {
   if (!p || !g.GetCompatibleItems || !component_id) return out;
   VecBuffer<unsigned> buf(256);
   guarded("Player::GetCompatibleItems", [&] { g.GetCompatibleItems(p, component_id, buf.vec()); });
-  out = buf.take("GetCompatibleItems");
+  std::set<unsigned> held;
+  for (const Bag& b : bags()) for (const BagItem& it : b.items) held.insert(it.id);
+  for (const EquipSlot& sl : equipment()) if (sl.item_id) held.insert(sl.item_id);
+  for (unsigned id : buf.take("GetCompatibleItems")) if (held.count(id)) out.push_back(id);
   return out;
 }
 // Attach the component to the target item. Character::UseItemOn resolves both ids, is-a-checks the used item
