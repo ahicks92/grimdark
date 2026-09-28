@@ -2628,12 +2628,12 @@ std::string cycle_review(ScanGroup group, int dir, bool nearest) {
   return land_on(items, group, dir, nearest);
 }
 
-std::string cycle_highest_classification(int dir) {
+std::string cycle_highest_classification(int dir, bool nearest) {
   std::vector<ScanItem> items = scan(ScanGroup::Enemies);
   int top = -1;
   for (const ScanItem& it : items) top = std::max(top, it.classification);
   if (top > 0) std::erase_if(items, [top](const ScanItem& it) { return it.classification != top; });
-  return land_on(items, ScanGroup::Enemies, dir, false);
+  return land_on(items, ScanGroup::Enemies, dir, nearest);
 }
 unsigned reviewed_id() { return g_reviewed_id; }
 bool reviewed_position(Vec3& out) {

@@ -221,6 +221,8 @@ static void register_actions() {
                     [] { speech::speak(world::cycle_highest_classification(1), true); }).bind(0x33);          // ,
   m.register_action("scan.topClassPrev", "Previous highest-rarity enemy", InputCategory::InGame,
                     [] { speech::speak(world::cycle_highest_classification(-1), true); }).bind(0x33, false, true, false);  // Shift+,
+  m.register_action("scan.topClassNearest", "Nearest highest-rarity enemy", InputCategory::InGame,
+                    [] { speech::speak(world::cycle_highest_classification(1, true), true); }).bind(0x33, false, false, true);  // Alt+,
   // Rooms (docs/rooms.md): X = the current room's title and description; its exits are the scanner's Exits
   // group (V above). Place changes are announced automatically in the player's voice.
   m.register_action("rooms.describe", "Describe the room", InputCategory::InGame, [] { rooms::speak_description(); }).bind(0x2d);   // X

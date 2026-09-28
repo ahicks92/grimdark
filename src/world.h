@@ -140,7 +140,7 @@ bool walk_to(const Vec3& point);   // L: the game's pathfound move to a world po
 std::string cycle_review(ScanGroup group, int dir, bool nearest = false);   // nearest: enter at the closest regardless of the current target (Alt+key)
 // The comma key: cycle only the enemies of the highest classification present nearby (find the boss and its
 // tier / a summoner's adds). Same readout and landing as cycle_review(Enemies).
-std::string cycle_highest_classification(int dir);
+std::string cycle_highest_classification(int dir, bool nearest = false);
 unsigned reviewed_id();
 // A devotion shrine (StaticShrine) that has been restored / cleansed (its state 6); false for a ruined or desecrated one.
 bool shrine_restored(unsigned id);
