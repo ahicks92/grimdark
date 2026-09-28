@@ -201,6 +201,9 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   (the wall tones use the navmesh raycast). `NavManager::FindPath` snaps its target within the radius and reports a
   complete path to the snapped point: gate exits by floor height and reach (`docs/rooms.md`).
 - `World::GetRegionContainingXZ(from, x, z)` takes x, z RELATIVE to `from`.
+- The live navmesh covers only the streamed-in regions (~250 u around the player, 2026-09-28): farther targets need
+  the offline rooms data. `FindClosestPointOnPathMesh` returns 1 = found, 2 = nothing (out param left garbage). Fog of
+  war is per region, 8-u cells, > 150 = fogged (`docs/devlog.md` 2026-09-28, `/fogmap`).
 - Hooking: a base export that is a COMDAT-folded stub is shared by ~2000 symbols; detouring one kills the game at
   start (`hooks.cpp` refuses bare stubs and duplicate targets). Never detour the exe's widget-handler vtable slots
   that are import thunks or `return false` stubs. Detours transactions must update every thread (`ThreadUpdater`).
