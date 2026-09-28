@@ -345,11 +345,11 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   internal detail. (Pets and the vendor's Ctrl+Enter both shipped without a README line, 2026-08-26.)
 - **CHANGES.md is the player-facing changelog**: every player-visible change (feature, fix, key, option) gets a line under
   `# Unreleased` at the top in the same change -- create that heading if the top section is a released version. Match the
-  existing style: plain player language, one `- ` bullet per change, `Fix: ...` prefix (no "untested" markers: the changelog is not a test log), keys in
+  existing style: plain player language, one `- ` bullet per change, `Fix: ...` / `Untested fix: ...` prefixes (the latter only when the user asks for it), keys in
   backticks as spoken (`alt comma`, `ctrl t`), sub-bullets for caveats; no internals. A release renames the heading to
   `# <version> (<date>)`.
 - **Commit each finished change** on main without asking (the user tests in batches and reports bugs back); an
-  untested change is still committed, and the report says it is untested -- not CHANGES.md.
+  untested change is still committed, and the report says it is untested.
 - Hook by exported name, never by signature scan. Member functions: `this` first; class-by-value returns
   (`std::basic_string`) use a hidden return pointer as the 2nd argument. The game uses
   `basic_string<unsigned short>` (not char16_t) — see `src/msvc_string.h`.
