@@ -1034,3 +1034,17 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   2.4 / 6.2 ms. Candidates are ordered by straight distance; nearest by PATH needs pathing the top few and taking the
   shortest.
 - Trap: `/teleport` into Basalt Crags left the test character dead and then back at the hub; check a spot first.
+- **Distant fog** (same day): every region's mask is available two ways, and they agree (5 distant regions compared
+  cell-count for cell-count, and 0J057's grid exactly):
+  - LIVE: `Region::GetFogOfWar(false)` on ANY region object, loaded or not. An empty region+0x138 is filled lazily
+    (Engine 0x194f10) from `World::GetFOWManager()` (a map of region name -> blob, the name being Region+0x48, e.g.
+    "Levels/Region0J057.lvl") via `FOWManager::Retrieve` -> `FogOfWar::Read`; a region with no entry is initialised
+    all-fogged. `/fogmap?range=1500` read 172 regions this way with the game healthy. Cost: each first read allocates
+    a FogOfWar and a small GPU texture (`FogOfWar::Read` calls `CreateTexture`) that stays on the region -- what the
+    game's own map does. Reading the FOWManager's blobs directly would avoid the texture if that ever matters.
+  - OFFLINE: the save's `map.fow` (Steam cloud: `userdata/<id>/219990/remote/save/main/_<char>/levels_world001.map/
+    <Difficulty>/map.fow`), all 1014 regions, as of the last save. `tools/fow.py` decodes it (format in its docstring:
+    u32 size + one LZ4 block of "FOWX" v1 entries). The block's last sequence reads 4 bytes past the file end (the
+    game's `LZ4_decompress_fast` does not care), so the python `lz4` package refuses it; fow.py carries its own decoder.
+- So distant fog is solved; what distant exploration still lacks is distant WALKABILITY and routes, which the live
+  navmesh cannot give past ~250 u -- that has to come from the offline rooms / gdmap data.

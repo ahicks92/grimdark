@@ -203,7 +203,8 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
 - `World::GetRegionContainingXZ(from, x, z)` takes x, z RELATIVE to `from`.
 - The live navmesh covers only the streamed-in regions (~250 u around the player, 2026-09-28): farther targets need
   the offline rooms data. `FindClosestPointOnPathMesh` returns 1 = found, 2 = nothing (out param left garbage). Fog of
-  war is per region, 8-u cells, > 150 = fogged (`docs/devlog.md` 2026-09-28, `/fogmap`).
+  war is per region, 8-u cells, > 150 = fogged; `Region::GetFogOfWar(false)` works on unloaded regions too (lazy load
+  from the FOWManager) (`docs/devlog.md` 2026-09-28, `/fogmap`, `tools/fow.py`).
 - Hooking: a base export that is a COMDAT-folded stub is shared by ~2000 symbols; detouring one kills the game at
   start (`hooks.cpp` refuses bare stubs and duplicate targets). Never detour the exe's widget-handler vtable slots
   that are import thunks or `return false` stubs. Detours transactions must update every thread (`ThreadUpdater`).
@@ -294,6 +295,7 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   `tools/exports/` (regenerate after a game patch).
 - `tools/gen_names.py` — resolves the exports we hook by regex over the undecorated listing and writes
   `src/gd_names.h`; fails loudly if a pattern does not match exactly one export.
+- `tools/fow.py [character] [difficulty] [--region s] [--grid]` -- a character's saved fog of war (map.fow, every region).
 - `tools/arz.py <record-path-regex> [field-regex]` — reads `database.arz` offline (records + their fields).
 - `tools/stacks.py [pid|exe] [n]` — native stack dump of all threads via dbghelp; `tools/pe_survey.py`,
   `tools/dinput_hook_scan.py` — static analysis helpers; `tools/hookmon.py` — LL keyboard hook monitor.
