@@ -40,6 +40,20 @@ struct Api {
   bool (*Skill_IsSkillTheMasterySkill)(const void*) = nullptr;
   bool (*Skill_IsSkillModifier)(const void*) = nullptr;
   bool (*Skill_IsItemSkillAuto)(void*) = nullptr;   // an auto-triggered item skill (proc); not assignable
+  bool (*Skill_IsPrimary)(const void*) = nullptr;
+  unsigned (*Skill_GetSkillSet)(const void*) = nullptr;
+  unsigned (*Skill_GetSubSkillParentId)(const void*) = nullptr;
+  bool (*SM_IsGlobalSkillTypeAndAllowed)(const void*, const void*) = nullptr;
+  bool (*BuffSelf_IsAutoToggle)(const void*) = nullptr;   // virtual; its slot comes from SkillActivatedBuffSelf's vtable
+  void** BuffSelf_vftable = nullptr;
+  unsigned (*Skill_GetCurrentLevel)(const void*) = nullptr;   // virtual
+  bool (*Skill_IsAugmented)(const void*) = nullptr;
+  unsigned (*Skill_GetAugmentedLevel)(const void*) = nullptr;
+  bool (*Profile_IsExclusiveSkill)(const void*) = nullptr;
+  const MemVec* (*Skill_GetSkillDependancies)(const void*, bool*) = nullptr;   // mem::vector<std::string> record paths; out: all required
+  unsigned (*Mastery_GetEnumeration)(const void*) = nullptr;
+  unsigned (*SM_FindSkillId)(const void*, const char*) = nullptr;
+  unsigned (*GetSkillMasteriesActive)(const void*) = nullptr;
   bool (*Skill_IsSkillEnabled)(const void*) = nullptr;                        // virtual
   MsvcStringW* (*Skill_CreateUISkillName)(const void*, MsvcStringW*, bool) = nullptr;   // virtual, u16 by value
   const MsvcStringA* (*Skill_GetDisplayNameTag)(const void*) = nullptr;
@@ -94,7 +108,7 @@ struct Api {
   void (*DisplaySkillReallocationWindow)(void*) = nullptr;   // the spirit guide's own open-in-reclaim-mode path
   bool loaded = false;
 } g;
-int g_s_enabled = -1, g_s_name = -1, g_s_profile = -1, g_s_inc = -1, g_s_dec = -1, g_s_set = -1;
+int g_s_enabled = -1, g_s_name = -1, g_s_profile = -1, g_s_inc = -1, g_s_dec = -1, g_s_set = -1, g_s_curlvl = -1, g_s_autotoggle = -1;
 constexpr int kSlotReleasePets = 0x80 / 8;   // Skill vtable +0x80 (the exe calls it right before IncrementSkillLevel)
 
 void load_skills() {
@@ -127,6 +141,20 @@ void load_skills() {
   GAPI_LOAD(g, Skill_IsSkillTheMasterySkill, Skill_IsSkillTheMasterySkill);
   GAPI_LOAD(g, Skill_IsSkillModifier, Skill_IsSkillModifier);
   GAPI_LOAD(g, Skill_IsItemSkillAuto, Skill_IsItemSkillAuto);
+  GAPI_LOAD(g, Skill_IsPrimary, Skill_IsPrimary);
+  GAPI_LOAD(g, Skill_GetSkillSet, Skill_GetSkillSet);
+  GAPI_LOAD(g, Skill_GetSubSkillParentId, Skill_GetSubSkillParentId);
+  GAPI_LOAD(g, SM_IsGlobalSkillTypeAndAllowed, SkillManager_IsGlobalSkillTypeAndAllowed);
+  GAPI_LOAD(g, BuffSelf_IsAutoToggle, SkillActivatedBuffSelf_IsAutoToggle);
+  GAPI_LOAD(g, BuffSelf_vftable, SkillActivatedBuffSelf_vftable);
+  GAPI_LOAD(g, Skill_GetCurrentLevel, Skill_GetCurrentLevel);
+  GAPI_LOAD(g, Skill_IsAugmented, Skill_IsAugmented);
+  GAPI_LOAD(g, Skill_GetAugmentedLevel, Skill_GetAugmentedLevel);
+  GAPI_LOAD(g, Profile_IsExclusiveSkill, SkillProfile_IsExclusiveSkill);
+  GAPI_LOAD(g, Skill_GetSkillDependancies, Skill_GetSkillDependancies);
+  GAPI_LOAD(g, Mastery_GetEnumeration, Skill_Mastery_GetEnumeration);
+  GAPI_LOAD(g, SM_FindSkillId, SkillManager_FindSkillId);
+  GAPI_LOAD(g, GetSkillMasteriesActive, Character_GetSkillMasteriesActive);
   GAPI_LOAD(g, Skill_IsSkillEnabled, Skill_IsSkillEnabled);
   GAPI_LOAD(g, Skill_CreateUISkillName, Skill_CreateUISkillName);
   GAPI_LOAD(g, Skill_GetDisplayNameTag, Skill_GetDisplayNameTag);
@@ -186,7 +214,9 @@ void load_skills() {
   g_s_inc = vslot(g.Skill_vftable, (const void*)g.Skill_IncrementSkillLevel);
   g_s_dec = vslot(g.Skill_vftable, (const void*)g.Skill_DecrementSkillLevel);
   g_s_set = vslot(g.Skill_vftable, (const void*)g.Skill_SetSkillLevel);
-  log::writef("gameapi: Skill slots enabled={} name={} profile={} inc={} dec={}", g_s_enabled, g_s_name, g_s_profile, g_s_inc, g_s_dec);
+  g_s_curlvl = vslot(g.Skill_vftable, (const void*)g.Skill_GetCurrentLevel);
+  g_s_autotoggle = vslot(g.BuffSelf_vftable, (const void*)g.BuffSelf_IsAutoToggle);   // 194 (+0x610) on 1.3.0.8
+  log::writef("gameapi: Skill slots enabled={} name={} profile={} inc={} dec={} curlvl={} autotoggle={}", g_s_enabled, g_s_name, g_s_profile, g_s_inc, g_s_dec, g_s_curlvl, g_s_autotoggle);
 }
 const void* skill_manager() { load_skills(); void* p = player(); return p && g.GetSkillManager ? g.GetSkillManager(p) : nullptr; }
 
@@ -366,15 +396,148 @@ std::string dump_item_skills() {
   for (unsigned id : item_skill_ids()) { void* s = object_by_id(id); SkillInfo i = s ? read_skill(s) : SkillInfo{}; out += std::format("  id={} '{}' auto={} {}\n", id, i.name, i.item_auto, i.record); }
   return out.size() > 60 ? out : out + "  (none)\n";
 }
-std::vector<std::string> skill_tooltip(const void* skill) {
+namespace {
+// GenerateUISkillText(skill, lines, SkillReasons const*, bool noRequirements, bool reclaimMode, int reclaimCost,
+// GameTextClass, bool). A null SkillReasons (or noRequirements) skips the whole points / requirements block; with
+// one, the builder prints "press to add unused skill points" unless a byte blocks it (Game.dll 0x2d050e..0x2d1298).
+std::vector<std::string> generate_skill_text(const void* skill, const unsigned char* reasons, bool reclaim, int cost) {
   load_skills();
   std::vector<std::string> out;
   if (!skill || !g.GenerateUISkillText) return out;
   TextLineBuffer buf;
-  alignas(16) unsigned char reasons[64] = {};   // SkillReasons: ~14 bools, never null-checked by the builder
-  guarded("GenerateUISkillText", [&] { g.GenerateUISkillText(skill, buf.vec(), reasons, false, false, 0, 0x31, true); });
+  guarded("GenerateUISkillText", [&] { g.GenerateUISkillText(skill, buf.vec(), reasons, false, reclaim, cost, 0x31, true); });
   for (TextLine& l : buf.take("skill text")) out.push_back(std::move(l.text));
   return out;
+}
+unsigned current_level(const void* s) {
+  if (auto f = (unsigned (*)(const void*))vfn(s, g_s_curlvl)) return f(s);
+  return g.Skill_GetSkillLevel ? g.Skill_GetSkillLevel(s) : 0;
+}
+bool is_exclusive(const void* s) {
+  auto f = (const void* (*)(const void*))vfn(s, g_s_profile);
+  const void* prof = f ? f(s) : nullptr;
+  return prof && g.Profile_IsExclusiveSkill && g.Profile_IsExclusiveSkill(prof);
+}
+unsigned mastery_enum_of(const void* s) {
+  void* m = g.Skill_GetMasteryId ? object_by_id(g.Skill_GetMasteryId(s)) : nullptr;
+  if (!m || !g.Skill_IsSkillTheMasterySkill || !g.Skill_IsSkillTheMasterySkill(m) || !g.Mastery_GetEnumeration) return ~0u;
+  return g.Mastery_GetEnumeration(m);
+}
+// exe+0x2487c0: at the cap -- augmented skills against the ultimate level, the rest against the max.
+bool at_cap(const void* s) {
+  unsigned max = g.Skill_GetMaxLevel ? g.Skill_GetMaxLevel(s) : 0;
+  if (g.Skill_IsAugmented && g.Skill_IsAugmented(s)) {
+    unsigned lvl = g.Skill_GetSkillLevel ? g.Skill_GetSkillLevel(s) : 0;
+    return lvl >= max || current_level(s) >= (g.Skill_GetUltimateLevel ? g.Skill_GetUltimateLevel(s) : 0);
+  }
+  return current_level(s) >= max;
+}
+// exe+0x248850: the skillDependancy records -- all learned when skillDependancyAll, else at least one. A record the
+// character does not have is skipped in "all" mode and counts as unlearned in "any" mode, as in the exe.
+bool dependencies_unmet(const void* s) {
+  const void* sm = skill_manager();
+  if (!g.Skill_GetSkillDependancies || !g.SM_FindSkillId || !sm) return false;
+  bool all = false;
+  std::vector<MsvcStringA> deps = vec_items<MsvcStringA>(g.Skill_GetSkillDependancies(s, &all), 32);
+  if (deps.empty()) return false;
+  bool any_learned = false;
+  for (const MsvcStringA& d : deps) {
+    std::string rec = a_text(&d);
+    void* dep = rec.empty() ? nullptr : object_by_id(g.SM_FindSkillId(sm, rec.c_str()));
+    if (!dep) continue;
+    bool learned = g.Skill_GetSkillLevel && g.Skill_GetSkillLevel(dep) > 0;
+    if (all && !learned) return true;
+    if (learned) any_learned = true;
+  }
+  return all ? false : !any_learned;
+}
+// exe+0x2489f0: an exclusive skill loses to a learned exclusive skill of higher level; on a tie, to one of a
+// higher mastery enumeration, then to one of higher augmented level. The exe walks SkillManager::GetActiveSkillList
+// (which it lets the game fill); the learned UI skills stand in for it here.
+bool exclusive_conflict(const void* s) {
+  if (!is_exclusive(s)) return false;
+  unsigned id = object_id(s), lvl = g.Skill_GetSkillLevel ? g.Skill_GetSkillLevel(s) : 0;
+  for (const SkillInfo& o : skills()) {
+    if (o.id == id || o.level == 0 || !is_exclusive(o.p)) continue;
+    if (o.level > lvl) return true;
+    if (o.level != lvl) continue;
+    unsigned mine = mastery_enum_of(s), theirs = mastery_enum_of(o.p);
+    if (mine == ~0u || theirs == ~0u) continue;
+    if (mine < theirs) return true;
+    if (mine == theirs && g.Skill_GetAugmentedLevel && g.Skill_GetAugmentedLevel(o.p) > g.Skill_GetAugmentedLevel(s)) return true;
+  }
+  return false;
+}
+// A level-1 base skill's modifiers that still hold points (SkillReasons byte 0xa; the reclaim must take them first).
+std::vector<std::string> modifiers_holding_points(unsigned id) {
+  std::vector<std::string> out;
+  for (const SkillInfo& s : skills()) if (s.modified_skill_id == id && s.level > 0) out.push_back(s.name.empty() ? s.record : s.name);
+  return out;
+}
+// A learned skill of this mastery that needs the bar at its current level (SkillReasons byte 0xd).
+const SkillInfo* mastery_dependant(const std::vector<SkillInfo>& list, unsigned mastery_id, unsigned lvl) {
+  for (const SkillInfo& s : list) if (!s.is_mastery && s.mastery_id == mastery_id && s.level > 0 && s.mastery_req >= lvl) return &s;
+  return nullptr;
+}
+// The skills window's SkillReasons, as its builder exe+0x2492b0 fills it for an icon (14 bytes):
+//   0 no skill points   1 mastery rank too low   2 base skill not learned   3 at the cap
+//   4 a new mastery with no mastery slot left   5 skill dependencies unmet   6 exclusive-skill conflict
+//   7 level 1 hosting a celestial power   8 reclaim costs more than you have   0xa level 1 with modifiers holding points
+//   0xb level 0   0xd mastery bar needed by a learned skill.   (9 and 0xc are never set by the skills window.)
+void fill_skill_reasons(const void* s, unsigned char r[16]) {
+  memset(r, 0, 16);
+  void* p = player();
+  if (!s || !p) return;
+  guarded("skill reasons", [&] {
+    bool mastery = g.Skill_IsSkillTheMasterySkill && g.Skill_IsSkillTheMasterySkill(s);
+    unsigned lvl = g.Skill_GetSkillLevel ? g.Skill_GetSkillLevel(s) : 0;
+    r[0] = g.GetSkillPoints && g.GetSkillPoints(p) == 0;
+    if (!mastery) {
+      unsigned req = g.Skill_GetMasteryLevelRequirement ? g.Skill_GetMasteryLevelRequirement(s) : 0;
+      r[1] = (g.Skill_GetMasteryLevel ? g.Skill_GetMasteryLevel(s) : 0) < req;
+      r[2] = g.Skill_IsBaseSkillEnabled && !g.Skill_IsBaseSkillEnabled(s);
+    }
+    r[3] = at_cap(s);
+    if (mastery && current_level(s) == 0 && g.GetSkillMasteriesAllowed && g.GetSkillMasteriesActive)
+      r[4] = g.GetSkillMasteriesAllowed(p) <= g.GetSkillMasteriesActive(p);
+    r[5] = dependencies_unmet(s);
+    r[6] = exclusive_conflict(s);
+    r[7] = lvl == 1 && hosted_power_id(s) != 0;
+    r[8] = reclaim_cost() > money();
+    r[0xa] = !mastery && lvl == 1 && !modifiers_holding_points(object_id(s)).empty();
+    r[0xb] = lvl == 0;
+    r[0xd] = mastery && mastery_dependant(skills(), object_id(s), lvl) != nullptr;
+  });
+}
+}  // namespace
+std::vector<std::string> skill_tooltip(const void* skill) { return generate_skill_text(skill, nullptr, false, 0); }
+std::vector<std::string> skill_window_tooltip(const void* skill, bool reclaim) {
+  alignas(16) unsigned char reasons[16];
+  fill_skill_reasons(skill, reasons);
+  return generate_skill_text(skill, reasons, reclaim, (int)reclaim_cost());
+}
+// The exe's quickbar picker filter (exe+0x1e7860, run over Character::GetUISkillList for a number-bar slot):
+// learned (current level), a primary or secondary skill, not auto-toggled, and -- when it belongs to another skill
+// set (a weapon set's item skills) -- only a global, non-sub skill the manager allows. Mouse slot 10 additionally
+// requires IsPrimary and the potion slots take no skill; neither applies to the number bars.
+bool hotbar_assignable(const void* skill) {
+  load_skills();
+  if (!skill) return false;
+  bool ok = false;
+  guarded("hotbar_assignable", [&] {
+    if (current_level(skill) == 0) return;
+    bool primary = g.Skill_IsPrimary && g.Skill_IsPrimary(skill), secondary = g.Skill_IsSecondary && g.Skill_IsSecondary(skill);
+    if (!primary && !secondary) return;
+    if (auto f = (bool (*)(const void*))vfn(skill, g_s_autotoggle)) if (f(skill)) return;
+    unsigned set = g.Skill_GetSkillSet ? g.Skill_GetSkillSet(skill) : 0;
+    if (set != displayed_skill_set()) {
+      if (g.Skill_GetSubSkillParentId && g.Skill_GetSubSkillParentId(skill) != 0) return;
+      const void* sm = skill_manager();
+      if (!sm || !g.SM_IsGlobalSkillTypeAndAllowed || !g.SM_IsGlobalSkillTypeAndAllowed(sm, skill)) return;
+    }
+    ok = true;
+  });
+  return ok;
 }
 // Raising: IncrementSkillLevel(n) (= AddSkillLevel: level += n clamped to the profile's cap, recalc, the owner's
 // level-changed notify) then DecrementSkillLevel(n) (= max(level - n, 0), the same notify; at 0 the owner's "skill
@@ -491,22 +654,21 @@ std::string can_reclaim_skill(const void* skill) {
     if (mastery) {
       // Lowering the bar by one must not drop it under any learned skill's requirement (byte 0xd walks the pane's
       // skills, i.e. this mastery's tree). SkillInfo::mastery_id is the mastery SKILL's object id.
-      for (const SkillInfo& s : skills()) {
-        if (s.is_mastery || s.mastery_id != id || s.level == 0 || s.mastery_req < lvl) continue;
+      const std::vector<SkillInfo> list = skills();
+      if (const SkillInfo* s = mastery_dependant(list, id, lvl)) {
         core::MessageBuilder m;
-        m.fragment(s.name.empty() ? s.record : s.name).fragment(strings::kRequiresMastery).fragment(std::format("{}", s.mastery_req));
+        m.fragment(s->name.empty() ? s->record : s->name).fragment(strings::kRequiresMastery).fragment(std::format("{}", s->mastery_req));
         reason = m.build();
         return;
       }
     } else if (lvl == 1) {
-      core::MessageBuilder m; bool any = false;
-      for (const SkillInfo& s : skills()) {
-        if (s.modified_skill_id != id || s.level == 0) continue;
-        if (!any) m.fragment(strings::kRemoveModifiersFirst);
-        any = true;
-        m.list_item().fragment(s.name.empty() ? s.record : s.name);
+      if (std::vector<std::string> mods = modifiers_holding_points(id); !mods.empty()) {
+        core::MessageBuilder m;
+        m.fragment(strings::kRemoveModifiersFirst);
+        for (const std::string& n : mods) m.list_item().fragment(n);
+        reason = m.build();
+        return;
       }
-      if (any) { reason = m.build(); return; }
       if (unsigned power = hosted_power_id(skill)) {
         core::MessageBuilder pm; pm.fragment(strings::kDetachPowerFirst);
         std::string pname = skill_name_by_id(power);

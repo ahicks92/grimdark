@@ -178,7 +178,7 @@ class SkillsScreen : public WindowScreen, public AssignSource {
       if ((exe_ui::skills_press_skill(id) && gameapi::skill_level(q) < before) || gameapi::refund_skill(q)) { speech::speak(strings::kReclaimed, true); refresh(); return; }
       speech::speak(std::string(strings::kCannot), true);   // left: a greyed icon for a reason we don't model (e.g. no expansion 1 for the mastery)
     };
-    auto tooltip = [p] { speak_lines(gameapi::skill_tooltip(p)); };
+    auto tooltip = [p, reclaim] { speak_lines(gameapi::skill_window_tooltip(p, reclaim)); };
     auto v = row_item(label, value, learn, tooltip, refund);
     v->state_text = [id] { for (const gameapi::SkillInfo& x : gameapi::skills()) if (x.id == id) { MessageBuilder m; strings::push_skill_level(m, x.level, x.max_level); return m.build(); } return std::string(); };
     b.add_item(ControlId::structural(std::format("skills.s{}", s.id)), v);

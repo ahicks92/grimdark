@@ -480,11 +480,21 @@ static std::string handle(const std::string& path, const std::map<std::string, s
     if (q.count("attach")) return gameapi::attach_component((unsigned)parse_int(q.at("attach"), 0), (unsigned)parse_int(q.count("target") ? q.at("target") : "0", 0), screens::bag_item_source()) ? "ok\n" : "failed\n";   // ?attach=<component>&target=<item>
     return std::format("item source knob {}\n", screens::bag_item_source()) + gameapi::dump_bags() + gameapi::dump_equipment();
   }
-  if (path == "/skills") {   // ?tip=<id> | ?learn=<id> | ?refund=<id> | ?attr=1..3 (spend an attribute point) | ?pane=<mastery enum|80>&tab=0|1
+  if (path == "/skills") {   // ?tip=<id>[&window=1[&reclaim=1]] | ?palette=1 | ?learn=<id> | ?refund=<id> | ?attr=1..3 (spend an attribute point) | ?pane=<mastery enum|80>&tab=0|1
     if (q.count("attr")) return gameapi::spend_attribute_point(parse_int(q.at("attr"), 0)) ? "ok\n" : "failed\n";
     if (q.count("pane")) return exe_ui::skills_set_pane(parse_int(q.count("tab") ? q.at("tab") : "0", 0), parse_int(q.at("pane"), 0)) ? "ok\n" : "failed\n";
     if (q.count("pickup")) return gameapi::pickup_item((unsigned)parse_int(q.at("pickup"), 0)) ? "ok\n" : "failed\n";
-    if (q.count("tip")) { std::string out; for (const std::string& l : gameapi::skill_tooltip(gameapi::object_by_id((unsigned)parse_int(q.at("tip"), 0)))) out += l + "\n"; return out.empty() ? "no text\n" : out; }
+    if (q.count("tip")) {   // &window=1: the skills window's text (points / requirements lines); &reclaim=1 as at a spirit guide
+      const void* s = gameapi::object_by_id((unsigned)parse_int(q.at("tip"), 0));
+      std::string out;
+      for (const std::string& l : q.count("window") ? gameapi::skill_window_tooltip(s, q.count("reclaim") > 0) : gameapi::skill_tooltip(s)) out += l + "\n";
+      return out.empty() ? "no text\n" : out;
+    }
+    if (q.count("palette")) {   // every hotbar candidate with the game's quickbar-filter verdict
+      std::string out = std::format("displayed skill set {}\n", gameapi::displayed_skill_set());
+      for (const gameapi::SkillInfo& s : gameapi::assignable_skills()) out += std::format("  id={} lvl={} auto={} assignable={} '{}' {}\n", s.id, s.level, s.item_auto, gameapi::hotbar_assignable(s.p), s.name, s.record);
+      return out;
+    }
     if (q.count("learn")) return gameapi::learn_skill(gameapi::object_by_id((unsigned)parse_int(q.at("learn"), 0))) ? "ok\n" : "failed\n";
     if (q.count("refund")) return gameapi::refund_skill(gameapi::object_by_id((unsigned)parse_int(q.at("refund"), 0))) ? "ok\n" : "failed\n";
     if (q.count("itemskills")) return gameapi::dump_item_skills();

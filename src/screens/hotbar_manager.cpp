@@ -37,14 +37,15 @@ void weapon_swap_tick() {
 }
 
 // A skill picker for one slot: `first_label` at id 0 (the slot's "clear" / "default"), then every assignable
-// skill. Filters (world::skill_aim, level, default utility, item_auto): only learned, user-activatable skills
-// -- passives / masteries / procs (Ice Spike) and the basic-attack/potion defaults are dropped. `assign` is
-// run with the picked id (0 for the first entry). Space reads the skill's text.
+// skill. Filters: the game's own quickbar-picker filter (gameapi::hotbar_assignable: learned, primary/secondary,
+// not auto-toggled, on the displayed weapon set's skill set unless global), plus item_auto, the basic-attack/potion
+// defaults and world::skill_aim -- passives / masteries / procs (Ice Spike) are dropped. `assign` is run with the
+// picked id (0 for the first entry). Space reads the skill's text.
 static void open_skill_picker(std::string label, std::string_view first_label, std::function<void(unsigned)> assign) {
   std::vector<PickerItem> items;
   items.push_back({0, std::string(first_label), {}});
   for (const gameapi::SkillInfo& s : gameapi::assignable_skills()) {
-    if (!s.id || s.level == 0 || s.item_auto) continue;
+    if (!s.id || s.level == 0 || s.item_auto || !gameapi::hotbar_assignable(s.p)) continue;
     if (s.record.rfind("records/skills/default/", 0) == 0 && s.record != "records/skills/default/defaultpetattack.dbr") continue;   // Pet Attack is the one assignable default
     if (world::skill_aim(gameapi::object_by_id(s.id)) == world::SkillAim::None) continue;
     items.push_back({s.id, s.name, {}});

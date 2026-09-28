@@ -266,8 +266,12 @@ Model: `Character::GetSkillManager()` (= Character `+0x850`); `GetSkillList()` -
 Engine Objects: `GetObjectName` = record path) `GetSkillLevel/GetMaxLevel/GetUltimateLevel/GetMasteryLevelRequirement/
 IsLocked/GetModifiers/GetSecondarySkills/GetCooldownRemaining/GetManaCost`, names `Skill::CreateUISkillName(bool)`
 (u16 by value), `GetDisplayNameTag()`. Full tooltip: static `GameEngine::GenerateUISkillText(skill, out,
-SkillReasons const* (zeroed 16 bytes, never null), false, bool, int reclaimCost, GameTextClass 0x31, true)`
-(call sites exe+0x2425c4, exe+0x242b92). The `int` is NOT a level override (corrected 2026-09-15): the exe passes
+SkillReasons const*, bool noRequirements, bool reclaimMode, int reclaimCost, GameTextClass 0x31, true)`
+(call sites exe+0x2425c4, exe+0x242b92, both passing the icon's stored reasons at button+0x4c0). A null SkillReasons
+or noRequirements skips the points/requirements block; a ZEROED one means "nothing blocks" and prints "press to add
+unused skill points" (the bug fixed 2026-09-28). The window fills it in exe+0x2492b0; the byte map is at
+`gameapi_skills.cpp fill_skill_reasons`. The quickbar rollover uses `GenerateUISkillInfo` instead (no points text),
+and the quickbar picker's filter is exe+0x1e7860 (`gameapi::hotbar_assignable`). The `int` is NOT a level override (corrected 2026-09-15): the exe passes
 `SkillManager::GetCurrentSkillReclamationCost()` and the builder only prints it (Game.dll+0x2d0575, the reclaim line);
 the text is always for the skill's CURRENT level (+ the next), so a tooltip "at level N" needs the skill put there --
 `gameapi::skill_tooltip_at` wraps the call in the game's own `IncrementSkillLevel(n)` / `DecrementSkillLevel(n)` pair

@@ -446,6 +446,21 @@ ENTRIES = [
     ("SkillManager_FindItemSkillIdByItemId", "Game", r"GAME::SkillManager::FindItemSkillIdByItemId\(unsigned int\)"),
     # a proc / chance-on-attack item skill (Ice Spike from a component) is auto-triggered, not assignable
     ("Skill_IsItemSkillAuto", "Game", r"GAME::Skill::IsItemSkillAuto\(void\)"),
+    # the exe's quickbar-picker filter (exe+0x1e7860): learned, primary or secondary, not auto-toggled, and on the
+    # displayed skill set unless it is a global, non-sub skill
+    ("Skill_IsPrimary", "Game", r"GAME::Skill::IsPrimary\(void\)"),
+    ("Skill_GetSkillSet", "Game", r"GAME::Skill::GetSkillSet\(void\)"),
+    ("Skill_GetSubSkillParentId", "Game", r"GAME::Skill::GetSubSkillParentId\(void\)"),
+    ("SkillManager_IsGlobalSkillTypeAndAllowed", "Game", r"GAME::SkillManager::IsGlobalSkillTypeAndAllowed\("),
+    ("SkillActivatedBuffSelf_IsAutoToggle", "Game", r"GAME::SkillActivatedBuffSelf::IsAutoToggle\(void\)"),   # Skill vtable +0x610; base is a folded return-false
+    ("SkillActivatedBuffSelf_vftable", "Game", r"const GAME::SkillActivatedBuffSelf::`vftable'$"),
+    # the skills window's SkillReasons builder (exe+0x2492b0) -> GenerateUISkillText's requirement lines
+    ("Skill_IsAugmented", "Game", r"GAME::Skill::IsAugmented\(void\)"),
+    ("Skill_GetAugmentedLevel", "Game", r"GAME::Skill::GetAugmentedLevel\(void\)"),
+    ("SkillProfile_IsExclusiveSkill", "Game", r"GAME::SkillProfile::IsExclusiveSkill\(void\)"),
+    ("Skill_GetSkillDependancies", "Game", r"GAME::Skill::GetSkillDependancies\("),
+    ("Skill_Mastery_GetEnumeration", "Game", r"GAME::Skill_Mastery::GetEnumeration\(void\)"),
+    ("Character_GetSkillMasteriesActive", "Game", r"GAME::Character::GetSkillMasteriesActive\("),
     ("Character_GetSkillPoints", "Game", r"GAME::Character::GetSkillPoints\(void\)"),
     ("Character_SubtractSkillPoint", "Game", r"GAME::Character::SubtractSkillPoint\("),
     ("Character_AddSkillPoints", "Game", r"GAME::Character::AddSkillPoints\("),

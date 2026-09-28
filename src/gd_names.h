@@ -1189,6 +1189,42 @@ inline constexpr const char* SkillManager_FindItemSkillIdByItemId = "?FindItemSk
 // public: bool __cdecl GAME::Skill::IsItemSkillAuto(void) __ptr64
 inline constexpr const char* Skill_IsItemSkillAuto_DLL = "Game.dll";
 inline constexpr const char* Skill_IsItemSkillAuto = "?IsItemSkillAuto@Skill@GAME@@QEAA_NXZ";
+// public: bool const __cdecl GAME::Skill::IsPrimary(void)const __ptr64
+inline constexpr const char* Skill_IsPrimary_DLL = "Game.dll";
+inline constexpr const char* Skill_IsPrimary = "?IsPrimary@Skill@GAME@@QEBA?B_NXZ";
+// public: int __cdecl GAME::Skill::GetSkillSet(void)const __ptr64
+inline constexpr const char* Skill_GetSkillSet_DLL = "Game.dll";
+inline constexpr const char* Skill_GetSkillSet = "?GetSkillSet@Skill@GAME@@QEBAHXZ";
+// public: unsigned int __cdecl GAME::Skill::GetSubSkillParentId(void)const __ptr64
+inline constexpr const char* Skill_GetSubSkillParentId_DLL = "Game.dll";
+inline constexpr const char* Skill_GetSubSkillParentId = "?GetSubSkillParentId@Skill@GAME@@QEBAIXZ";
+// public: bool __cdecl GAME::SkillManager::IsGlobalSkillTypeAndAllowed(class GAME::Skill const * __ptr64)const __ptr64
+inline constexpr const char* SkillManager_IsGlobalSkillTypeAndAllowed_DLL = "Game.dll";
+inline constexpr const char* SkillManager_IsGlobalSkillTypeAndAllowed = "?IsGlobalSkillTypeAndAllowed@SkillManager@GAME@@QEBA_NPEBVSkill@2@@Z";
+// public: virtual bool __cdecl GAME::SkillActivatedBuffSelf::IsAutoToggle(void)const __ptr64
+inline constexpr const char* SkillActivatedBuffSelf_IsAutoToggle_DLL = "Game.dll";
+inline constexpr const char* SkillActivatedBuffSelf_IsAutoToggle = "?IsAutoToggle@SkillActivatedBuffSelf@GAME@@UEBA_NXZ";
+// const GAME::SkillActivatedBuffSelf::`vftable'
+inline constexpr const char* SkillActivatedBuffSelf_vftable_DLL = "Game.dll";
+inline constexpr const char* SkillActivatedBuffSelf_vftable = "??_7SkillActivatedBuffSelf@GAME@@6B@";
+// public: bool const __cdecl GAME::Skill::IsAugmented(void)const __ptr64
+inline constexpr const char* Skill_IsAugmented_DLL = "Game.dll";
+inline constexpr const char* Skill_IsAugmented = "?IsAugmented@Skill@GAME@@QEBA?B_NXZ";
+// public: unsigned int const __cdecl GAME::Skill::GetAugmentedLevel(void)const __ptr64
+inline constexpr const char* Skill_GetAugmentedLevel_DLL = "Game.dll";
+inline constexpr const char* Skill_GetAugmentedLevel = "?GetAugmentedLevel@Skill@GAME@@QEBA?BIXZ";
+// public: bool __cdecl GAME::SkillProfile::IsExclusiveSkill(void)const __ptr64
+inline constexpr const char* SkillProfile_IsExclusiveSkill_DLL = "Game.dll";
+inline constexpr const char* SkillProfile_IsExclusiveSkill = "?IsExclusiveSkill@SkillProfile@GAME@@QEBA_NXZ";
+// public: class mem::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > const & __ptr64 __cdecl GAME::Skill::GetSkillDependancies(bool & __ptr64)const __ptr64
+inline constexpr const char* Skill_GetSkillDependancies_DLL = "Game.dll";
+inline constexpr const char* Skill_GetSkillDependancies = "?GetSkillDependancies@Skill@GAME@@QEBAAEBV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@mem@@AEA_N@Z";
+// public: unsigned int __cdecl GAME::Skill_Mastery::GetEnumeration(void)const __ptr64
+inline constexpr const char* Skill_Mastery_GetEnumeration_DLL = "Game.dll";
+inline constexpr const char* Skill_Mastery_GetEnumeration = "?GetEnumeration@Skill_Mastery@GAME@@QEBAIXZ";
+// public: unsigned int const __cdecl GAME::Character::GetSkillMasteriesActive(void)const __ptr64
+inline constexpr const char* Character_GetSkillMasteriesActive_DLL = "Game.dll";
+inline constexpr const char* Character_GetSkillMasteriesActive = "?GetSkillMasteriesActive@Character@GAME@@QEBA?BIXZ";
 // public: unsigned int const __cdecl GAME::Character::GetSkillPoints(void)const __ptr64
 inline constexpr const char* Character_GetSkillPoints_DLL = "Game.dll";
 inline constexpr const char* Character_GetSkillPoints = "?GetSkillPoints@Character@GAME@@QEBA?BIXZ";

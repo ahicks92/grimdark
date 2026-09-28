@@ -509,11 +509,16 @@ const char* aim_name(world::SkillAim a) {
 }
 const char* slot_aim(unsigned skill_id) { return skill_id ? aim_name(world::skill_aim(object_by_id(skill_id))) : "-"; }
 }  // namespace
+unsigned displayed_skill_set() {
+  void* c = hotslot_ctrl();
+  unsigned set = 0; if (c && g.HS_GetDisplayedSkillSetIndex) guarded("GetDisplayedSkillSetIndex", [&] { set = g.HS_GetDisplayedSkillSetIndex(c); });
+  return set;
+}
 std::string dump_hotslots() {
   std::string out;
   void* c = hotslot_ctrl();
   if (!c) return "no hot slot ctrl\n";
-  unsigned set = 0; if (g.HS_GetDisplayedSkillSetIndex) guarded("GetDisplayedSkillSetIndex", [&] { set = g.HS_GetDisplayedSkillSetIndex(c); });
+  unsigned set = displayed_skill_set();
   out += std::format("hotslot ctrl {} displayed set {}\n", c, set);
   for (const HotSlot& s : hotslots()) if (!s.empty || s.status != -1) out += std::format("  slot {:2} type={} skill={} aim={} cd={} status={} '{}'\n", s.index, s.type, s.skill_id, slot_aim(s.skill_id), s.cooldown_ms, s.status, s.name);
   HotSlot p = primary_slot(), q = secondary_slot();

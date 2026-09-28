@@ -2,6 +2,8 @@
 
 - Fix: attaching a component or augment only offers items in your bags or equipped, no longer items in your personal and shared stashes.
 - Items now say "with component", "with augment" or "with component augment" in every list, not just the inventory: the vendor's buy and sell tabs, both stash lists, the equip and attach pickers, and the inventor.
+- Fix: the hotbar manager's skill list now uses the game's own rules, so it no longer offers skills the game won't put on a bar, such as auto-toggled skills or skills from the weapon set you aren't holding.
+- Fix: skill tooltips in the skills screen no longer claim you can add points when you can't. They now say why, just like the game: no points, mastery too low, skill maxed, needs another skill first, and so on. Tooltips in the hotbar and celestial power pickers no longer talk about skill points at all.
 
 # 0.4.0 (2026-09-27)
 

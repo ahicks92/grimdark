@@ -49,6 +49,8 @@ std::vector<Faction> factions();                 // the player-visible factions 
 struct HotSlot { unsigned index; std::string name; int type; unsigned skill_id; int cooldown_ms; int status; bool empty; };
 constexpr unsigned kHotSlotCount = 47;
 std::vector<HotSlot> hotslots();                 // every slot of the displayed set (index = the game's slot index)
+unsigned displayed_skill_set();                  // PlayerHotSlotCtrl::GetDisplayedSkillSetIndex (the active weapon set's)
+bool hotbar_assignable(const void* skill);       // the exe's quickbar-picker filter (exe+0x1e7860) for a number-bar slot
 HotSlot hotslot(unsigned index);
 HotSlot primary_slot();                          // left mouse
 HotSlot secondary_slot();                        // right mouse
@@ -169,7 +171,10 @@ std::vector<SkillInfo> assignable_skills();      // UI skills + EQUIPPED-item gr
 std::string dump_item_skills();                  // dev: GetItemSkillList vs equipped-item granted skills
 unsigned masteries_allowed();
 std::vector<unsigned> mastery_ids();             // the masteries the character has
-std::vector<std::string> skill_tooltip(const void* skill);   // GameEngine::GenerateUISkillText
+std::vector<std::string> skill_tooltip(const void* skill);   // GameEngine::GenerateUISkillText, no points / requirements block (pickers)
+// The skills window's tooltip: the same text plus the points / requirements / reclaim lines, from a SkillReasons filled
+// the way the window fills it (exe+0x2492b0), so "press to add unused skill points" only appears when a point can go in.
+std::vector<std::string> skill_window_tooltip(const void* skill, bool reclaim);
 // The same text with the skill temporarily at `level` (the game's own IncrementSkillLevel(n) / DecrementSkillLevel(n)
 // pair around the call; a level at or below the current one reads as-is). Dev/documentation use only: the increment
 // applies the skill's passive effects to the character for the duration of the call.
