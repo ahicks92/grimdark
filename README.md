@@ -2,6 +2,8 @@
 
 A screen-reader accessibility mod for Grim Dawn.
 
+See [CHANGES.md](CHANGES.md) for what's new in each release.
+
 Status: pre-release, but pretty complete.  I'm into act 3 and even have basic support for hazardous terrain obstacles.
 
 ## Disclaimer

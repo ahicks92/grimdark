@@ -1,4 +1,4 @@
-# unreleased
+# 0.4.0 (2026-09-27)
 
 - Wall tones are now smoother.  When hugging a wall the wall will seem flatter/straighter.
 - A number of critical but rare incorrect wall tone cases have been fixed.
@@ -15,3 +15,4 @@
 - Fix: do not play mod-provided sounds for shrines that are not enabled on your difficulty.
 - Fix/improvement: rework how the 3 pings you get when cycling through entities work out reachability, to better match both how you use them and what's really going on.
 - Fix/improvement: the stats screen now shows armor breakdown
+- Fix: `alt comma` works again, jumping to the nearest of the highest-rarity enemies like `alt` with the other review keys.
