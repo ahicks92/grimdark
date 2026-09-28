@@ -1,6 +1,7 @@
 # Unreleased
 
 - Fix: attaching a component or augment only offers items in your bags or equipped, no longer items in your personal and shared stashes.
+- Items now say "with component", "with augment" or "with component augment" in every list, not just the inventory: the vendor's buy and sell tabs, both stash lists, the equip and attach pickers, and the inventor.
 
 # 0.4.0 (2026-09-27)
 

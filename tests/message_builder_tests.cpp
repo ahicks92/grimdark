@@ -41,3 +41,11 @@ TEST_CASE("push_control shape") {
   gd::strings::push_position(m, 2, 7);
   CHECK(m.build() == "Delete, button, disabled, 2 of 7");
 }
+
+TEST_CASE("push_item shape") {
+  { MessageBuilder m; gd::strings::push_item(m, "Gladius", 7, 1, true, false); CHECK(m.build() == "Gladius with component"); }
+  { MessageBuilder m; gd::strings::push_item(m, "Gladius", 7, 3, true, true); CHECK(m.build() == "Gladius with component augment x 3"); }
+  { MessageBuilder m; gd::strings::push_item(m, "Scrap", 7, 5, false, false); CHECK(m.build() == "Scrap x 5"); }
+  { MessageBuilder m; gd::strings::push_item(m, "", 1234, 1, false, false); CHECK(m.build() == "item 1234"); }
+  { MessageBuilder m; gd::strings::push_item(m, "Gladius", 7, 1, false, true); CHECK(m.build() == "Gladius with augment"); }
+}

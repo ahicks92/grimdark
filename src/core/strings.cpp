@@ -142,6 +142,15 @@ MessageBuilder& push_stack(MessageBuilder& m, std::string_view name, unsigned st
   if (stack > 1) m.list_item().fragment(std::format("x {}", stack));
   return m;
 }
+MessageBuilder& push_item(MessageBuilder& m, std::string_view name, unsigned id, unsigned stack, bool component, bool augment) {
+  if (name.empty()) m.fragment(kItem).fragment(std::to_string(id));
+  else m.fragment(name);
+  if (component || augment) m.fragment(kWith);
+  if (component) m.fragment(kComponent);
+  if (augment) m.fragment(kAugment);
+  if (stack > 1) m.list_item().fragment(std::format("x {}", stack));
+  return m;
+}
 MessageBuilder& push_stat(MessageBuilder& m, std::string_view label, std::string_view value) { return m.fragment(label).fragment(value); }
 MessageBuilder& push_armor_part(MessageBuilder& m, std::string_view region, int armor, std::string_view hit_label, int chance,
                                 std::string_view absorption_label, int absorption) {

@@ -69,12 +69,12 @@ std::vector<std::string> note_full_text(void* note);
 std::vector<std::string> note_text(void* note_item);   // ItemNote::GetUIDisplayText, one string per line
 
 // ---- bags and equipment ----
-struct BagItem { unsigned id; void* p; float x, y, w, h; std::string name; unsigned stack; bool component = false; };   // component: a component is attached (the grid's icon badge)
+struct BagItem { unsigned id; void* p; float x, y, w, h; std::string name; unsigned stack; bool component = false; bool augment = false; };   // component: a component is attached (the grid's icon badge); augment: an augment is attached
 struct Bag { int index; std::string name; unsigned width, height; std::vector<BagItem> items; std::string debug; };   // items in reading order (rows, then columns)
 std::vector<Bag> bags();
 int selected_bag();
 bool select_bag(int index);
-struct EquipSlot { int loc; std::string label; unsigned item_id; void* item; std::string name; bool component = false; bool inactive = false; };   // loc = EquipmentCtrlLocation 1..14; inactive = equipped but detached (requirements no longer met)
+struct EquipSlot { int loc; std::string label; unsigned item_id; void* item; std::string name; bool component = false; bool augment = false; bool inactive = false; };   // loc = EquipmentCtrlLocation 1..14; inactive = equipped but detached (requirements no longer met)
 bool has_component(const void* item);            // ItemEquipment::HasRelic, after an is-a ItemEquipment check (false for anything else)
 bool has_augment(const void* item);              // ItemEquipment::HasEnchantment, same guard (an augment = the game's "enchantment")
 int item_classification(const void* item);       // Item::GetItemClassification(true) (virtual): 0 common, 1 magical, 2 rare, 3 epic, 4 legendary, 5 quest...; -1 unknown

@@ -91,8 +91,7 @@ class InventoryScreen : public WindowScreen, public AssignSource {
     std::set<unsigned> worn;
     for (const gameapi::EquipSlot& sl : gameapi::equipment()) if (sl.item_id) worn.insert(sl.item_id);
     for (unsigned tid : gameapi::compatible_items(comp_id)) {
-      std::string name = gameapi::item_name(gameapi::object_by_id(tid));
-      items.push_back({tid, name.empty() ? std::format("item {}", tid) : name, worn.count(tid) ? std::string(strings::kEquipped) : std::string()});
+      items.push_back({tid, item_label(tid), worn.count(tid) ? std::string(strings::kEquipped) : std::string()});
     }
     if (items.empty()) { speech::speak(strings::kNoCompatibleItems, true); return; }
     // Equipped targets first (what you most likely want to improve), the rest in the game's order.
@@ -109,8 +108,7 @@ class InventoryScreen : public WindowScreen, public AssignSource {
     const std::vector<gameapi::EquipSlot>& eq = equipment_.get([] { return gameapi::equipment(); }, 30);
     for (const gameapi::EquipSlot& s : eq) {
       std::string label = s.label.empty() ? std::format("slot {}", s.loc) : s.label;
-      std::string name = s.name.empty() ? std::string(strings::kEmptySlot) : s.name;
-      if (s.component) { MessageBuilder cm; cm.fragment(name).fragment(strings::kWithComponent); name = cm.build(); }   // "Splintered Club with component": part of the name
+      std::string name = s.item_id ? item_label(s) : std::string(strings::kEmptySlot);
       if (s.inactive) { MessageBuilder im; im.fragment(name).list_item().fragment(strings::kInactive); name = im.build(); }   // "Devil's Grin, inactive": equipped but detached by the game (requirements no longer met)
       unsigned id = s.item_id; int loc = s.loc;
       // Enter opens the equip picker: everything across all bags that fits this slot (weapons/off-hands go to
@@ -122,7 +120,7 @@ class InventoryScreen : public WindowScreen, public AssignSource {
         for (const gameapi::Bag& bag : gameapi::bags())
           for (const gameapi::BagItem& it : bag.items)
             if (gameapi::can_equip(it.id, loc))
-              items.push_back({it.id, it.name.empty() ? std::format("item {}", it.id) : it.name, it.stack > 1 ? std::format("x{}", it.stack) : std::string()});
+              items.push_back({it.id, item_label(it), {}});
         open_picker(label, std::move(items), [this, loc](unsigned pid) {
           bool ok = pid ? gameapi::equip(pid, loc) : gameapi::unequip(loc);
           if (!ok) speech::speak(strings::kCannot, true);
@@ -139,9 +137,6 @@ class InventoryScreen : public WindowScreen, public AssignSource {
   void build_bag(GraphBuilder& b, const gameapi::Bag& bag) {
     if (bag.items.empty()) { b.add_item(ControlId::structural(std::format("inventory.bag{}.empty", bag.index)), line_item(std::string(strings::kEmpty))); return; }
     for (const gameapi::BagItem& it : bag.items) {
-      std::string nm = it.name.empty() ? std::format("item {}", it.id) : it.name;
-      if (it.component) { MessageBuilder cm; cm.fragment(nm).fragment(strings::kWithComponent); nm = cm.build(); }   // the grid tile's badge, as part of the name: "Gladius with component"
-      MessageBuilder m; strings::push_stack(m, nm, it.stack);
       unsigned id = it.id;
       auto activate = [this, id] {
         if (gameapi::is_component(id)) { open_component_picker(id); return; }   // components attach; they aren't "used"
@@ -156,7 +151,7 @@ class InventoryScreen : public WindowScreen, public AssignSource {
         gameapi::use_item(id, g_bag_source);
         invalidate();
       };
-      auto v = row_item(m.build(), {}, activate, item_tip(id, false), {}, item_tip(id, true));
+      auto v = row_item(item_label(it), {}, activate, item_tip(id, false), {}, item_tip(id, true));
       v->on_compare = item_compare(id);   // Backslash: the equipped item in the slot this one fits
       b.add_item(ControlId::structural(std::format("inventory.item{}", it.id)), v);
     }

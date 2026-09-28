@@ -16,10 +16,9 @@ void add_item_rows(GraphBuilder& b, const std::string& prefix, const std::vector
                    std::function<void(unsigned)> activate) {
   if (items.empty()) { b.add_item(ControlId::structural(prefix + ".empty"), line_item(std::string(strings::kEmpty))); return; }
   for (const gameapi::BagItem& it : items) {
-    MessageBuilder m; strings::push_stack(m, it.name.empty() ? std::format("item {}", it.id) : it.name, it.stack);
     unsigned id = it.id;
     std::string extra = value ? value(it) : std::string();
-    auto v = row_item(m.build(), extra.empty() ? std::function<std::string()>{} : [extra] { return extra; }, [activate, id] { activate(id); }, item_tip(id, false), {}, item_tip(id, true));
+    auto v = row_item(item_label(it), extra.empty() ? std::function<std::string()>{} : [extra] { return extra; }, [activate, id] { activate(id); }, item_tip(id, false), {}, item_tip(id, true));
     v->on_compare = item_compare(id);   // Backslash: the equipped item in the slot this one fits
     b.add_item(ControlId::structural(std::format("{}.{}", prefix, id)), v);
   }

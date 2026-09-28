@@ -158,21 +158,15 @@ class InventorScreen : public WindowScreen {
       for (const gameapi::BagItem& it : bag.items) {
         if (!gameapi::is_equipment(it.p)) continue;
         bool comp = gameapi::has_component(it.p), aug = gameapi::has_augment(it.p);
-        Row r{it.id, it.name, {}, 0};
+        Row r{it.id, item_label(it), {}, 0};
         if (exe_tab == 0) {
           if (!comp && !aug) continue;
-          MessageBuilder l;
-          l.fragment(it.name);
-          if (comp) l.list_item().fragment(std::string(strings::kWithComponent));
-          if (aug) l.list_item().fragment(std::string(strings::kWithAugment));
-          r.label = l.build();
           r.cost = gameapi::salvage_cost(it.p);
           MessageBuilder v;
           v.fragment(std::string(strings::kSalvageCost)).fragment(std::to_string(r.cost)).fragment(std::string(strings::kIronBits));
           r.value = v.build();
         } else {
           if (gameapi::item_classification(it.p) <= 0) continue;
-          if (comp) { MessageBuilder l; l.fragment(it.name).list_item().fragment(std::string(strings::kWithComponent)); r.label = l.build(); }
           r.cost = gameapi::dismantle_cost(it.p);
           MessageBuilder v;
           v.fragment(std::string(strings::kDismantleCost)).fragment(std::to_string(r.cost)).fragment(std::string(strings::kIronBits));

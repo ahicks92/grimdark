@@ -458,6 +458,7 @@ std::vector<Bag> bags() {
         it.name = item_name(it.p);
         it.stack = item_stack(it.p);
         it.component = has_component(it.p);
+        it.augment = has_augment(it.p);
         b.items.push_back(std::move(it));
       }
       std::stable_sort(b.items.begin(), b.items.end(), [](const BagItem& a, const BagItem& c) { return a.y != c.y ? a.y < c.y : a.x < c.x; });
@@ -491,6 +492,7 @@ std::vector<EquipSlot> equipment() {
       s.inactive = s.item_id && g.Equip_IsItemAttached && !g.Equip_IsItemAttached(ec, s.item_id);
       s.name = item_name(s.item);
       s.component = has_component(s.item);
+      s.augment = has_augment(s.item);
       out.push_back(std::move(s));
     }
   });
@@ -701,6 +703,7 @@ Bag read_sack(const void* sack, int index) {
       it.name = item_name(it.p);
       it.stack = item_stack(it.p);
       it.component = has_component(it.p);
+      it.augment = has_augment(it.p);
       b.items.push_back(std::move(it));
     }
     std::stable_sort(b.items.begin(), b.items.end(), [](const BagItem& a, const BagItem& c) { return a.y != c.y ? a.y < c.y : a.x < c.x; });

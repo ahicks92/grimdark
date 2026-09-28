@@ -195,7 +195,6 @@ inline constexpr std::string_view kTake = "take";                // Enter on a r
 inline constexpr std::string_view kNothingFits = "nothing fits"; // the chamber picker when no bag item qualifies
 inline constexpr std::string_view kNotLearned = "not learned";   // the Dismantle tab before the Inventor knows the trade
 inline constexpr std::string_view kDynamite = "dynamite";
-inline constexpr std::string_view kWithAugment = "with augment";
 inline constexpr std::string_view kSalvageCost = "salvage cost";     // "salvage cost 120 iron bits"
 inline constexpr std::string_view kDismantleCost = "dismantle cost";
 inline constexpr std::string_view kTooExpensive = "too expensive";
@@ -315,7 +314,9 @@ inline constexpr std::string_view kEquipment = "equipment";
 inline constexpr std::string_view kBag = "bag";
 inline constexpr std::string_view kStats = "stats";
 inline constexpr std::string_view kEmptySlot = "empty";
-inline constexpr std::string_view kWithComponent = "with component";   // the bag tile's component badge, on the row label
+inline constexpr std::string_view kWith = "with";           // an item's attachments on its row label: "Gladius with component augment"
+inline constexpr std::string_view kAugment = "augment";
+inline constexpr std::string_view kItem = "item";                      // "item 1234": an item row whose name the game did not give
 inline constexpr std::string_view kNothingEquipped = "nothing equipped";   // Backslash on an item: the slot it fits holds nothing
 inline constexpr std::string_view kNotEquipment = "not equipment";         // Backslash on a potion / component / note
 inline constexpr std::string_view kNotUsable = "not usable";               // Enter on a bag item that is neither equipment nor a consumable/note (crafting materials, quest items)
@@ -461,6 +462,11 @@ gd::core::MessageBuilder& push_quest_objective(gd::core::MessageBuilder& m, std:
 gd::core::MessageBuilder& push_range_hint(gd::core::MessageBuilder& m, unsigned lo, unsigned hi);
 // "<name>, x 3" -- a stacked item
 gd::core::MessageBuilder& push_stack(gd::core::MessageBuilder& m, std::string_view name, unsigned stack);
+// "Gladius with component augment x 3" -- an item in any item list (bags, equipment, vendor, stash, pickers): the name
+// ("item <id>" when the game gave none), what is attached to it (the grid tile's component badge, the augment), then the
+// stack -- no commas: the whole thing is the row's name field. Every item row goes through this so the lists agree
+// (screens/window_base.h item_label).
+gd::core::MessageBuilder& push_item(gd::core::MessageBuilder& m, std::string_view name, unsigned id, unsigned stack, bool component, bool augment);
 // "<label>: <value>" -- a sheet row
 gd::core::MessageBuilder& push_stat(gd::core::MessageBuilder& m, std::string_view label, std::string_view value);
 // One body region of the Armor Rating row: "Head 145, Chance to Hit Area 15 percent, Armor Absorption 70 percent" (the

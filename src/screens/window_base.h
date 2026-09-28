@@ -48,6 +48,18 @@ inline gd::core::NodeVtablePtr row_item(std::string label, std::function<std::st
   v->on_secondary = std::move(secondary);
   return v;
 }
+// The label of an item row in any item list ("Gladius with component augment x 3"): every list of items builds its label
+// here (strings::push_item), so what one list says about an item every list says. The by-id form reads the object.
+inline std::string item_label(const gd::gameapi::BagItem& it) {
+  gd::core::MessageBuilder m; gd::strings::push_item(m, it.name, it.id, it.stack, it.component, it.augment); return m.build();
+}
+inline std::string item_label(const gd::gameapi::EquipSlot& s) {   // an occupied slot's item (the caller says "empty")
+  gd::core::MessageBuilder m; gd::strings::push_item(m, s.name, s.item_id, 1, s.component, s.augment); return m.build();
+}
+inline std::string item_label(unsigned id) {
+  void* p = gd::gameapi::object_by_id(id);
+  gd::core::MessageBuilder m; gd::strings::push_item(m, gd::gameapi::item_name(p), id, gd::gameapi::item_stack(p), gd::gameapi::has_component(p), gd::gameapi::has_augment(p)); return m.build();
+}
 // Speak a multi-line game text (a tooltip) as one interrupting utterance; "no tooltip" when empty.
 inline void speak_lines(const std::vector<std::string>& lines) {
   if (lines.empty()) { speech::speak(gd::strings::kNoTooltip, true); return; }
