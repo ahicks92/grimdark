@@ -963,7 +963,7 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   no longer refuse to fire while Shift is held (Ctrl / Alt still block them). With the game's Classic Casting option a plain
   press walks into a spell's range and Shift casts in place. Not verified live.
 
-## 2026-09-23 -- pitch options, walk-to (U), line-of-sight preference
+## 2026-09-23 -- pitch options, walk-to (L), line-of-sight preference
 - `audio::play_sample` gained `semitones` (a resampled copy, cached per file and shift) and `predelay_ms`.
 - Ctrl+T, two new rows with Space tooltips (`src/cues.h`):
   - range pitch (off by default): the sonar's enemy ping is +4 semitones within 20 u and +8 within 3 u. 3 u is
