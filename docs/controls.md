@@ -167,7 +167,7 @@ in-world UI restoring an Options tab index of -1 and crashes when the pause menu
 Passed straight to the game (src/screens/in_game.cpp `passes_key`): WASD, 1-0, Y, Space, E, R, U, Escape,
 Alt/Right Alt (held: show items), F2-F7. Every other game function is reachable only as Ctrl + its default
 key (the `game.*` lifts in src/app.cpp: C/I N Q M O K G H J V L B X Z P, Backspace, \, ], Enter, Tab, `,` `.`).
-The mod's plain keys: `.` `,` N B M V (review groups; Shift = back, Alt = nearest), `;` `'` `/` `\`, J I G F,
+The mod's plain keys: `.` `,` N B M V (review groups; Shift = back, Alt = nearest), `;` `'` `/` `\`, J I G F L P,
 K H Q X T Z, Shift+W A S D (the free cursor: the press is swallowed before the game, the release passes), and
 Ctrl+1..0, Ctrl+- Ctrl+=, Ctrl+`, Ctrl+T, Ctrl+Shift+P. Still free: F8, F9, Insert/Delete/Home/End/PgUp/PgDn,
 the arrow keys, numpad. Ctrl+letter chords arrive with flags and are unused by the game.
