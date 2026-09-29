@@ -1056,3 +1056,19 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   room brushing a fogged cell edge reads a few percent fogged (threshold, not 0); lvl files reused by several map
   records share one fog key (fog.get by lvl path, placement = the first record) -- not yet checked whether that ever
   matters.
+
+## 2026-09-28 -- L walks to the last selection; P finds unexplored ground (verified live)
+- L targets the last selection: a review landing, or the follow target (a map pick, `'`, P). It always just walks:
+  a route check with "no path" / "too far" and a "stopped" stall report were built and then removed by decision (a
+  check misreports the gate the crowd walks through; a stall report is over-convenient -- players hear whether they
+  walk).
+- P = the nearest fogged 8-u cell within 250 u that snaps onto the navmesh and has a complete path, nearest by walk
+  among the first 8 reachable; it becomes the follow target "unexplored area" and "explored" is spoken once its cell
+  clears. Live in Mourndale (test character): "unexplored area, 107 away, 11 o'clock" (1 of 41 candidates reachable),
+  L walked it in ~12 s, "explored" on arrival; the next P said "nothing unexplored within about 200" -- the never-seen
+  rooms fog_rooms.py lists were ~195 u off with no navmesh loaded there. At Vanguard: nothing (fog only over cliffs).
+- Bug found and fixed: the route ping built P's target in the player's region and PutOnFloor'd it to -0.8, under a
+  walkable platform at 5.1, and read it "blocked". `find_path_corridor(..., floor)` / `route_kind(..., floor)`: P's
+  exact navmesh point is no longer floored. Other pings unchanged.
+- Traps: a hot reload in the world left the game paused again (L "fired" and nothing moved; `/pause?set=0`). `/fog` is
+  the REVEAL route (FogOfWar::AddVisibility) -- reading fog with it clears it; use `/fogmap` or tools/fow.py.

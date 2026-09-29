@@ -89,7 +89,10 @@ std::string navprobe(float x0, float z0, float x1, float z1, float step);  // Is
 int find_path(const Vec3& dest_world, float f1, float f2, Vec3* out_world);  // Player::FindPath -> raw PathResult (dev)
 // NavManager::FindPath -> the navmesh straight-path corridor from the player to dest, as absolute world points
 // (empty on failure). Used to test whether a nearby room is a DIRECT exit; on-demand (V / room change) only.
-bool find_path_corridor(const Vec3& dest_world, std::vector<Vec3>& out);
+// `floor` = PutOnFloor the destination first (right for entity / room points); false for a point that is already an
+// exact navmesh point (P's pick), which flooring can drop below raised walkable ground (a platform at 5.1 over
+// terrain at -0.8 read unreachable, 2026-09-28).
+bool find_path_corridor(const Vec3& dest_world, std::vector<Vec3>& out, bool floor = true);
 std::string path_probe(float x, float z, float snap);   // dev: snap (x,z) onto the navmesh, NavManager::FindPath to it, timed
 std::string fog_dump(int n, float range, bool grid, float unsee = 0);           // dev: the player region's fog-of-war grid + nearest reachable frontier cells
 std::string teleport(float x, float z, bool check_only);

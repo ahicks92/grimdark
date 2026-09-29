@@ -807,7 +807,7 @@ bool seh_nav_find_path(void* nav, const void* from, const void* to, void* corrid
   __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
 }
 }
-bool find_path_corridor(const Vec3& dest_world, std::vector<Vec3>& out) {
+bool find_path_corridor(const Vec3& dest_world, std::vector<Vec3>& out, bool floor) {
   out.clear();
   load_api();
   void* nav = g_api.NavManager_Get ? g_api.NavManager_Get() : nullptr;
@@ -819,7 +819,7 @@ bool find_path_corridor(const Vec3& dest_world, std::vector<Vec3>& out) {
   const Vec3* rb = g_api.WorldVec3_GetRegionPosition(&base);
   Vec3 rel{dest_world.x - wb.x + rb->x, dest_world.y - wb.y + rb->y, dest_world.z - wb.z + rb->z};
   Buf dest{}; g_api.WorldVec3_ctor(&dest, region, &rel);
-  if (g_api.WorldVec3_PutOnFloor) g_api.WorldVec3_PutOnFloor(&dest);
+  if (floor && g_api.WorldVec3_PutOnFloor) g_api.WorldVec3_PutOnFloor(&dest);
   // Reuse one game-allocated corridor vector across calls (game thread only): reset its size to 0 (POD
   // WorldVec3, no dtors) so the game refills from empty and reuses capacity. The buffer is intentionally never
   // freed -- a single small leak on unload, the same pattern as GetEntitiesInSphere.
@@ -3010,9 +3010,9 @@ bool route_sight(unsigned id, const Vec3& target) {
   return seh_route_los_point(pl, &wv, los) ? los : true;
 }
 }  // namespace
-static std::string route_kind(const Vec3& me, const Vec3& target, unsigned id) {
+static std::string route_kind(const Vec3& me, const Vec3& target, unsigned id, bool floor = true) {
   std::vector<Vec3> corridor;
-  if (!find_path_corridor(target, corridor)) return "unreachable";
+  if (!find_path_corridor(target, corridor, floor)) return "unreachable";
   float reach = kRouteReachTol;
   if (id && !is_point_id(id)) {   // a prop / chest / shrine is itself an obstacle: the path ends at its edge
     if (void* e = find_entity(id)) {
@@ -3154,6 +3154,7 @@ static bool g_follow_active = false;
 static unsigned g_follow_id = 0;   // 0 = a fixed point (g_follow_pos)
 static Vec3 g_follow_pos{};
 static std::string g_follow_label;
+static bool g_follow_unexplored = false;   // the follow target is P's pick: an exact navmesh point; "explored" once its cell clears
 
 static bool g_follow_unexplored_flag_reset();   // with the L / P code below
 void set_follow_target(unsigned id, const Vec3& pos, const std::string& label) {
@@ -3179,7 +3180,7 @@ std::string follow_ping() {
     Buf wv;
     if (e && entity_world_vec(e, wv)) { target = world_pos_of(wv); g_follow_pos = target; }
   }
-  std::string kind = route_kind(me, target, g_follow_id);
+  std::string kind = route_kind(me, target, g_follow_id, !g_follow_unexplored);
   play_route_sound(kind, target);
   float dx = target.x - me.x, dz = target.z - me.z;
   float dist = std::sqrt(dx * dx + dz * dz);
@@ -3198,7 +3199,6 @@ std::string follow_ping() {
 // and players can tell whether they are walking.
 namespace {
 constexpr float kUnexploredRange = 250.0f;   // regions sampled for P (the loaded navmesh reaches ~220 u straight)
-bool g_follow_unexplored = false;        // the follow target is P's pick: say "explored" once its cell clears
 bool g_explored_said = false;
 // The fog byte of the 8-u cell under a world point (> 150 = fogged), -1 when unknown.
 int fog_value_at(const Vec3& w) {
