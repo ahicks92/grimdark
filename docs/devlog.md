@@ -1048,3 +1048,11 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
     game's `LZ4_decompress_fast` does not care), so the python `lz4` package refuses it; fow.py carries its own decoder.
 - So distant fog is solved; what distant exploration still lacks is distant WALKABILITY and routes, which the live
   navmesh cannot give past ~250 u -- that has to come from the offline rooms / gdmap data.
+- **Fog x rooms** (`tools/fog_rooms.py <area>|all`): each room's walkable label cells looked up in its engine chunk's
+  fog (chunk placement from world001.map) -> fogged fraction per room. Numpy over a whole area's 0.25-u grid is
+  seconds offline; the per-room answer is the natural unit for "where haven't I been" (the test character: vanguard
+  0 partly / 0 never; aetherfire 398 seen / 23 partly / 18 never of 439; alpinefort 21 / 44 / 235 of 300). This is the
+  distant-walkability piece the live navmesh lacks, and the room graph (exits) gives the route. Caveats: fog is 8-u, so a
+  room brushing a fogged cell edge reads a few percent fogged (threshold, not 0); lvl files reused by several map
+  records share one fog key (fog.get by lvl path, placement = the first record) -- not yet checked whether that ever
+  matters.
