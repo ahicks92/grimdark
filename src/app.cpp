@@ -195,8 +195,8 @@ static void register_actions() {
   // wall tone probe (2026-09-22) and direct aim (2026-09-23) A/B key, and is free.)
   // L: walk to the last selection with the game's pathfinder -- the reviewed thing, or the follow target when a map
   // pick, ' or P came after the last review landing (world::last_selection_is_follow). An exit walks into the
-  // neighbouring room's most open point (rooms::exit_walk_point). The route is checked first: "too far to walk" /
-  // "no path"; a walk that stalls says "stopped" (world::walk_tick). Plain L is free: the riftgate is lifted to Ctrl+L.
+  // neighbouring room's most open point (rooms::exit_walk_point). No route check: L always tries (world.cpp explains
+  // why). Plain L is free: the game's personal riftgate is lifted to Ctrl+L.
   m.register_action("ingame.walkTo", "Walk to the last selection", InputCategory::InGame, [] {
     world::Vec3 target, me;
     unsigned id = 0;
@@ -204,18 +204,12 @@ static void register_actions() {
     if (!world::player_position(me)) { speech::speak(strings::kNoTarget, true); return; }
     if (world::last_selection_is_follow()) {
       ok = world::follow_position(target);
-      id = world::follow_id();
     } else if ((id = world::reviewed_id()) != 0) {
       if (world::is_point_id(id)) ok = rooms::exit_walk_point(id, me.y, target.x, target.y, target.z);
       if (!ok) ok = world::reviewed_position(target);
     }
     if (!ok) { speech::speak(strings::kNoTarget, true); return; }
-    switch (world::walk_to_checked(target, id)) {
-      case world::WalkResult::Walking: break;
-      case world::WalkResult::TooFar: speech::speak(strings::kTooFarToWalk, true); break;
-      case world::WalkResult::NoPath: speech::speak(strings::kNoPath, true); break;
-      case world::WalkResult::Failed: speech::speak(strings::kCannotWalkThere, true); break;
-    }
+    if (!world::walk_to(target)) speech::speak(strings::kCannotWalkThere, true);
   }).bind(0x26);   // L
   // P: the nearest unexplored ground within about 200 u that has a route becomes the follow target (' pings it, L walks
   // there). Plain P is free: the game's pause is lifted to Ctrl+P.

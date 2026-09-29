@@ -78,8 +78,6 @@ gd::core::MessageBuilder& push_enemy_label(gd::core::MessageBuilder& m, std::str
 gd::core::MessageBuilder& push_target_inspect(gd::core::MessageBuilder& m, int health_percent, const std::vector<std::string>& effects);
 // "5 away, 2 o'clock" -- the distance and bearing part alone (a riftgate row's value).
 gd::core::MessageBuilder& push_distance_bearing(gd::core::MessageBuilder& m, float distance, int clock_hour);
-// "stopped" / "stopped, 3 enemies near" -- L's walk made no progress (enemies = those within a few units).
-gd::core::MessageBuilder& push_walk_stopped(gd::core::MessageBuilder& m, int enemies);
 // "no enemies nearby"
 gd::core::MessageBuilder& push_nothing_nearby(gd::core::MessageBuilder& m, std::string_view group_plural);
 gd::core::MessageBuilder& push_cursor_mode(gd::core::MessageBuilder& m, bool polar);   // "cursor mode polar" / "cursor mode default"
@@ -220,10 +218,6 @@ inline constexpr std::string_view kTransitions = "dungeon entrances";
 inline constexpr std::string_view kEntrance = "entrance";                  // an unnamed DungeonEntrance in the N group (a one-way exit shaft has no name)
 inline constexpr std::string_view kNoTarget = "no target";
 inline constexpr std::string_view kCannotWalkThere = "cannot walk there";   // L (app.cpp ingame.walkTo)
-inline constexpr std::string_view kTooFarToWalk = "too far to walk, get closer";   // L: no loaded navmesh at the target
-inline constexpr std::string_view kNoPath = "no path";                             // L: the route check found no way
-inline constexpr std::string_view kWalkStopped = "stopped";                       // L: the walk made no progress
-inline constexpr std::string_view kEnemiesNear = "enemies near";
 inline constexpr std::string_view kUnexploredArea = "unexplored area";            // P's follow target label
 inline constexpr std::string_view kNothingUnexplored = "nothing unexplored within about 200";
 inline constexpr std::string_view kExplored = "explored";                         // P's target was revealed

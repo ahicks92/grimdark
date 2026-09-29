@@ -209,21 +209,15 @@ std::string follow_target_label();
 // "blocked" note when it can't be reached directly). Empty when nothing is being followed.
 std::string follow_ping();
 bool follow_position(Vec3& out);   // the follow target's position (a live entity re-resolved); false when not following
-unsigned follow_id();              // its entity id, 0 for a fixed point or when not following
 
-// L and P (2026-09-28). L walks to the last selection: the reviewed thing (a review landing) or the follow target (a
-// map pick, ', P) -- last_selection_is_follow() says which. walk_to_checked checks the route first (the route ping's
-// test): TooFar = unreachable, far, and no loaded navmesh at the target (the live mesh covers ~200 u); NoPath =
-// unreachable otherwise. A started walk is watched by walk_tick (per frame): no progress for 2.5 s while the
-// character's movement target is still the goal speaks "stopped" (+ the enemies within 8 u).
-enum class WalkResult { Walking, TooFar, NoPath, Failed };
+// L and P (2026-09-28). L walks (walk_to, no route check, nothing spoken) to the last selection: the reviewed thing (a
+// review landing) or the follow target (a map pick, ', P) -- last_selection_is_follow() says which.
 bool last_selection_is_follow();
-WalkResult walk_to_checked(const Vec3& target, unsigned id);
-void walk_tick();
 // P: the nearest unexplored (fogged) 8-u cell within ~250 u that is on the navmesh and reachable, nearest by walking
 // distance, becomes the follow target ("unexplored area"); returns follow_ping()'s line, or "nothing unexplored ...".
-// walk_tick says "explored" once when that cell clears (the game reveals within ~24 u).
+// unexplored_tick (per frame) says "explored" once when that cell clears (the game reveals within ~24 u).
 std::string pick_unexplored();
+void unexplored_tick();
 
 // Per-frame (self-throttled): while a thing is under review, re-sound the ping the moment its route KIND
 // changes (path becomes straight, becomes unreachable, ...) so the player hears the change without pressing ;.

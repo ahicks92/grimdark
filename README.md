@@ -206,7 +206,7 @@ Enter selects); then Start / difficulty / game mode / Delete.
 | I | Right mouse button at the reviewed thing (the right-hand skill), same rules |
 | Shift+J, Shift+I, Shift+number | The game's own Hold Position: attack or cast without moving. With the game's Classic Casting option on, plain J / I / number keys walk you into a spell's range and Shift casts from where you stand |
 | U | Interact with the nearest usable thing within 10 units (door, chest, shrine, NPC), no aiming |
-| L | Walk to whatever you selected last, finding a way round walls: the thing you last reached with the finding keys, or the map marker you picked or followed with `'`, or the unexplored area from P. On a room exit (V), walk into the middle of that room's widest part. Says "no path" when there is no way there, and "too far to walk, get closer" when the target is beyond about 200 units (the game only knows the ground near you). Says "stopped" if the walk gets stuck, with how many enemies are close if any are. WASD takes over again |
+| L | Walk to whatever you selected last, finding a way round walls: the thing you last reached with the finding keys, or the map marker you picked or followed with `'`, or the unexplored area from P. On a room exit (V), walk into the middle of that room's widest part. The game only knows the ground within about 200 units of you, so a farther target may not walk until you are closer. WASD takes over again |
 | G | Pick up the nearest item on the ground |
 | E / R | Energy / health potion |
 | F | Swap weapon set (announces "weapon set N" and the two hands) |

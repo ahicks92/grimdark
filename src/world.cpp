@@ -296,7 +296,6 @@ struct Api {
   void* (*World_GetRegionContainingXZ)(const void*, void*, float, float) = nullptr;
   void (*Entity_SetCoords)(void*, const void*) = nullptr;                 // protected, exported -- a raw field write, see teleport()
   void (*Character_TeleportToLocation)(void*, const void*) = nullptr;     // the game's own teleport (Game.dll): World::SetCoords + nav reset
-  const void* (*Character_GetMovementTarget)(const void*) = nullptr;   // WorldVec3 const&: where the character is moving to
   void* (*Region_GetFogOfWar)(void*, bool) = nullptr;
   void (*FogOfWar_AddVisibility)(void*, const Vec3*, int) = nullptr;
   bool (*FogOfWar_IsInFog)(const void*, const Vec3*) = nullptr;
@@ -428,7 +427,6 @@ void load_api() {
   LOAD(World_GetRegionContainingXZ, World_GetRegionContainingXZ);
   LOAD(Entity_SetCoords, Entity_SetCoords);
   LOAD(Character_TeleportToLocation, Character_TeleportToLocation);
-  LOAD(Character_GetMovementTarget, Character_GetMovementTarget);
   LOAD(Region_GetFogOfWar, Region_GetFogOfWar);
   LOAD(FogOfWar_AddVisibility, FogOfWar_AddVisibility);
   LOAD(FogOfWar_IsInFog, FogOfWar_IsInFog);
@@ -3194,37 +3192,14 @@ std::string follow_ping() {
 }
 
 // ---- L and P: walk to the last selection, and find unexplored ground (2026-09-28) ----
-// L's target is whichever was selected last: a review landing (land_on) or the follow target (a map pick, ', P).
-// Before walking, the route is checked the way the route ping checks it (route_kind): an unreachable target is
-// "too far" when there is no loaded navmesh at it and it is far away (the live mesh only covers the streamed-in
-// regions, ~200 u), else "no path". While the walk runs, walk_tick watches it: the walk is ours as long as the
-// character's movement target (Character::GetMovementTarget) is still its goal; no progress for kStallMs while it
-// is means something is in the way (a pack of enemies body-blocks the crowd movement -- measured 2026-09-28).
+// L's target is whichever was selected last: a review landing (land_on) or the follow target (a map pick, ', P). L
+// always just issues the walk (world::walk_to), with no route check and nothing spoken: a check would misreport the
+// few cases the crowd movement handles and the navmesh query does not (a closed auto-opening gate, devlog 2026-09-23),
+// and players can tell whether they are walking.
 namespace {
-constexpr float kTooFarMin = 120.0f;     // an unreachable target closer than this with no mesh is "no path", not "too far"
-constexpr float kArriveTol = 2.5f;       // the walk is over within this of its goal
-constexpr float kGoalTol = 3.0f;         // the movement target still counts as ours within this of the goal
-constexpr float kProgressMin = 1.0f;     // moving at least this since the last checkpoint is progress
-constexpr ULONGLONG kStallMs = 2500;
-constexpr float kEnemyNear = 8.0f;
 constexpr float kUnexploredRange = 250.0f;   // regions sampled for P (the loaded navmesh reaches ~220 u straight)
-bool g_walk_active = false;
-Vec3 g_walk_goal{}, g_walk_check{};
-ULONGLONG g_walk_check_ms = 0;
 bool g_follow_unexplored = false;        // the follow target is P's pick: say "explored" once its cell clears
 bool g_explored_said = false;
-bool mesh_near(const Vec3& w, float radius) {
-  void* nav = g_api.NavManager_Get ? g_api.NavManager_Get() : nullptr;
-  Buf dest{};
-  if (!nav || !g_api.FindClosestPointOnPathMesh || !world_vec3_at(Vec3{w.x, w.y + 20.0f, w.z}, &dest)) return false;
-  if (g_api.WorldVec3_PutOnFloor) g_api.WorldVec3_PutOnFloor(&dest);
-  Buf snapped = dest;
-  return seh_closest_on_mesh(nav, &dest, &snapped, radius) == 1;
-}
-bool seh_movement_target(const void* p, unsigned char* out) {
-  __try { const void* t = g_api.Character_GetMovementTarget(p); if (!t) return false; memcpy(out, t, 0x18); return true; }
-  __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
-}
 // The fog byte of the 8-u cell under a world point (> 150 = fogged), -1 when unknown.
 int fog_value_at(const Vec3& w) {
   Buf base; void* region = nullptr;
@@ -3243,21 +3218,6 @@ int fog_value_at(const Vec3& w) {
 
 bool last_selection_is_follow() { return g_last_selected_follow && g_follow_active; }
 
-WalkResult walk_to_checked(const Vec3& target, unsigned id) {
-  Vec3 me;
-  if (!player_position(me)) return WalkResult::Failed;
-  if (route_kind(me, target, id) == "unreachable") {
-    float d = std::hypot(target.x - me.x, target.z - me.z);
-    return d >= kTooFarMin && !mesh_near(target, 6.0f) ? WalkResult::TooFar : WalkResult::NoPath;
-  }
-  if (!walk_to(target)) return WalkResult::Failed;
-  g_walk_active = true;
-  g_walk_goal = target;
-  g_walk_check = me;
-  g_walk_check_ms = GetTickCount64();
-  return WalkResult::Walking;
-}
-
 bool follow_position(Vec3& out) {
   if (!g_follow_active) return false;
   out = g_follow_pos;
@@ -3268,37 +3228,15 @@ bool follow_position(Vec3& out) {
   }
   return true;
 }
-unsigned follow_id() { return g_follow_active ? g_follow_id : 0; }
 
-void walk_tick() {
+void unexplored_tick() {
+  if (!g_follow_active || !g_follow_unexplored || g_explored_said) return;
+  static ULONGLONG last = 0;
   ULONGLONG now = GetTickCount64();
-  if (g_follow_active && g_follow_unexplored && !g_explored_said) {   // P's pick: "explored" once its cell is seen
-    static ULONGLONG last_fog = 0;
-    if (now - last_fog >= 500) {
-      last_fog = now;
-      int b = fog_value_at(g_follow_pos);
-      if (b >= 0 && b <= 150) { g_explored_said = true; speech::speak(std::string(gd::strings::kExplored), false); }
-    }
-  }
-  if (!g_walk_active) return;
-  void* p = player();
-  Vec3 me;
-  if (!p || !player_position(me)) { g_walk_active = false; return; }
-  if (std::hypot(g_walk_goal.x - me.x, g_walk_goal.z - me.z) <= kArriveTol) { g_walk_active = false; return; }
-  if (g_api.Character_GetMovementTarget) {   // replaced by another order (attack, WASD, a new L): no longer ours
-    Buf mt{};
-    if (!seh_movement_target(p, mt.b)) { g_walk_active = false; return; }
-    Vec3 w = world_pos_of(mt);
-    if (std::hypot(w.x - g_walk_goal.x, w.z - g_walk_goal.z) > kGoalTol) { g_walk_active = false; return; }
-  }
-  if (std::hypot(me.x - g_walk_check.x, me.z - g_walk_check.z) >= kProgressMin) { g_walk_check = me; g_walk_check_ms = now; return; }
-  if (now - g_walk_check_ms < kStallMs) return;
-  g_walk_active = false;
-  int enemies = 0;
-  for (const ScanItem& it : scan(ScanGroup::Enemies, kEnemyNear)) if (it.dist <= kEnemyNear) ++enemies;
-  gd::core::MessageBuilder m;
-  gd::strings::push_walk_stopped(m, enemies);
-  speech::speak(m.build(), true);
+  if (now - last < 500) return;
+  last = now;
+  int b = fog_value_at(g_follow_pos);
+  if (b >= 0 && b <= 150) { g_explored_said = true; speech::speak(std::string(gd::strings::kExplored), false); }
 }
 
 std::string pick_unexplored() {
