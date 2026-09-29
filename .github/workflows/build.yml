@@ -25,7 +25,7 @@ jobs:
   mod:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # git describe needs the tags
       - name: Build (VS 2022 via tools/vsdev.cmd, Ninja RelWithDebInfo)
@@ -39,12 +39,12 @@ jobs:
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then VER="$GITHUB_REF_NAME"; else VER="ci-$(git rev-parse --short HEAD)"; fi
           python tools/package.py --out dist/grimdark.zip --pdb-out dist/pdb --version "$VER"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: grimdark
           path: dist/grimdark.zip
           compression-level: 0
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: grimdark-pdb
           path: dist/pdb/grimdark.pdb
@@ -52,12 +52,12 @@ jobs:
   installer:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Rust toolchain (installer/rust-toolchain.toml)
         shell: bash
         run: rustup show active-toolchain || rustup toolchain install
         working-directory: installer
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: |
             installer/target
@@ -71,7 +71,7 @@ jobs:
         shell: cmd
         run: cargo build --release
         working-directory: installer
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: GrimdarkInstaller
           path: installer/target/release/GrimdarkInstaller.exe
@@ -79,14 +79,14 @@ jobs:
   publish:
     needs: [mod, installer]
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04   # explicit: ubuntu-latest moves to 26.04 from 2026-10-19
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # the rolling step compares commits
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
       - name: Release (semver tag)
