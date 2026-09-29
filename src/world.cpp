@@ -296,6 +296,7 @@ struct Api {
   void* (*World_GetRegionContainingXZ)(const void*, void*, float, float) = nullptr;
   void (*Entity_SetCoords)(void*, const void*) = nullptr;                 // protected, exported -- a raw field write, see teleport()
   void (*Character_TeleportToLocation)(void*, const void*) = nullptr;     // the game's own teleport (Game.dll): World::SetCoords + nav reset
+  const void* (*Character_GetMovementTarget)(const void*) = nullptr;   // WorldVec3 const&: where the character is moving to
   void* (*Region_GetFogOfWar)(void*, bool) = nullptr;
   void (*FogOfWar_AddVisibility)(void*, const Vec3*, int) = nullptr;
   bool (*FogOfWar_IsInFog)(const void*, const Vec3*) = nullptr;
@@ -427,6 +428,7 @@ void load_api() {
   LOAD(World_GetRegionContainingXZ, World_GetRegionContainingXZ);
   LOAD(Entity_SetCoords, Entity_SetCoords);
   LOAD(Character_TeleportToLocation, Character_TeleportToLocation);
+  LOAD(Character_GetMovementTarget, Character_GetMovementTarget);
   LOAD(Region_GetFogOfWar, Region_GetFogOfWar);
   LOAD(FogOfWar_AddVisibility, FogOfWar_AddVisibility);
   LOAD(FogOfWar_IsInFog, FogOfWar_IsInFog);
@@ -898,18 +900,23 @@ FogView seh_fog(void* region) {
 bool seh_copy(void* dst, const void* src, size_t n) { __try { memcpy(dst, src, n); return true; } __except (EXCEPTION_EXECUTE_HANDLER) { return false; } }
 }  // namespace
 std::string region_label(const void* r);   // defined with the world-structure dumps below
-std::string fog_dump(int n, float range, bool grid, float unsee) {
-  load_api();
-  void* nav = g_api.NavManager_Get ? g_api.NavManager_Get() : nullptr;
-  Buf base; void* region = nullptr;
-  if (!nav || !g_api.Region_GetFogOfWar || !g_api.Region_GetOffsetFromWorld || !player_world_vec(base, &region)) return "no player or exports\n";
-  const Vec3 me = world_pos_of(base);
+// Every region within `range` of `me` (plus `region` itself), found by sampling World::GetRegionContainingXZ on a 32-u grid.
+static std::vector<void*> regions_near(void* region, const Vec3& me, float range) {
   std::vector<void*> regions{region};
   for (float dx = -range; dx <= range; dx += 32.0f)
     for (float dz = -range; dz <= range; dz += 32.0f) {
       void* r = region_containing_xz(region, me.x + dx, me.z + dz);
       if (r && std::find(regions.begin(), regions.end(), r) == regions.end()) regions.push_back(r);
     }
+  return regions;
+}
+std::string fog_dump(int n, float range, bool grid, float unsee) {
+  load_api();
+  void* nav = g_api.NavManager_Get ? g_api.NavManager_Get() : nullptr;
+  Buf base; void* region = nullptr;
+  if (!nav || !g_api.Region_GetFogOfWar || !g_api.Region_GetOffsetFromWorld || !player_world_vec(base, &region)) return "no player or exports\n";
+  const Vec3 me = world_pos_of(base);
+  std::vector<void*> regions = regions_near(region, me, range);
   // One world-level map of 8-u cells from every region's inner 16x16 (the ring overlaps the neighbours): key = world
   // cell index pair, value = fogged. A frontier cell is fogged with a seen 4-neighbour in ANY region.
   std::unordered_map<long long, bool> world_cells;
@@ -2429,6 +2436,7 @@ std::string label_of(unsigned id) {
 // ---- the review cursor ----
 namespace {
 unsigned g_reviewed_id = 0;
+bool g_last_selected_follow = false;   // L's target: false = the reviewed thing, true = the follow target (map pick, ', P)
 // Screen-up in world xz (measured against WASD, see in_game.cpp): (-sin yaw, -cos yaw).
 void screen_axes(float& fx, float& fz, float& rx, float& rz) {
   float yaw = camera_yaw();
@@ -2732,6 +2740,7 @@ static std::string land_on(std::vector<ScanItem>& items, ScanGroup group, int di
   idx = idx < 0 ? (dir >= 0 ? 0 : count - 1) : ((idx + dir) % count + count) % count;
   const ScanItem& it = items[(size_t)idx];
   g_reviewed_id = it.id;
+  g_last_selected_follow = false;
   if (is_point_id(it.id)) { g_reviewed_point = it.pos; lock_point(it.pos); }
   else lock_target(it.id);
   ping_reviewed();  // every landing plays the route ping, like wotr
@@ -3148,7 +3157,10 @@ static unsigned g_follow_id = 0;   // 0 = a fixed point (g_follow_pos)
 static Vec3 g_follow_pos{};
 static std::string g_follow_label;
 
+static bool g_follow_unexplored_flag_reset();   // with the L / P code below
 void set_follow_target(unsigned id, const Vec3& pos, const std::string& label) {
+  g_follow_unexplored_flag_reset();
+  g_last_selected_follow = true;
   g_follow_active = true;
   g_follow_id = id;
   g_follow_pos = pos;
@@ -3160,6 +3172,7 @@ std::string follow_target_label() { return g_follow_label; }
 
 std::string follow_ping() {
   if (!g_follow_active) return {};
+  g_last_selected_follow = true;
   Vec3 me;
   if (!player_position(me)) return {};
   Vec3 target = g_follow_pos;
@@ -3179,6 +3192,167 @@ std::string follow_ping() {
   gd::strings::push_distance_bearing(m, dist, hour);
   return m.build();
 }
+
+// ---- L and P: walk to the last selection, and find unexplored ground (2026-09-28) ----
+// L's target is whichever was selected last: a review landing (land_on) or the follow target (a map pick, ', P).
+// Before walking, the route is checked the way the route ping checks it (route_kind): an unreachable target is
+// "too far" when there is no loaded navmesh at it and it is far away (the live mesh only covers the streamed-in
+// regions, ~200 u), else "no path". While the walk runs, walk_tick watches it: the walk is ours as long as the
+// character's movement target (Character::GetMovementTarget) is still its goal; no progress for kStallMs while it
+// is means something is in the way (a pack of enemies body-blocks the crowd movement -- measured 2026-09-28).
+namespace {
+constexpr float kTooFarMin = 120.0f;     // an unreachable target closer than this with no mesh is "no path", not "too far"
+constexpr float kArriveTol = 2.5f;       // the walk is over within this of its goal
+constexpr float kGoalTol = 3.0f;         // the movement target still counts as ours within this of the goal
+constexpr float kProgressMin = 1.0f;     // moving at least this since the last checkpoint is progress
+constexpr ULONGLONG kStallMs = 2500;
+constexpr float kEnemyNear = 8.0f;
+constexpr float kUnexploredRange = 250.0f;   // regions sampled for P (the loaded navmesh reaches ~220 u straight)
+bool g_walk_active = false;
+Vec3 g_walk_goal{}, g_walk_check{};
+ULONGLONG g_walk_check_ms = 0;
+bool g_follow_unexplored = false;        // the follow target is P's pick: say "explored" once its cell clears
+bool g_explored_said = false;
+bool mesh_near(const Vec3& w, float radius) {
+  void* nav = g_api.NavManager_Get ? g_api.NavManager_Get() : nullptr;
+  Buf dest{};
+  if (!nav || !g_api.FindClosestPointOnPathMesh || !world_vec3_at(Vec3{w.x, w.y + 20.0f, w.z}, &dest)) return false;
+  if (g_api.WorldVec3_PutOnFloor) g_api.WorldVec3_PutOnFloor(&dest);
+  Buf snapped = dest;
+  return seh_closest_on_mesh(nav, &dest, &snapped, radius) == 1;
+}
+bool seh_movement_target(const void* p, unsigned char* out) {
+  __try { const void* t = g_api.Character_GetMovementTarget(p); if (!t) return false; memcpy(out, t, 0x18); return true; }
+  __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
+}
+// The fog byte of the 8-u cell under a world point (> 150 = fogged), -1 when unknown.
+int fog_value_at(const Vec3& w) {
+  Buf base; void* region = nullptr;
+  if (!g_api.Region_GetFogOfWar || !g_api.Region_GetOffsetFromWorld || !player_world_vec(base, &region)) return -1;
+  void* reg = region_containing_xz(region, w.x, w.z);
+  if (!reg) return -1;
+  FogView v = seh_fog(reg);
+  if (!v.data || v.w <= 2 || v.h <= 2 || v.w > 4096 || v.h > 4096) return -1;
+  const int* off = g_api.Region_GetOffsetFromWorld(reg);
+  int c = (int)((w.x - off[0]) / 8.0f + 1.0f), r = v.h - (int)((w.z - off[2]) / 8.0f + 1.0f) - 1;
+  if (c < 0 || r < 0 || c >= v.w || r >= v.h) return -1;
+  unsigned char b = 0;
+  return seh_copy(&b, v.data + (size_t)r * v.w + c, 1) ? b : -1;
+}
+}  // namespace
+
+bool last_selection_is_follow() { return g_last_selected_follow && g_follow_active; }
+
+WalkResult walk_to_checked(const Vec3& target, unsigned id) {
+  Vec3 me;
+  if (!player_position(me)) return WalkResult::Failed;
+  if (route_kind(me, target, id) == "unreachable") {
+    float d = std::hypot(target.x - me.x, target.z - me.z);
+    return d >= kTooFarMin && !mesh_near(target, 6.0f) ? WalkResult::TooFar : WalkResult::NoPath;
+  }
+  if (!walk_to(target)) return WalkResult::Failed;
+  g_walk_active = true;
+  g_walk_goal = target;
+  g_walk_check = me;
+  g_walk_check_ms = GetTickCount64();
+  return WalkResult::Walking;
+}
+
+bool follow_position(Vec3& out) {
+  if (!g_follow_active) return false;
+  out = g_follow_pos;
+  if (g_follow_id && !is_point_id(g_follow_id)) {
+    void* e = find_entity(g_follow_id);
+    Buf wv;
+    if (e && entity_world_vec(e, wv)) { out = world_pos_of(wv); g_follow_pos = out; }
+  }
+  return true;
+}
+unsigned follow_id() { return g_follow_active ? g_follow_id : 0; }
+
+void walk_tick() {
+  ULONGLONG now = GetTickCount64();
+  if (g_follow_active && g_follow_unexplored && !g_explored_said) {   // P's pick: "explored" once its cell is seen
+    static ULONGLONG last_fog = 0;
+    if (now - last_fog >= 500) {
+      last_fog = now;
+      int b = fog_value_at(g_follow_pos);
+      if (b >= 0 && b <= 150) { g_explored_said = true; speech::speak(std::string(gd::strings::kExplored), false); }
+    }
+  }
+  if (!g_walk_active) return;
+  void* p = player();
+  Vec3 me;
+  if (!p || !player_position(me)) { g_walk_active = false; return; }
+  if (std::hypot(g_walk_goal.x - me.x, g_walk_goal.z - me.z) <= kArriveTol) { g_walk_active = false; return; }
+  if (g_api.Character_GetMovementTarget) {   // replaced by another order (attack, WASD, a new L): no longer ours
+    Buf mt{};
+    if (!seh_movement_target(p, mt.b)) { g_walk_active = false; return; }
+    Vec3 w = world_pos_of(mt);
+    if (std::hypot(w.x - g_walk_goal.x, w.z - g_walk_goal.z) > kGoalTol) { g_walk_active = false; return; }
+  }
+  if (std::hypot(me.x - g_walk_check.x, me.z - g_walk_check.z) >= kProgressMin) { g_walk_check = me; g_walk_check_ms = now; return; }
+  if (now - g_walk_check_ms < kStallMs) return;
+  g_walk_active = false;
+  int enemies = 0;
+  for (const ScanItem& it : scan(ScanGroup::Enemies, kEnemyNear)) if (it.dist <= kEnemyNear) ++enemies;
+  gd::core::MessageBuilder m;
+  gd::strings::push_walk_stopped(m, enemies);
+  speech::speak(m.build(), true);
+}
+
+std::string pick_unexplored() {
+  load_api();
+  void* nav = g_api.NavManager_Get ? g_api.NavManager_Get() : nullptr;
+  Buf base; void* region = nullptr;
+  if (!nav || !g_api.Region_GetFogOfWar || !g_api.Region_GetOffsetFromWorld || !g_api.WorldVec3_PutOnFloor || !player_world_vec(base, &region)) return {};
+  const Vec3 me = world_pos_of(base);
+  struct C { float d; Vec3 w; };
+  std::vector<C> cells;   // every fogged inner cell of the regions around the player (the ring overlaps the neighbours)
+  for (void* reg : regions_near(region, me, kUnexploredRange)) {
+    FogView v = seh_fog(reg);
+    if (!v.data || v.w <= 2 || v.h <= 2 || v.w > 4096 || v.h > 4096) continue;
+    std::vector<unsigned char> buf((size_t)v.w * v.h);
+    if (!seh_copy(buf.data(), v.data, buf.size())) continue;
+    const int* off = g_api.Region_GetOffsetFromWorld(reg);
+    for (int r = 1; r + 1 < v.h; ++r)
+      for (int c = 1; c + 1 < v.w; ++c) {
+        if (buf[(size_t)r * v.w + c] <= 150) continue;
+        Vec3 w{(c - 0.5f) * 8.0f + (float)off[0], me.y + 20.0f, (v.h - r - 1.5f) * 8.0f + (float)off[2]};
+        float d = std::hypot(w.x - me.x, w.z - me.z);
+        if (d <= kUnexploredRange) cells.push_back({d, w});
+      }
+  }
+  std::sort(cells.begin(), cells.end(), [](const C& a, const C& b) { return a.d < b.d; });
+  // Nearest by WALK: the first few reachable cells by straight distance are pathed and the shortest path wins.
+  constexpr int kCandidates = 8, kMaxTries = 800;
+  static MemVec corridor{};
+  bool found = false; float best_len = 0; Vec3 best{};
+  int reachable = 0, tries = 0;
+  for (const C& c : cells) {
+    if (reachable >= kCandidates || tries++ >= kMaxTries) break;
+    if (found && c.d > best_len) break;   // straight distance already exceeds the best walk
+    Buf dest{};
+    if (!world_vec3_at(c.w, &dest)) continue;
+    g_api.WorldVec3_PutOnFloor(&dest);
+    Buf snapped = dest;
+    if (seh_closest_on_mesh(nav, &dest, &snapped, 6.0f) != 1) continue;   // NavResult 1 = found
+    corridor.end = corridor.begin;
+    Buf end = snapped; unsigned poly = 0; float len = -1.0f;
+    if (!seh_find_path_probe(nav, &base, &snapped, &end, &poly, &len, &corridor)) continue;
+    Vec3 s = world_pos_of(snapped), e = world_pos_of(end);
+    if (std::hypot(e.x - s.x, e.z - s.z) > 1.5f || std::fabs(e.y - s.y) > 2.0f) continue;   // a snapped partial path
+    ++reachable;
+    if (!found || len < best_len) { found = true; best_len = len; best = s; }
+  }
+  log::writef("unexplored: {} fogged cells within {:.0f}, {} tried, {} reachable, best path {:.0f}", cells.size(), kUnexploredRange, tries, reachable, best_len);
+  if (!found) return std::string(gd::strings::kNothingUnexplored);
+  set_follow_target(0, best, std::string(gd::strings::kUnexploredArea));
+  g_follow_unexplored = true;
+  g_explored_said = false;
+  return follow_ping();
+}
+static bool g_follow_unexplored_flag_reset() { g_follow_unexplored = false; g_explored_said = false; return true; }
 
 std::string probe_timing(int iters) {   // dev: time one reviewed_route() call (the navmesh line probe)
   if (iters < 1) iters = 1;

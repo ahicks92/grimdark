@@ -165,8 +165,11 @@ slightly north if the wall bends or has protrusions.  This isn't a game about su
 works out.
 
 We are slowly adding pathfinding features. The one most relevant to exploration is that pressing `l` with an exit
-targeted will move you to somewhere in the middle of the targeted room.  More will come as time goes by; however, it
-appears that pathfinding over very long distances may never be possible due to engine limitations.
+targeted will move you to somewhere in the middle of the targeted room.  `l` walks to whatever you selected last, which
+includes a map marker you picked, so `Ctrl+M`, pick something, then `l` walks you there if it's close enough.  If you
+are stuck and don't know where to go, `p` finds the nearest area you haven't explored yet and `l` walks you to it.  The
+game only knows the ground within about 200 units of you, so walking farther than that happens in steps: walk, then
+press `l` again once you're closer.
 
 ## Controls
 
@@ -203,7 +206,7 @@ Enter selects); then Start / difficulty / game mode / Delete.
 | I | Right mouse button at the reviewed thing (the right-hand skill), same rules |
 | Shift+J, Shift+I, Shift+number | The game's own Hold Position: attack or cast without moving. With the game's Classic Casting option on, plain J / I / number keys walk you into a spell's range and Shift casts from where you stand |
 | U | Interact with the nearest usable thing within 10 units (door, chest, shrine, NPC), no aiming |
-| L | Walk to the reviewed thing, finding a way round walls. On a room exit (V), walk into the middle of that room's widest part. WASD takes over again |
+| L | Walk to whatever you selected last, finding a way round walls: the thing you last reached with the finding keys, or the map marker you picked or followed with `'`, or the unexplored area from P. On a room exit (V), walk into the middle of that room's widest part. Says "no path" when there is no way there, and "too far to walk, get closer" when the target is beyond about 200 units (the game only knows the ground near you). Says "stopped" if the walk gets stuck, with how many enemies are close if any are. WASD takes over again |
 | G | Pick up the nearest item on the ground |
 | E / R | Energy / health potion |
 | F | Swap weapon set (announces "weapon set N" and the two hands) |
@@ -234,6 +237,7 @@ you probably have to get closer, or the object is behind something.  We can't re
 | \ | Sonar on / off: every nearby enemy, loot drop, breakable, devotion shrine (ruined shrines have their own sound; restored ones share the loot ping), dungeon entrance and other person or thing you can use (quest NPCs, merchants, doors, levers, riftgates, notes, graves) repeats its own ping, faster as it nears and panned to its side |
 | Ctrl+M | The map: a nearest-first list of everything the game draws on it, named as the game names it -- points of interest by their own text ("Burial Hill Entrance"; a quest's marker is one of these and appears only while that quest step is active), people and merchants by name, barricades as "obstacle", the rest by the map's own words (Riftgate, Healer, Smith, Spirit Guide, hero monster, boss). The map is held at its widest zoom while the list is open, about 400 by 650 units, the same reach a sighted player gets; further away there is only the quest log's prose. Then a second Tab stop with every devotion shrine you have discovered anywhere ("desecrated shrine, Burrwitch" / "not restored, Burrwitch Village Rift, 1200 away, 3 o'clock"); Enter picks one to follow |
 | ' | Follow the picked map marker: route ping plus "name, distance, bearing" |
+| P | Find the nearest unexplored area you can walk to, within about 200 units, and follow it like a map marker: `'` pings it again, L walks there. Says "explored" once you have seen it, then press P for the next. "Nothing unexplored within about 200" when you have seen everything nearby (the fog left near explored ground is usually over cliffs and water); go further, or use the map. For getting unstuck when you don't know where to go next |
 
 ### Advanced targeting: moving the cursor yourself
 

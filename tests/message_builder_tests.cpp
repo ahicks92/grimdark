@@ -49,3 +49,8 @@ TEST_CASE("push_item shape") {
   { MessageBuilder m; gd::strings::push_item(m, "", 1234, 1, false, false); CHECK(m.build() == "item 1234"); }
   { MessageBuilder m; gd::strings::push_item(m, "Gladius", 7, 1, false, true); CHECK(m.build() == "Gladius with augment"); }
 }
+
+TEST_CASE("push_walk_stopped shape") {
+  { MessageBuilder m; gd::strings::push_walk_stopped(m, 0); CHECK(m.build() == "stopped"); }
+  { MessageBuilder m; gd::strings::push_walk_stopped(m, 3); CHECK(m.build() == "stopped, 3 enemies near"); }
+}

@@ -187,6 +187,7 @@ class InGameScreen : public Screen {
     weapon_swap_tick();
     pets_tick();
     world::reping_tick();   // re-sound the review ping when the target's route (straight/path/unreachable) changes
+    world::walk_tick();     // L's stall report and P's "explored"
     world::show_all_tick();
     sonar::tick();
     walltones::tick();

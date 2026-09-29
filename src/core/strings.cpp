@@ -81,6 +81,11 @@ MessageBuilder& push_distance_bearing(MessageBuilder& m, float distance, int clo
   m.list_item().fragment(std::format("{} o'clock", clock_hour));
   return m;
 }
+MessageBuilder& push_walk_stopped(MessageBuilder& m, int enemies) {
+  m.list_item().fragment(kWalkStopped);
+  if (enemies > 0) m.list_item().fragment(std::format("{}", enemies)).fragment(kEnemiesNear);
+  return m;
+}
 MessageBuilder& push_place(MessageBuilder& m, std::string_view region, std::string_view subregion, std::string_view room) {
   if (!region.empty()) m.list_item().fragment(region);
   if (!subregion.empty()) m.list_item().fragment(subregion);
