@@ -50,7 +50,7 @@ screenshots. Rows in the game's order; "-" = unassigned.
 | Toggle Hide All Items (Loot Filter) | - | - |
 | Target Pet (Hold Key and Click) | Ctrl | Right Ctrl |
 | Stationary Attack (Hold Key and Click) | Shift | Gamepad LTrigger |
-| Pause Game (Single Player Only) | P | - |
+| Pause Game (Single Player Only) | P (Ctrl+P with the mod; plain P does nothing in the world -- see "Which plain keys are whose" below and the README's Pausing section) | - |
 | Toggle Pet Display | Backspace (taken by the mod: the pet overlay) | - |
 | Toggle Party Display | \ | - |
 | Quickbar Switch | Y | Gamepad RThumb |

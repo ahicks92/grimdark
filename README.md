@@ -136,6 +136,8 @@ a few things are worth knowing:
 - Lots and lots and lots of things have tooltips; get those with `Space`.
 - You can type to search for things in menus; there's no dedicated key, just start typing.
 - Many windows have more than one section so always try tab as well as arrows.
+- `Ctrl+P` pauses the game (single player). While paused you can't act in the world, but you can open windows and use the
+  mod's keys to find out what's around you. See Pausing in the Controls section.
 
 There are a lot of mechanics in this game, so in general Google or [the
 wiki](https://grimdawn.fandom.com/wiki/Grim_Dawn) are your friends. To help you with build planning however, we have [a
@@ -306,7 +308,23 @@ hotbar manager and works against the locked target like any aimed skill.
 | Ctrl+L | Personal riftgate |
 | Ctrl+1..0, Ctrl+J, Ctrl+I | Inside inventory / skills: put the focused skill (or, on a weapon slot, the weapon's basic attack) on quickbar slot 1..10 / the left mouse / the right mouse |
 | Ctrl+O | Loot filter config |
-| Ctrl+K, Ctrl+G, Ctrl+H, Ctrl+V, Ctrl+B, Ctrl+X, Ctrl+Z, Ctrl+P, Ctrl+], Ctrl+\, Ctrl+Enter | The game's own group, game menu, help, achievements, drop item, item tooltips, show items, pause, toggle UI, party display, chat. We do not yet support these. |
+| Ctrl+P | Pause / unpause (single player only), see Pausing below |
+| Ctrl+K, Ctrl+G, Ctrl+H, Ctrl+V, Ctrl+B, Ctrl+X, Ctrl+Z, Ctrl+], Ctrl+\, Ctrl+Enter | The game's own group, game menu, help, achievements, drop item, item tooltips, show items, toggle UI, party display, chat. We do not yet support these. |
+
+### Pausing
+
+`Ctrl+P` is the game's own pause, single player only; press it again to unpause. It has always been there, but it was
+easy to miss because plain `P` does nothing with the mod running. This is what we believe happens, from reading the
+game's code; we have not tried every case yet, so tell us if you find otherwise:
+
+- Everything in the world freezes: monsters, projectiles, cooldowns, buffs.
+- You cannot act in the world. Moving, attacking and using skills are all refused, including skills you place at the
+  cursor (runes, totems, traps).
+- The game's windows still work: inventory, character sheet, skills and devotion, the map. Pausing to sort gear or spend
+  points is fine.
+- The mod's own keys should keep working, since they don't need the game clock: the review keys (`.` `,` N B M V and the
+  rest), `;` and `/`, `X` for the room, and reading things. So you can pause in a fight, find out what is around you and
+  where, and then unpause.
 
 # Development
 
