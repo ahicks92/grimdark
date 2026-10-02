@@ -39,7 +39,9 @@ The player-facing buckets (`world::SkillAim`, spoken by `screens::speak_slot` / 
 - **self** — value 1 (Overguard, potions, stances).
 - **around you** — value 2 with a `Radius` class (War Cry).
 - **at a target** — value 2 otherwise (Weapon Attack, Cadence, Blitz, Forcewave).
-- **at a spot** — value 3 (cursor-placed; unconfirmed on Soldier).
+- **at a spot** — value 3 (cursor-placed; unconfirmed on Soldier) and value 4 (a pure cursor point: Vire's Might,
+  Nullification, the GDX2 medal runes; added 2026-10-02 -- before that they read as passive and the hotbar manager
+  hid them). Direct aim hands them the locked enemy or the locked point / free cursor like any other skill.
 - (nothing spoken) — value 0 or not a `SkillActivated`.
 
 **Value 2 does NOT require an enemy** (static RE 2026-09-15, `docs/masteries.md` run over all 289 class skills: no

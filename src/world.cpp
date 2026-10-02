@@ -2562,6 +2562,7 @@ SkillAim skill_aim(const void* skill_obj) {
     case 1: return SkillAim::SelfCast;                                                            // self / buff: no aiming
     case 2: return class_name(skill_obj).find("Radius") != std::string::npos ? SkillAim::AroundYou : SkillAim::AtTarget;
     case 3: return SkillAim::AtPoint;                                                             // a ground location: movement, placed AoE
+    case 4: return SkillAim::AtPoint;                                                             // a pure cursor point: Vire's Might, Nullification, the medal runes (docs/re_movement_skills.md)
     default: return SkillAim::None;                                                               // 0 = passive / not applicable
   }
 }
