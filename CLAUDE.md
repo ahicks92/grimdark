@@ -330,6 +330,7 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   ", " in a speech path; never add a second joining helper. All mod-authored wording lives in
   `src/core/strings.h`; composed shapes are `push_*` helpers there. Game text passes through verbatim.
 - **English only** (decided). No localization layer.
+- **Hints call Enter "click"** ("click to assign an attribute point"): that is the player's word for activating a row. Other keys are named ("Backspace to reclaim a skill point").
 - **Speech never interrupts by default**; interrupt only on focus moves and synchronous state feedback.
 - **Never hold a `GraphNode*` across frames.** The graph is rebuilt immediate-mode; a stored pointer dangles
   after the next render (the navigator's `last_spoken_node_` crashed the game in the announcer's path walk
