@@ -426,6 +426,10 @@ inline constexpr std::string_view kReclaimHint = "Backspace to reclaim a skill p
 inline constexpr std::string_view kToReclaim = "to reclaim";     // "<N> iron bits to reclaim" on each skill row
 inline constexpr std::string_view kEach = "each";
 inline constexpr std::string_view kReclaimed = "reclaimed";
+// Clear all constellations (a spirit guide's Constellations tab; mod-only, vanilla needs a Tonic of Clarity for this)
+inline constexpr std::string_view kClearAllConstellations = "clear all constellations";
+inline constexpr std::string_view kClearAllQuestion = "clear all constellations? celestial powers will need binding again";
+inline constexpr std::string_view kAllConstellationsCleared = "all constellations cleared";
 inline constexpr std::string_view kNotEnoughBits = "not enough iron bits";
 inline constexpr std::string_view kNothingToReclaim = "nothing to reclaim";
 inline constexpr std::string_view kRemoveModifiersFirst = "remove points from its modifiers first";   // a base skill's last point while modifiers hold points (the game's tagReclaimBase); the modifiers follow as list items

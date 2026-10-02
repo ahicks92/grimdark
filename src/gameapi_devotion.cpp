@@ -531,6 +531,83 @@ bool reclaim_star(unsigned skill_id, bool& uncompleted) {
   }
   return false;
 }
+// ---- clear all (a spirit guide's reclaim mode; mod-only: vanilla has no such button, docs/devotion.md) ----
+// The iron-bit price of reclaiming `n` points in a row, read-only: GetCurrentDevotionReclamationCost (Game.dll 0x520050)
+// is a pure function of the reclaims-so-far counter SkillManager+0xf4 and two vectors, the tier thresholds +0xc0 and
+// the costs +0xd8 (the PC record's devotionReclamationPointTiers / Costs): the tier is the first i with tiers[i] <=
+// counter < tiers[i+1], else the last. UseDevotionReclamationPoints(n) charges exactly this sum, stepping the counter.
+static bool devotion_reclaim_bits_for(const void* sm, unsigned n, unsigned long long& total) {
+  total = 0;
+  unsigned counter = 0;
+  std::vector<unsigned> tiers, costs;
+  if (!read_mem((const char*)sm + 0xf4, &counter, sizeof counter)) return false;
+  tiers = vec_items<unsigned>((const MemVec*)((const char*)sm + 0xc0), 256);
+  costs = vec_items<unsigned>((const MemVec*)((const char*)sm + 0xd8), 256);
+  if (tiers.empty() || costs.size() < tiers.size()) return false;
+  for (unsigned k = 0; k < n; ++k, ++counter) {
+    size_t idx = 0;
+    if (tiers.size() > 1) {
+      size_t i = 0;
+      for (; i + 1 < tiers.size(); ++i) {
+        if (counter < tiers[i]) { ++idx; continue; }
+        if (counter < tiers[i + 1]) break;
+        ++idx;
+      }
+    }
+    total += costs[idx];
+  }
+  return true;
+}
+DevotionClearCost devotion_clear_cost() {
+  load_devotion();
+  DevotionClearCost out;
+  for (const DevotionConstellation& c : constellations()) out.points += c.learned;
+  void* p = player();
+  const void* sm = p && g.GetSkillManager ? g.GetSkillManager(p) : nullptr;
+  unsigned long long bits = 0;
+  if (!sm || !devotion_reclaim_bits_for(sm, out.points, bits)) { out.ok = false; return out; }
+  // Sanity: the first point's price must be the game's own answer, or the layout moved (a game patch).
+  { unsigned long long first = 0; if (out.points && (!devotion_reclaim_bits_for(sm, 1, first) || first != devotion_reclaim_cost())) { out.ok = false; return out; } }
+  out.bits = bits;
+  out.aether = (unsigned long long)devotion_reclaim_aether_cost() * out.points;
+  return out;
+}
+// Reclaim every learned star at once, ignoring the lock order (the reason this exists: a self-sustaining set cannot be
+// unwound star by star without spare points). One UseDevotionReclamationPoints(n) charges the whole escalating price
+// all-or-nothing; then each star gets reclaim_star's steps without the per-star charge.
+std::string clear_all_devotion() {
+  load_devotion();
+  void* p = player();
+  const void* sm = p && g.GetSkillManager ? g.GetSkillManager(p) : nullptr;
+  if (!p || !sm || !g.SM_UseDevotionReclamationPoints || !g.AddDevotionPoints || g_slot_setlvl < 0) return std::string(strings::kCannot);
+  std::vector<DevotionConstellation> all = constellations();
+  unsigned n = 0;
+  for (const DevotionConstellation& c : all) n += c.learned;
+  if (!n) return std::string(strings::kNothingToReclaim);
+  DevotionClearCost cost = devotion_clear_cost();
+  if (!cost.ok) return std::string(strings::kCannot);
+  if (cost.bits > money()) return std::string(strings::kNotEnoughBits);
+  if (cost.aether > aether()) return std::string(strings::kNotEnoughAether);
+  bool charged = false;
+  guarded("clear all charge", [&] { charged = g.SM_UseDevotionReclamationPoints((void*)sm, (int)n); });
+  if (!charged) return std::string(strings::kCannot);
+  unsigned cleared = 0;
+  for (const DevotionConstellation& c : all) {
+    if (!c.learned) continue;
+    for (const DevotionStar& s : c.stars) {
+      if (!s.learned || !s.skill) continue;
+      if (s.power) unbind(s.skill, s.star);
+      bool ok = false;
+      guarded("clear star", [&] { if (auto setlvl = (void (*)(void*, unsigned))vfn(s.skill, g_slot_setlvl)) { setlvl(s.skill, 0); ok = true; } });
+      if (ok) ++cleared;
+    }
+    if (c.complete && g.SubtractAffinity) guarded("SubtractAffinity", [&] { for (const auto& [type, amount] : c.given) g.SubtractAffinity(p, type, amount); });
+  }
+  guarded("AddDevotionPoints", [&] { g.AddDevotionPoints(p, cleared); });
+  if (cleared != n) guarded("refund", [&] { g.SM_UseDevotionReclamationPoints((void*)sm, -(int)(n - cleared)); });
+  log::writef("gameapi: devotion cleared {} of {} stars, {} bits + {} aether", cleared, n, cost.bits, cost.aether);
+  return {};
+}
 std::string dump_devotion() {
   unsigned spent = 0;
   { void* p = player(); const void* sm = p && g.GetSkillManager ? g.GetSkillManager(p) : nullptr; if (sm && g.SM_GetNumDevotionPointsSpent) guarded("GetNumDevotionPointsSpent", [&] { spent = g.SM_GetNumDevotionPointsSpent(sm); }); }

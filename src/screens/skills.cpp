@@ -306,6 +306,7 @@ class SkillsScreen : public WindowScreen, public AssignSource {
       MessageBuilder m; m.fragment(strings::kSpiritGuide).list_item().fragment(strings::kReclaimDevotionHint);
       m.list_item().fragment(std::format("{}", cost)).fragment(strings::kIronBits).fragment(strings::kAnd).fragment(std::format("{}", gameapi::devotion_reclaim_aether_cost())).fragment(strings::kAetherCrystals).fragment(strings::kEach);
       b.add_item(ControlId::structural("skills.devreclaim"), line_item(m.build()));
+      add_clear_all(b);
     }
     // Three Tab stops -- learned (a star taken; complete ones included), available (open to take), unavailable (locked
     // behind an affinity) -- alphabetical within each, "empty" for a stop with nothing in it (as the inventory's bags).
@@ -323,6 +324,29 @@ class SkillsScreen : public WindowScreen, public AssignSource {
       for (const gameapi::DevotionConstellation* cp : st.items) add_constellation(b, *cp, reclaim, cost);
       b.pop_context();
     }
+  }
+  // "clear all constellations, 13 devotion points, 425 iron bits and 13 aether crystals": every learned star at once,
+  // ignoring the lock order, at the price of reclaiming them one by one; a yes/no picker repeats the cost first.
+  static void push_clear_cost(MessageBuilder& m, const gameapi::DevotionClearCost& c) {
+    m.list_item().fragment(std::format("{}", c.points)).fragment(strings::kDevotionPoints);
+    m.list_item().fragment(std::format("{}", c.bits)).fragment(strings::kIronBits).fragment(strings::kAnd).fragment(std::format("{}", c.aether)).fragment(strings::kAetherCrystals);
+  }
+  void add_clear_all(GraphBuilder& b) {
+    gameapi::DevotionClearCost cost = gameapi::devotion_clear_cost();
+    if (!cost.ok || cost.points == 0) return;
+    MessageBuilder m; m.list_item().fragment(strings::kClearAllConstellations); push_clear_cost(m, cost);
+    auto activate = [this] {
+      gameapi::DevotionClearCost c = gameapi::devotion_clear_cost();
+      if (!c.ok || c.points == 0) { speech::speak(strings::kCannot, true); return; }
+      MessageBuilder t; t.list_item().fragment(strings::kClearAllQuestion); push_clear_cost(t, c);
+      open_picker(t.build(), {{0, std::string(strings::kNo), {}}, {1, std::string(strings::kYes), {}}}, [this](unsigned id) {
+        if (id != 1) return;
+        std::string why = gameapi::clear_all_devotion();
+        speech::speak(why.empty() ? std::string(strings::kAllConstellationsCleared) : why, true);
+        refresh();
+      });
+    };
+    b.add_item(ControlId::structural("skills.devclearall"), row_item(m.build(), {}, activate));
   }
   void add_constellation(GraphBuilder& b, const gameapi::DevotionConstellation& c, bool reclaim, unsigned cost) {
     std::string id = std::format("skills.con{:x}", (uintptr_t)c.p);

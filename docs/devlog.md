@@ -1113,3 +1113,16 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   flags (`Skill+0x568` self-locked, `+0x550` dependency names) were all zero: the exe only fills them while its devotion
   map is drawn in reclaim mode, which the mod never shows, so they cannot be compared without calling
   ComputeReclaimBlockers ourselves.
+
+## 2026-10-02 -- clear all constellations at a spirit guide (verified live)
+- Why: a self-sustaining constellation set cannot be unwound star by star without a spare point, and the Tonic of
+  Clarity is two expansions beyond any blind player. Checked first that vanilla has no apply / batch path: the exe calls
+  `UseDevotionReclamationPoints` twice, a star click (n = 1) and Undo (n = the window's negative session count, the
+  refund branch that also winds the price counter back).
+- Test char setup: `/cheat?aether=30`, `/devotion?take=` Crossroads Chaos + Vulture, `/devotion?reclaim=41590` (the
+  crossroads) -> Vulture "Devotion Point Cannot be Removed". `/reclaim`, Constellations tab: row "clear all
+  constellations, 6 devotion points, 150 iron bits and 6 aether crystals"; yes -> "all constellations cleared", 7 points
+  available, no affinity, 3875 -> 3725 bits, 30 -> 24 aether. Not tried: a bound celestial power, a price crossing a tier
+  step (the replica follows the asm at Game.dll 0x520050 and is checked against the first point).
+- The test char's Oathkeeper / Vire's Might from earlier today was gone after the user's session: never saved
+  (learned through dev routes, the game was closed without an autosave in between).

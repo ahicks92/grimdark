@@ -246,6 +246,11 @@ std::string can_reclaim_star(const DevotionConstellation& c, const DevotionStar&
 bool reclaim_star(unsigned skill_id, bool& uncompleted);
 unsigned devotion_reclaim_cost();          // iron bits for the next reclaim (SkillManager::GetCurrentDevotionReclamationCost)
 unsigned devotion_reclaim_aether_cost();   // aether crystals per reclaim
+// Clear all (mod-only, a spirit guide's reclaim mode): every learned star reclaimed at once, ignoring the lock order,
+// for the price of reclaiming them one by one. ok = false when the price could not be read (a moved layout).
+struct DevotionClearCost { unsigned points = 0; unsigned long long bits = 0, aether = 0; bool ok = true; };
+DevotionClearCost devotion_clear_cost();
+std::string clear_all_devotion();          // "" = done; else the reason (not enough iron bits / aether, cannot)
 unsigned aether();                         // Player::GetCurrentAether
 bool dev_add_aether(unsigned n);           // dev only
 std::string dump_devotion();

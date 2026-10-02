@@ -165,7 +165,17 @@ itself is never shown. `src/gameapi_devotion.cpp` (model) + `src/screens/skills.
   the game's sidebar while you hold none, but the charge is real (1 per point here).
 - **Affinity is not saved**: the game derives it from complete constellations when its map is shown; `constellations()`
   reconciles the counters the same way (to value) so a loaded character gates correctly without the map.
-- Not modelled: the Tonic of Clarity full reset, the game's devotion Undo button.
+- Not modelled: the game's devotion Undo button. The Tonic of Clarity is used from the bag like any usable item
+  (`ItemDevotionReset::Use` -> the full reset; untried live).
+- **Clear all** (2026-10-02, mod-only, verified live): a spirit guide's Constellations tab gets "clear all constellations,
+  N devotion points, X iron bits and Y aether crystals" -> a yes/no picker -> `gameapi::clear_all_devotion`: one
+  `UseDevotionReclamationPoints(N)` (all-or-nothing, escalating per point, 1 aether each) then every learned star
+  `SetSkillLevel(0)`, powers unbound, `SubtractAffinity` once per complete constellation, `AddDevotionPoints(N)`. It
+  ignores the lock order on purpose: vanilla has no way out of a self-sustaining set at a spirit guide (no apply
+  button, no batch reclaim; the exe's only multi-point `UseDevotionReclamationPoints` call is Undo's refund, exe+0x18c142)
+  except re-adding support first, which needs a spare point. The price preview is read-only: `GetCurrentDevotionReclamationCost`
+  is a pure function of `SkillManager+0xf4` (reclaims so far), `+0xc0` tier thresholds and `+0xd8` costs, replicated per
+  point and checked against the game's own first-point price (a mismatch hides the row).
 
 ## 4a. The earlier design sketch
 
