@@ -1,5 +1,6 @@
 # Unreleased
 
+- The stats tab now tells you how to spend attribute points. The attribute points line always says to click Physique, Cunning or Spirit, and while you have points left each of those says "click to assign an attribute point".
 - Fix: Vire's Might, Nullification and the medal runes that charge, leap or teleport to a spot now show up in the hotbar manager. They fire at your target, or at the spot you have selected.
 - Fix: attaching a component or augment only offers items in your bags or equipped, no longer items in your personal and shared stashes.
 - Items now say "with component", "with augment" or "with component augment" in every list, not just the inventory: the vendor's buy and sell tabs, both stash lists, the equip and attach pickers, and the inventor.

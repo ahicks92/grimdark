@@ -412,6 +412,9 @@ inline constexpr std::string_view kClassChosen = "chosen; spend a point on the m
 inline constexpr std::string_view kSecondClassAt = "second class available at level";
 inline constexpr std::string_view kPointSpent = "point spent";
 inline constexpr std::string_view kNoPoints = "no points";
+// The character sheet's attribute hints: testers did not find that clicking an attribute (Enter) spends a point.
+inline constexpr std::string_view kAttributePointsHint = "click Physique, Cunning or Spirit below to assign";   // always on the "attribute points" row
+inline constexpr std::string_view kSpendAttributeHint = "click to assign an attribute point";                     // on each attribute while points are left
 inline constexpr std::string_view kAtMaximum = "at maximum";
 inline constexpr std::string_view kRequires = "requires";        // "requires <base skill>" for a modifier's prerequisite
 inline constexpr std::string_view kModifies = "modifies";        // "modifies <base skill>" for a modifier skill

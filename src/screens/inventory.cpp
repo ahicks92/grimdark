@@ -158,9 +158,12 @@ class InventoryScreen : public WindowScreen, public AssignSource {
   }
   void build_sheet(GraphBuilder& b) {
     const std::vector<gameapi::Stat>& rows = sheet_.get([] { return gameapi::character_sheet(); }, 30);
+    const bool points_left = gameapi::attribute_points() > 0;
     int i = 0;
     for (const gameapi::Stat& s : rows) {
-      MessageBuilder m; strings::push_stat(m, s.label, s.value);
+      MessageBuilder m; strings::push_stat(m.list_item(), s.label, s.value);   // a list item, so a hint below comma-joins
+      if (s.label == strings::kAttributePoints) m.list_item().fragment(strings::kAttributePointsHint);
+      if (s.spend && points_left) m.list_item().fragment(strings::kSpendAttributeHint);
       std::string id = std::format("inventory.stat{}", i++);
       std::string desc = s.desc;   // the game's stat description, read on Space
       std::function<void()> tip;
