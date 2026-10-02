@@ -534,7 +534,11 @@ bool reclaim_star(unsigned skill_id, bool& uncompleted) {
 std::string dump_devotion() {
   unsigned spent = 0;
   { void* p = player(); const void* sm = p && g.GetSkillManager ? g.GetSkillManager(p) : nullptr; if (sm && g.SM_GetNumDevotionPointsSpent) guarded("GetNumDevotionPointsSpent", [&] { spent = g.SM_GetNumDevotionPointsSpent(sm); }); }
-  std::string out = std::format("devotion points {} available, {} of {}, game counts {} spent; affinities {}; reclaim {} bits + {} aether (have {} bits, {} aether)\n", devotion_points(), devotion_points_total(), devotion_points_max(), spent, affinities_text(), devotion_reclaim_cost(), devotion_reclaim_aether_cost(), money(), aether());
+  // GetNumDevotionPointsSpent (Game.dll 0x51fc90) sums Skill::GetCurrentLevel (vt+0x1c8) over the devotion skills, and a
+  // celestial power star's current level is its POWER level: a level-7 Turtle Shell counts 7. Not points; dev reading only.
+  unsigned learned = 0;
+  for (const DevotionConstellation& c : constellations()) learned += c.learned;
+  std::string out = std::format("devotion points {} available, {} of {}, {} stars learned (game's GetNumDevotionPointsSpent {}: counts power levels); affinities {}; reclaim {} bits + {} aether (have {} bits, {} aether)\n", devotion_points(), devotion_points_total(), devotion_points_max(), learned, spent, affinities_text(), devotion_reclaim_cost(), devotion_reclaim_aether_cost(), money(), aether());
   for (const DevotionConstellation& c : constellations()) {
     out += std::format("  {} ({}) learned {}/{} complete={} affinity_met={} requires [{}] gives [{}]\n", c.name, c.p, c.learned, c.stars.size(), c.complete, c.affinity_met, pairs_text(c.required), pairs_text(c.given));
     for (unsigned i : star_order(c)) for (const DevotionStar& s : c.stars) if (s.index == i) {

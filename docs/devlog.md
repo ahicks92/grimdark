@@ -1101,3 +1101,15 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   plain label in `g_reviewed_label` for this.
 - Verified: enemyNearest (Training Dummy) -> follow.review "following Training Dummy" -> neutralNearest (lock 57393, the
   rift) -> follow.ping -> lock 60725 (the dummy), nothing spoken. Not tried: "gone", a moving target, the real Ctrl chord.
+
+## 2026-10-02 -- devotion "game counts 19 spent" with 13 stars learned: not a discrepancy
+- The user's real character dumped "13 of 55, game counts 19 spent". `SkillManager::GetNumDevotionPointsSpent`
+  (Game.dll 0x51fc90) sums `Skill::GetCurrentLevel` (vt+0x1c8, our `g_s_curlvl` slot 57) over every devotion skill
+  (`+0x4a0` set), and a celestial power star's current level is its power level: Turtle Shell at 7 counts 7, so
+  13 - 1 + 7 = 19. Points are consistent (13 earned, 13 stars, 0 available). Only the dev dump read it; it now prints
+  the stars learned and labels the game's figure.
+- Same session, read-only on that character at a spirit guide: our reclaim gate refused Vulture (sole Chaos source,
+  needs Chaos 1) as self-locked and Tortoise's power star as "would lock Scarab", as the rule predicts. The game's own
+  flags (`Skill+0x568` self-locked, `+0x550` dependency names) were all zero: the exe only fills them while its devotion
+  map is drawn in reclaim mode, which the mod never shows, so they cannot be compared without calling
+  ComputeReclaimBlockers ourselves.
