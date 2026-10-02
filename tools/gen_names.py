@@ -466,6 +466,7 @@ ENTRIES = [
     ("Character_AddSkillPoints", "Game", r"GAME::Character::AddSkillPoints\("),
     ("Character_GetSkillMasteries", "Game", r"GAME::Character::GetSkillMasteries\(class"),
     ("Character_GetSkillMasteriesAllowed", "Game", r"GAME::Character::GetSkillMasteriesAllowed\("),
+    ("SkillManager_UpdateMasteriesAllowed", "Game", r"GAME::SkillManager::UpdateMasteriesAllowed\("),
     ("GameEngine_GenerateUISkillText", "Game", r"GAME::GameEngine::GenerateUISkillText\("),
     # character sheet
     ("Character_GetCharLevel", "Game", r"GAME::Character::GetCharLevel\(void\)"),

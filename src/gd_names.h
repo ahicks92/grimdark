@@ -1240,6 +1240,9 @@ inline constexpr const char* Character_GetSkillMasteries = "?GetSkillMasteries@C
 // public: unsigned int const __cdecl GAME::Character::GetSkillMasteriesAllowed(void)const __ptr64
 inline constexpr const char* Character_GetSkillMasteriesAllowed_DLL = "Game.dll";
 inline constexpr const char* Character_GetSkillMasteriesAllowed = "?GetSkillMasteriesAllowed@Character@GAME@@QEBA?BIXZ";
+// public: void __cdecl GAME::SkillManager::UpdateMasteriesAllowed(unsigned int) __ptr64
+inline constexpr const char* SkillManager_UpdateMasteriesAllowed_DLL = "Game.dll";
+inline constexpr const char* SkillManager_UpdateMasteriesAllowed = "?UpdateMasteriesAllowed@SkillManager@GAME@@QEAAXI@Z";
 // public: static void __cdecl GAME::GameEngine::GenerateUISkillText(class GAME::Skill const * __ptr64,class mem::vector<struct GAME::GameTextLine> & __ptr64,struct GAME::SkillReasons const * __ptr64,bool,bool,int,enum GAME
 inline constexpr const char* GameEngine_GenerateUISkillText_DLL = "Game.dll";
 inline constexpr const char* GameEngine_GenerateUISkillText = "?GenerateUISkillText@GameEngine@GAME@@SAXPEBVSkill@2@AEAV?$vector@UGameTextLine@GAME@@@mem@@PEBUSkillReasons@2@_N3HW4GameTextClass@2@3@Z";

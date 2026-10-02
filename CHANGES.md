@@ -1,7 +1,6 @@
 # Unreleased
 
 - Fix: Vire's Might, Nullification and the medal runes that charge, leap or teleport to a spot now show up in the hotbar manager. They fire at your target, or at the spot you have selected.
-  - Untested in game: the test character doesn't have any of them. Please try one.
 - Fix: attaching a component or augment only offers items in your bags or equipped, no longer items in your personal and shared stashes.
 - Items now say "with component", "with augment" or "with component augment" in every list, not just the inventory: the vendor's buy and sell tabs, both stash lists, the equip and attach pickers, and the inventor.
 - `ctrl p` pauses the game in single player. It always worked, but it wasn't written down anywhere. The README has a new Pausing section on what you can and can't do while paused (short version: no acting in the world, but windows and the mod's own keys work).

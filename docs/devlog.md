@@ -1073,12 +1073,18 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
 - Traps: a hot reload in the world left the game paused again (L "fired" and nothing moved; `/pause?set=0`). `/fog` is
   the REVEAL route (FogOfWar::AddVisibility) -- reading fog with it clears it; use `/fogmap` or tools/fow.py.
 
-## 2026-10-02 -- target type 4 skills reach the hotbar manager (classification verified live, firing untested)
+## 2026-10-02 -- target type 4 skills reach the hotbar manager (verified live)
 - Report: Vire's Might missing from the Ctrl+` picker. Cause: its runtime `GetTargetType()` is 4 (all four point
   movement classes plus Nullification's `Skill_DispelMagic`, `re_movement_skills.md` s.1), `world::skill_aim` mapped it
   to None, and the picker drops None as passive. Now 4 -> `AtPoint` ("at a spot"). `/masteries` shows both as
   `at a spot|4`; docs/masteries.md regenerated (only those two rows changed).
 - Firing goes through direct aim unchanged: a type-4 request reads the combat enemy +0x468 (the locked entity) and the
-  hot slot fires at the mouse repeat WorldVec3 (the locked point / free cursor). Not verified: the test character has
-  no type-4 skill (one mastery allowed, no item spawner). The design question in `re_movement_skills.md` s.8 (a
+  hot slot fires at the mouse repeat WorldVec3 (the locked point / free cursor). Verified: Vire's Might on slot 1,
+  `/lock` on a Seeker 13.0 u away, `/hotbar?activate=0` -> 2.1 u away (charged). The point-lock / free-cursor case was
+  not tried. The design question in `re_movement_skills.md` s.8 (a
   direction-and-distance aim for runes) stays open.
+- The "claude" test char was level 24 with ONE mastery allowed: the big `/cheat?xp=` jump skipped the game's per-level
+  `SkillManager::UpdateMasteriesAllowed(level)` step (Game.dll 0x51f740: `allowed += 1` if `level >= threshold[allowed]`,
+  one step per call). New `/cheat?masteries=1` calls it with the character's level until caught up. The char is now
+  Soldier + Oathkeeper (Oathkeeper 10, Vire's Might 1), via `/ingame?action=2`, `/skills?pane=8&tab=1`, `/skills?learn=`.
+- Our own Vire's Might logged `telegraph: unknown skill class 'Skill_AttackPathCharge'`: left unclassified.

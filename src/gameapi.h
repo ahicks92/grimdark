@@ -275,6 +275,7 @@ std::string dump_lore();
 std::string dump_bags();
 std::string dump_equipment();
 std::string dump_skills();
+bool dev_update_masteries_allowed();   // dev only: SkillManager::UpdateMasteriesAllowed(char level) until caught up
 bool dev_add_experience(unsigned xp);   // dev only: SkillManager::AddExperience on the main player
 bool dev_open_skill_reclaim();          // dev only: open the skills window in spirit-guide reclaim mode
 std::string dump_sheet();

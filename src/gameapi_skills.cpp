@@ -68,6 +68,7 @@ struct Api {
   void (*AddSkillPoints)(void*, unsigned) = nullptr;
   void (*GetSkillMasteries)(const void*, MemVec*) = nullptr;
   unsigned (*GetSkillMasteriesAllowed)(const void*) = nullptr;
+  void (*SM_UpdateMasteriesAllowed)(const void*, unsigned) = nullptr;   // one step: allowed += 1 if level >= threshold[allowed]
   void (*GenerateUISkillText)(const void*, MemVec*, const void*, bool, bool, int, int, bool) = nullptr;
   unsigned (*Object_GetObjectId)(const void*) = nullptr;
   // sheet
@@ -169,6 +170,7 @@ void load_skills() {
   GAPI_LOAD(g, AddSkillPoints, Character_AddSkillPoints);
   GAPI_LOAD(g, GetSkillMasteries, Character_GetSkillMasteries);
   GAPI_LOAD(g, GetSkillMasteriesAllowed, Character_GetSkillMasteriesAllowed);
+  GAPI_LOAD(g, SM_UpdateMasteriesAllowed, SkillManager_UpdateMasteriesAllowed);
   GAPI_LOAD(g, GenerateUISkillText, GameEngine_GenerateUISkillText);
   GAPI_LOAD(g, Object_GetObjectId, Object_GetObjectId);
   GAPI_LOAD(g, GetCharLevel, Character_GetCharLevel);
@@ -738,6 +740,17 @@ bool dev_add_experience(unsigned xp) {
   if (!e || !p || !g.CharacterExperienceOutbound) return false;
   bool ok = guarded("CharacterExperienceOutbound", [&] { g.CharacterExperienceOutbound(e, object_id(p), xp); });
   log::writef("gameapi: dev experience {} ok={}", xp, ok);
+  return ok;
+}
+// Dev only: catch the masteries-allowed count up with the character's level. A big /cheat?xp= jump can skip the
+// game's per-level step (the "claude" test char sat at level 24 with one mastery allowed); UpdateMasteriesAllowed
+// (Game.dll 0x51f740) bumps the count by one when the level reaches the next threshold, so call it until it stops.
+bool dev_update_masteries_allowed() {
+  load_skills(); void* p = player(); const void* sm = skill_manager();
+  if (!p || !sm || !g.SM_UpdateMasteriesAllowed || !g.GetCharLevel) return false;
+  unsigned before = masteries_allowed();
+  bool ok = guarded("UpdateMasteriesAllowed", [&] { unsigned lvl = g.GetCharLevel(p); for (int i = 0; i < 4; ++i) g.SM_UpdateMasteriesAllowed(sm, lvl); });
+  log::writef("gameapi: dev masteries allowed {} -> {} ok={}", before, masteries_allowed(), ok);
   return ok;
 }
 std::string dump_skills() {
