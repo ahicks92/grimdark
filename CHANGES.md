@@ -1,5 +1,6 @@
 # Unreleased
 
+- New key `ctrl apostrophe`: follow whatever you are reviewing instead of a map marker. After that, `apostrophe` puts your review cursor back on it and pings it like `semicolon`, even if it moved or you have reviewed other things since, so you can keep targeting one enemy in a boss fight. It says "gone" once the thing no longer exists. Picking a map marker or pressing `p` replaces it.
 - The stats tab now tells you how to spend attribute points. The attribute points line always says to click Physique, Cunning or Spirit, and while you have points left each of those says "click to assign an attribute point".
 - Fix: Vire's Might, Nullification and the medal runes that charge, leap or teleport to a spot now show up in the hotbar manager. They fire at your target, or at the spot you have selected.
 - Fix: attaching a component or augment only offers items in your bags or equipped, no longer items in your personal and shared stashes.

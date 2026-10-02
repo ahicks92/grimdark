@@ -1092,3 +1092,12 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   (class `Monster`, so a `Player` class test would miss them) and allied NPCs never reach the table, and the unknown
   list only ever holds enemy vocabulary. Pets not tried live (the char has none now). PathCharge stays out of the table: no monster record uses
   it. Verified: a second charge counted `friend=1 unknown=0` in `/telegraph`.
+
+## 2026-10-02 -- Ctrl+' follows the reviewed thing (verified live through /action)
+- Ctrl+' (`follow.review`, `world::follow_reviewed`) makes the review target the follow target by id (entities
+  re-resolved on every use, a review point stays put), flagged `g_follow_review`; `set_follow_target` (a Ctrl+M pick, P)
+  clears the flag. ' in that mode (`follow_review_land`) re-locks the review cursor on it, restores `g_reviewed_id` /
+  the label and plays `ping_reviewed`, silent like ;; "<label> gone" when `find_entity` fails. `land_on` now keeps the
+  plain label in `g_reviewed_label` for this.
+- Verified: enemyNearest (Training Dummy) -> follow.review "following Training Dummy" -> neutralNearest (lock 57393, the
+  rift) -> follow.ping -> lock 60725 (the dummy), nothing spoken. Not tried: "gone", a moving target, the real Ctrl chord.

@@ -311,6 +311,7 @@ inline constexpr std::string_view kMapMarker = "marker";            // an icon k
 inline constexpr std::string_view kNoQuestMarkers = "no quest markers";
 inline constexpr std::string_view kFollowing = "following";
 inline constexpr std::string_view kNotFollowing = "not following anything";
+inline constexpr std::string_view kGone = "gone";   // ' on a Ctrl+' target that no longer exists: "Bound Beast gone"
 inline constexpr std::string_view kNoFactions = "no factions known";
 inline constexpr std::string_view kInventory = "inventory";
 inline constexpr std::string_view kEquipment = "equipment";

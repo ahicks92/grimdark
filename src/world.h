@@ -212,6 +212,13 @@ std::string follow_target_label();
 // "blocked" note when it can't be reached directly). Empty when nothing is being followed.
 std::string follow_ping();
 bool follow_position(Vec3& out);   // the follow target's position (a live entity re-resolved); false when not following
+// Ctrl+' (2026-10-02): the reviewed thing becomes the follow target by id (a moving entity is tracked, never its
+// position remembered). Returns its label; empty = nothing reviewed. A map pick or P replaces it.
+std::string follow_reviewed();
+bool follow_is_review();           // the follow target came from Ctrl+'
+// ' in that mode: the review cursor lands back on it (lock + review ping, like Semicolon). Empty on success, else
+// "<label> gone".
+std::string follow_review_land();
 
 // L and P (2026-09-28). L walks (walk_to, no route check, nothing spoken) to the last selection: the reviewed thing (a
 // review landing) or the follow target (a map pick, ', P) -- last_selection_is_follow() says which.

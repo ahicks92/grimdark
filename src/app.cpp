@@ -219,9 +219,21 @@ static void register_actions() {
                     [] { if (world::ping_reviewed().empty()) speech::speak(strings::kNoTarget, true); }).bind(0x27);  // Semicolon
   // The follow key: ping the map marker picked in the Ctrl+M window, with its distance and heading.
   m.register_action("follow.ping", "Follow the quest marker", InputCategory::InGame, [] {
+    if (world::follow_is_review()) {   // a Ctrl+' target: back onto it with the review cursor, ping like Semicolon
+      std::string err = world::follow_review_land();
+      if (!err.empty()) speech::speak(err, true);
+      return;
+    }
     std::string line = world::follow_ping();
     speech::speak(line.empty() ? std::string(strings::kNotFollowing) : line, true);
   }).bind(0x28);  // Apostrophe
+  // Ctrl+': follow the reviewed thing (an enemy in a boss fight, an NPC) instead of a map marker; ' then re-lands on it.
+  m.register_action("follow.review", "Follow the reviewed thing", InputCategory::InGame, [] {
+    std::string label = world::follow_reviewed();
+    if (label.empty()) { speech::speak(strings::kNoTarget, true); return; }
+    MessageBuilder msg; msg.fragment(strings::kFollowing).fragment(label);
+    speech::speak(msg.build(), true);
+  }).bind(0x28, true);  // Ctrl+Apostrophe
   // Inspect the current target (/ ): "<pct> percent health, <effects>" with no name; silent for a non-enemy.
   m.register_action("scan.inspect", "Inspect target", InputCategory::InGame, [] {
     std::string s = world::inspect_target();

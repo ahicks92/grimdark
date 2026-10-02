@@ -2434,6 +2434,7 @@ std::string label_of(unsigned id) {
 // ---- the review cursor ----
 namespace {
 unsigned g_reviewed_id = 0;
+std::string g_reviewed_label;   // the landed item's plain label (no level / rarity), for Ctrl+' (follow_reviewed)
 bool g_last_selected_follow = false;   // L's target: false = the reviewed thing, true = the follow target (map pick, ', P)
 // Screen-up in world xz (measured against WASD, see in_game.cpp): (-sin yaw, -cos yaw).
 void screen_axes(float& fx, float& fz, float& rx, float& rz) {
@@ -2732,7 +2733,7 @@ static std::string_view group_label(ScanGroup g) {
 // speak "label, N away, H o'clock, i of n" -- with "level N <rarity>" folded into an enemy's label.
 static std::string land_on(std::vector<ScanItem>& items, ScanGroup group, int dir, bool nearest) {
   gd::core::MessageBuilder m;
-  if (items.empty()) { unlock_target(); g_reviewed_id = 0; gd::strings::push_nothing_nearby(m, group_label(group)); return m.build(); }
+  if (items.empty()) { unlock_target(); g_reviewed_id = 0; g_reviewed_label.clear(); gd::strings::push_nothing_nearby(m, group_label(group)); return m.build(); }
   int idx = -1;
   if (!nearest) for (size_t i = 0; i < items.size(); ++i) if (items[i].id == g_reviewed_id) { idx = (int)i; break; }
   int count = (int)items.size();
@@ -2744,6 +2745,7 @@ static std::string land_on(std::vector<ScanItem>& items, ScanGroup group, int di
   else lock_target(it.id);
   ping_reviewed();  // every landing plays the route ping, like wotr
   std::string label = it.label.empty() ? it.cls : it.label;
+  g_reviewed_label = label;
   if (group == ScanGroup::Enemies && it.classification >= 0) {   // "walking undead level 5 hero"
     gd::core::MessageBuilder em; gd::strings::push_enemy_label(em, label, it.level, it.classification); label = em.build();
   }
@@ -3156,17 +3158,49 @@ static unsigned g_follow_id = 0;   // 0 = a fixed point (g_follow_pos)
 static Vec3 g_follow_pos{};
 static std::string g_follow_label;
 static bool g_follow_unexplored = false;   // the follow target is P's pick: an exact navmesh point; "explored" once its cell clears
+static bool g_follow_review = false;       // the follow target came from the review cursor (Ctrl+'): ' re-lands the cursor on it
 
 static bool g_follow_unexplored_flag_reset();   // with the L / P code below
 void set_follow_target(unsigned id, const Vec3& pos, const std::string& label) {
   g_follow_unexplored_flag_reset();
+  g_follow_review = false;
   g_last_selected_follow = true;
   g_follow_active = true;
   g_follow_id = id;
   g_follow_pos = pos;
   g_follow_label = label;
 }
-void clear_follow_target() { g_follow_active = false; g_follow_id = 0; g_follow_label.clear(); }
+void clear_follow_target() { g_follow_active = false; g_follow_review = false; g_follow_id = 0; g_follow_label.clear(); }
+bool follow_is_review() { return g_follow_active && g_follow_review; }
+
+// Ctrl+': the reviewed thing becomes the follow target by id -- an entity is re-resolved on every use (it tracks a
+// moving enemy), a review point (an exit) stays put. Returns its label, empty when nothing is reviewed.
+std::string follow_reviewed() {
+  Vec3 pos;
+  if (!g_reviewed_id || !reviewed_position(pos)) return {};
+  std::string label = g_reviewed_label.empty() ? label_of(g_reviewed_id) : g_reviewed_label;
+  set_follow_target(g_reviewed_id, pos, label);
+  g_follow_review = true;
+  return label;
+}
+
+// ' while following a review target: land the review cursor back on it (the lock, so skills aim at it on or off
+// screen) and play the review ping, like Semicolon. Silent on success; "<label> gone" when the entity no longer exists.
+std::string follow_review_land() {
+  if (!follow_is_review()) return {};
+  if (is_point_id(g_follow_id)) {
+    g_reviewed_point = g_follow_pos;
+    lock_point(g_follow_pos);
+  } else if (!find_entity(g_follow_id) || !lock_target(g_follow_id)) {
+    gd::core::MessageBuilder m; m.fragment(g_follow_label).fragment(gd::strings::kGone);
+    return m.build();
+  }
+  g_reviewed_id = g_follow_id;
+  g_reviewed_label = g_follow_label;
+  g_last_selected_follow = false;
+  ping_reviewed();
+  return {};
+}
 bool has_follow_target() { return g_follow_active; }
 std::string follow_target_label() { return g_follow_label; }
 
