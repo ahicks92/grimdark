@@ -1087,4 +1087,7 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   `SkillManager::UpdateMasteriesAllowed(level)` step (Game.dll 0x51f740: `allowed += 1` if `level >= threshold[allowed]`,
   one step per call). New `/cheat?masteries=1` calls it with the character's level until caught up. The char is now
   Soldier + Oathkeeper (Oathkeeper 10, Vire's Might 1), via `/ingame?action=2`, `/skills?pane=8&tab=1`, `/skills?learn=`.
-- Our own Vire's Might logged `telegraph: unknown skill class 'Skill_AttackPathCharge'`: left unclassified.
+- Our own Vire's Might logged `telegraph: unknown skill class 'Skill_AttackPathCharge'`: `on_cast` looked the class up
+  before skipping the player. Now any caster whose class is `Player` (ours or, one day, another player's) is skipped
+  first, so the unknown list only ever holds enemy vocabulary. PathCharge stays out of the table: no monster record uses
+  it. Verified: a second charge counted `friend=1 unknown=0` in `/telegraph`.

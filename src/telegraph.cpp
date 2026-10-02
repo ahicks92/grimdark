@@ -120,11 +120,13 @@ const char* shape_of(const std::string& k, float dist) {
 
 void on_cast(const Cast& c) {
   if (g_mode == Mode::Off) return;
+  // Players first, before the class lookup: the table is the ENEMY vocabulary, and a player's own class skills (Vire's
+  // Might = Skill_AttackPathCharge) must not land in the unknown-class list. Any Player, not just ours (multiplayer).
+  if (c.caster_class == "Player") { ++g_skipped_friend; return; }
   const char* shape = shape_of(c.skill_class, c.dist);
   if (!shape) { ++g_skipped_shape; return; }
   int si = shape_index(shape);
   if (si >= 0 && !g_shape_on[si]) { ++g_skipped_shape; return; }
-  if (c.caster_id == world::player_id()) { ++g_skipped_friend; return; }
   if (!world::is_foe(c.caster_id)) { ++g_skipped_friend; note(std::format("{:.3f} skip friend {} {} #{} {:.1f}u", c.t, shape, c.caster_class, c.caster_id, c.dist)); return; }
   if (!c.has_pos || c.dist < 0 || c.dist > g_radius) { ++g_skipped_far; note(std::format("{:.3f} skip far {} #{} {:.1f}u", c.t, shape, c.caster_id, c.dist)); return; }
   auto it = g_last.find(c.caster_id);
