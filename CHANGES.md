@@ -1,3 +1,7 @@
+# Unreleased
+
+- Fix: the update announcement now waits until the main menu has been up for a few seconds, so the game's own startup speech no longer talks over it.
+
 # 0.5.1 (2026-10-02)
 
 - Nothing new for players: this release exists so the update check added in 0.5.0 has something newer to find.

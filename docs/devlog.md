@@ -1140,3 +1140,6 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   proxy, no new dependency; JSON is two top-level string fields, read by `core::update::json_string`.
 - Verified: gdcore_tests (4 new cases); a full build into build/vertest with GRIMDARK_VERSION=v0.0.1 embeds the string;
   both endpoints answer (latest v0.4.0, ci-latest 26ab370). NOT run inside the game: the user held it.
+- Follow-up (user test of v0.5.0 -> v0.5.1, it worked): the line was spoken right after load and stomped by the main
+  menu's own announcements. The worker now only stores it; `update::tick` (from `app::tick`, game thread) speaks it once a
+  screen other than "loading" has been current for 3 s (the main menu, or the world after a hot reload). Not run in game.

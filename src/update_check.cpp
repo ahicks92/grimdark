@@ -21,6 +21,8 @@ std::thread g_worker;
 std::mutex g_mu;
 HINTERNET g_request = nullptr;   // the request in flight (closing it from shutdown() aborts the blocking calls)
 std::atomic<bool> g_cancel{false};
+std::string g_pending;               // the line to speak, set by the worker, taken by tick() (under g_mu)
+constexpr double kSettleSeconds = 3.0;
 
 std::wstring widen(std::string_view s) { return std::wstring(s.begin(), s.end()); }   // ASCII paths and versions
 
@@ -75,9 +77,23 @@ void run() {
   m.list_item().fragment(ch == core::update::Channel::Ci ? strings::kCiUpdateAvailable : strings::kUpdateAvailable).fragment(v.latest);
   m.list_item().fragment(strings::kYouHave).fragment(mine);
   m.list_item().fragment(strings::kRunInstallerToUpdate);
-  speech::speak(m.build(), false);
+  std::lock_guard<std::mutex> l(g_mu);
+  g_pending = m.build();   // spoken by tick() once the game has settled
 }
 }  // namespace
+
+// Called every frame on the game thread with the current screen. The startup announcements (the main menu, its
+// selected character, the loading screens) would talk over the line, so it waits until one screen other than a
+// loading screen has stayed current for kSettleSeconds -- the main menu normally, the world after a hot reload.
+void tick(std::string_view screen_key, double now) {
+  static std::string last_key;
+  static double since = 0;
+  if (screen_key != last_key) { last_key = std::string(screen_key); since = now; }
+  if (screen_key.empty() || screen_key == "loading" || now - since < kSettleSeconds) return;
+  std::string line;
+  { std::lock_guard<std::mutex> l(g_mu); line.swap(g_pending); }
+  if (!line.empty()) speech::speak(line, false);
+}
 
 bool enabled() { return settings::get_bool(kSettingKey, true); }
 void set_enabled(bool on) { settings::set_bool(kSettingKey, on); }

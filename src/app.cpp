@@ -46,6 +46,7 @@
 #include "screens/pets.h"
 #include "gameapi.h"
 #include "speech.h"
+#include "update_check.h"
 #include "world.h"
 
 namespace gd::app {
@@ -368,6 +369,7 @@ void tick() {
   }
   g_input.set_live_categories(g_screens.live_categories());
   Screen* cur = g_screens.current();
+  update::tick(cur ? cur->key() : std::string_view{}, t);
   if (raw || (cur && cur->captures_raw_input())) return;
   // The keys of the frame a screen became current belong to whoever had the keyboard before it: the Escape
   // that the game turned into its pause menu must not reach the pause menu screen as Back (structured
