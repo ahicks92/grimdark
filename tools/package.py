@@ -19,22 +19,20 @@ import argparse, os, shutil, sys, zipfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRISM = os.path.join(ROOT, "third_party", "prism-bin", "prism-sdk-v0.18.1")
 
-def git_describe():
-    import subprocess
-    try:
-        return subprocess.check_output(["git", "describe", "--tags", "--always"], cwd=ROOT, text=True).strip()
-    except Exception:
-        return "unknown"
-
-
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--build", default=os.path.join(ROOT, "build", "ninja"))
     ap.add_argument("--out", default=os.path.join(ROOT, "dist", "grimdark.zip"))
     ap.add_argument("--pdb-out", default=None, help="directory to copy grimdark.pdb into (default: next to --out)")
-    ap.add_argument("--version", default=None, help="written to grimdark/version.txt (the installer compares it to release tags); default: git describe")
+    ap.add_argument("--version", default=None, help="must match the version the build embedded (<build>/version.txt, from GRIMDARK_VERSION at configure time)")
     a = ap.parse_args()
-    version = a.version or git_describe()
+    # The DLL embeds its version at configure time and CMake writes the same string to <build>/version.txt: ship that,
+    # so grimdark/version.txt (the installer's view) and the DLL (the update check's) cannot disagree.
+    vfile = os.path.join(a.build, "version.txt")
+    if not os.path.exists(vfile): sys.exit(f"package: missing {vfile} (re-run the CMake configure)")
+    version = open(vfile, encoding="utf-8").read().strip()
+    if a.version and a.version != version:
+        sys.exit(f"package: --version {a.version} but the build embedded {version}; set GRIMDARK_VERSION and reconfigure")
 
     files = []   # (zip path, source path)
     def add(zpath, src):

@@ -1126,3 +1126,17 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   step (the replica follows the asm at Game.dll 0x520050 and is checked against the first point).
 - The test char's Oathkeeper / Vire's Might from earlier today was gone after the user's session: never saved
   (learned through dev routes, the game was closed without an autosave in between).
+
+## 2026-10-02 -- embedded version + update check (unit-tested; not run in the game)
+- Version: CI's new "Version" step exports `GRIMDARK_VERSION` (the tag, else `ci-<short sha>`) before the build; CMake
+  configures it into `build/generated/grimdark_version.h` (`gd::kGrimdarkVersion`) and `build/version.txt`;
+  `package.py` now ships that file and refuses a `--version` that disagrees. Local builds are `dev`.
+- Update check: after "Grimdark loaded" a worker does ONE WinHTTP GET to api.github.com (release builds
+  `/releases/latest` -> `tag_name`, semver compare; CI builds `/releases/tags/ci-latest` -> `target_commitish`, newer =
+  a different commit since CI never moves ci-latest backwards) and speaks, not interrupting, "Grimdark update available
+  v0.5.0, you have v0.4.0, run the Grimdark installer to update" (CI: "newer Grimdark CI build available <sha>").
+  Silent on dev / offline / non-200 (logged). `grimdark_unload` closes the in-flight request and joins. F1 -> mod options
+  "check for updates" (settings `updatecheck`, default on). WinHTTP over the alternatives: built in, Schannel TLS, system
+  proxy, no new dependency; JSON is two top-level string fields, read by `core::update::json_string`.
+- Verified: gdcore_tests (4 new cases); a full build into build/vertest with GRIMDARK_VERSION=v0.0.1 embeds the string;
+  both endpoints answer (latest v0.4.0, ci-latest 26ab370). NOT run inside the game: the user held it.

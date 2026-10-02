@@ -8,6 +8,7 @@
 #include "log.h"
 #include "screens/window_base.h"
 #include "settings.h"
+#include "update_check.h"
 
 namespace gd::screens {
 using namespace gd::core;
@@ -39,6 +40,9 @@ class ModOptionsScreen : public Screen {
     b.add_item(ControlId::structural("modopt.devserver"),
                row_item(std::string(strings::kDevServer), [] { return std::string(dev::running() ? strings::kOn : strings::kOff); },
                         [] { toggle_devserver(); }));   // the navigator speaks the row's new value itself
+    b.add_item(ControlId::structural("modopt.updatecheck"),
+               row_item(std::string(strings::kCheckForUpdates), [] { return std::string(update::enabled() ? strings::kOn : strings::kOff); },
+                        [] { update::set_enabled(!update::enabled()); }));   // takes effect at the next load
   }
 };
 }  // namespace

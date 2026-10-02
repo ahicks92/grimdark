@@ -51,6 +51,12 @@ inline constexpr std::string_view kUnsupportedScreen = "unsupported screen";
 inline constexpr std::string_view kFullscreenToggleBlocked = "Fullscreen must be toggled through the options menu to avoid a vanilla crash";  // Alt+Enter (src/hooks.cpp)
 inline constexpr std::string_view kModName = "Grimdark";
 inline constexpr std::string_view kModLoaded = "Grimdark loaded";
+// The update check (src/update_check.cpp): "Grimdark update available v0.5.0, you have v0.4.0, run the Grimdark installer to update"
+inline constexpr std::string_view kUpdateAvailable = "Grimdark update available";
+inline constexpr std::string_view kCiUpdateAvailable = "newer Grimdark CI build available";
+inline constexpr std::string_view kYouHave = "you have";
+inline constexpr std::string_view kRunInstallerToUpdate = "run the Grimdark installer to update";
+inline constexpr std::string_view kCheckForUpdates = "check for updates";
 inline constexpr std::string_view kModLoadedNoSpeech = "Grimdark loaded, no speech backend";
 
 // ---- composed shapes: push_* helpers so call sites never concatenate ----

@@ -265,6 +265,9 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   static (`CMAKE_MSVC_RUNTIME_LIBRARY`): no VC++ redistributable on a player's machine.
 - The F10-F12 GetAsyncKeyState dev hotkeys were removed 2026-09-13 (the dev routes replaced them long before).
 - Speech: prism (prebuilt SDK in `third_party/prism-bin`, delay-loaded from next to grimdark.dll).
+- **The mod's version is embedded at configure time** (`GRIMDARK_VERSION` env -> `build/generated/grimdark_version.h` +
+  `build/version.txt`, which `tools/package.py` ships): CI sets `v<tag>` or `ci-<short sha>`, a local build is `dev`. The
+  update check (`src/update_check.cpp`, WinHTTP, `core/update_check.h`) is silent on `dev`. Changing it needs a reconfigure.
 - Hooking: Microsoft Detours, vendored source in `third_party/Detours`, built as a static lib.
 
 ## Tools (Python: `uv run tools/<script>.py` -- the repo root `pyproject.toml` declares lz4/pefile/capstone/numpy/scipy/pillow, no `--with` needed)

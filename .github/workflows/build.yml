@@ -28,6 +28,11 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # git describe needs the tags
+      - name: Version (a tag build is the tag, anything else ci-<short sha>; embedded in the DLL and version.txt)
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then VER="$GITHUB_REF_NAME"; else VER="ci-$(git rev-parse --short HEAD)"; fi
+          echo "GRIMDARK_VERSION=$VER" >> "$GITHUB_ENV"
       - name: Build (VS 2022 via tools/vsdev.cmd, Ninja RelWithDebInfo)
         shell: cmd
         run: tools\build.cmd
@@ -37,8 +42,7 @@ jobs:
       - name: Package
         shell: bash
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then VER="$GITHUB_REF_NAME"; else VER="ci-$(git rev-parse --short HEAD)"; fi
-          python tools/package.py --out dist/grimdark.zip --pdb-out dist/pdb --version "$VER"
+          python tools/package.py --out dist/grimdark.zip --pdb-out dist/pdb
       - uses: actions/upload-artifact@v7
         with:
           name: grimdark

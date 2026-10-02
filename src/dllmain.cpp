@@ -25,6 +25,7 @@
 #include "crash.h"
 #include "log.h"
 #include "speech.h"
+#include "update_check.h"
 
 static bool env_flag(const wchar_t* name) {
   wchar_t v[8];
@@ -78,6 +79,7 @@ static DWORD WINAPI init_thread(LPVOID) {
   if (gd::settings::get_bool("devserver", false) || GetEnvironmentVariableW(L"GRIMDARK_PORT", nullptr, 0) > 0)
     gd::dev::start(env_int(L"GRIMDARK_PORT", 8791));
   gd::speech::speak(sp ? "Grimdark loaded" : "Grimdark loaded, no speech backend", true);
+  gd::update::start();   // a worker asks GitHub for a newer build; spoken (not interrupting) when there is one
   // Always APPLY the state, both ways: Windows remembers a per-app session mute across launches, so a muted dev
   // run would otherwise leave the next real (speaking) launch silent. Give the game time to open its session.
   Sleep(3000);
@@ -92,6 +94,7 @@ extern "C" __declspec(dllexport) DWORD WINAPI grimdark_unload(LPVOID) {
   gd::log::write("grimdark: unloading");
   if (!g_installed) { gd::crash::remove(); gd::speech::shutdown(); return 1; }   // the gate refused: only these two are up
   gd::dev::stop();
+  gd::update::shutdown();
   gd::app::shutdown();
   gd::rooms::shutdown();
   gd::db::shutdown();

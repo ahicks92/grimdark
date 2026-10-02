@@ -49,6 +49,20 @@ target_include_directories(gdcore_tests PRIVATE third_party)
 target_link_libraries(gdcore_tests PRIVATE gdcore)
 add_custom_target(check COMMAND gdcore_tests DEPENDS gdcore_tests)
 
+# --- the mod's own version, embedded at configure time (2026-10-02) ---
+# CI sets GRIMDARK_VERSION (a tag "v0.4.0" or "ci-<short sha>") before configuring; a local build is "dev" (the update
+# check stays silent). The same string goes to build/version.txt, which tools/package.py ships as grimdark/version.txt,
+# so the DLL and the installer can never disagree.
+if(DEFINED ENV{GRIMDARK_VERSION} AND NOT "$ENV{GRIMDARK_VERSION}" STREQUAL "")
+  set(GRIMDARK_VERSION "$ENV{GRIMDARK_VERSION}")
+else()
+  set(GRIMDARK_VERSION "dev")
+endif()
+message(STATUS "grimdark version: ${GRIMDARK_VERSION}")
+configure_file(src/grimdark_version.h.in ${CMAKE_BINARY_DIR}/generated/grimdark_version.h @ONLY)
+file(WRITE ${CMAKE_BINARY_DIR}/version.txt "${GRIMDARK_VERSION}
+")
+
 # --- the injected DLL ---
 add_library(grimdark SHARED
   src/dllmain.cpp src/log.cpp src/crash.cpp src/speech.cpp src/hooks.cpp src/textcap.cpp src/devserver.cpp src/audio_mute.cpp src/app.cpp src/screens/main_menu.cpp src/screens/create_character.cpp src/screens/difficulty_select.cpp
@@ -58,12 +72,12 @@ add_library(grimdark SHARED
   src/screens/codex.cpp src/screens/factions.cpp src/screens/inventory.cpp src/screens/skills.cpp src/screens/quickbar.cpp
   src/screens/modals.cpp src/screens/vendor.cpp src/db.cpp src/rooms.cpp src/sonar.cpp src/hazard.cpp src/screens/riftgate.cpp
   src/screens/list_picker.cpp src/screens/count_prompt.cpp src/screens/reward_list.cpp src/screens/hotbar_manager.cpp src/screens/map_markers.cpp
-  src/screens/mod_options.cpp src/version_gate.cpp)
+  src/screens/mod_options.cpp src/version_gate.cpp src/update_check.cpp)
 # C++/WinRT (OneCore speech in src/tts_onecore.cpp): the projection headers are heavy, and windowsapp.lib's
 # api-ms-win-* imports are delay-loaded so a machine without them loses combat speech, not the whole mod.
 set_source_files_properties(src/tts_onecore.cpp PROPERTIES COMPILE_OPTIONS "/bigobj")
-target_include_directories(grimdark PRIVATE src ${PRISM_SDK}/include third_party/miniaudio)
-target_link_libraries(grimdark PRIVATE gdcore detours sqlite3 ${PRISM_LIB} user32 ws2_32 ole32 delayimp windowsapp)
+target_include_directories(grimdark PRIVATE src ${PRISM_SDK}/include third_party/miniaudio ${CMAKE_BINARY_DIR}/generated)
+target_link_libraries(grimdark PRIVATE gdcore detours sqlite3 ${PRISM_LIB} user32 ws2_32 ole32 delayimp windowsapp winhttp)
 target_link_options(grimdark PRIVATE /DELAYLOAD:${PRISM_DLL_NAME}
   /DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll /DELAYLOAD:api-ms-win-core-winrt-error-l1-1-1.dll /DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll)
 target_compile_definitions(grimdark PRIVATE PRISM_DLL_NAME="${PRISM_DLL_NAME}")
