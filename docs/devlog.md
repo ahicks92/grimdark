@@ -1088,6 +1088,7 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   one step per call). New `/cheat?masteries=1` calls it with the character's level until caught up. The char is now
   Soldier + Oathkeeper (Oathkeeper 10, Vire's Might 1), via `/ingame?action=2`, `/skills?pane=8&tab=1`, `/skills?learn=`.
 - Our own Vire's Might logged `telegraph: unknown skill class 'Skill_AttackPathCharge'`: `on_cast` looked the class up
-  before skipping the player. Now any caster whose class is `Player` (ours or, one day, another player's) is skipped
-  first, so the unknown list only ever holds enemy vocabulary. PathCharge stays out of the table: no monster record uses
+  before skipping friends. Now the `world::is_foe` test runs first: players (ours or, one day, another player's), pets
+  (class `Monster`, so a `Player` class test would miss them) and allied NPCs never reach the table, and the unknown
+  list only ever holds enemy vocabulary. Pets not tried live (the char has none now). PathCharge stays out of the table: no monster record uses
   it. Verified: a second charge counted `friend=1 unknown=0` in `/telegraph`.
