@@ -1,4 +1,4 @@
-# Unreleased
+# 0.5.0 (2026-10-02)
 
 - Grimdark now checks for updates when it starts and tells you if a newer version is out, for example "Grimdark update available v0.5.0, you have v0.4.0, run the Grimdark installer to update". If you installed a CI build, it tells you about newer CI builds instead. It stays quiet if you are offline. Turn it off in `f1`, mod options, check for updates.
 - At a spirit guide, the constellations tab has a new "clear all constellations" row that says what it costs. Clicking it asks yes or no, then gives back every devotion point at once for the same price as reclaiming them one by one. This gets you out of constellations that hold themselves up, which the game otherwise only lets you undo with a Tonic of Clarity. Celestial powers need binding again afterwards.
