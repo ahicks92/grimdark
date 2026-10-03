@@ -136,8 +136,8 @@ a few things are worth knowing:
 - Lots and lots and lots of things have tooltips; get those with `Space`.
 - You can type to search for things in menus; there's no dedicated key, just start typing.
 - Many windows have more than one section so always try tab as well as arrows.
-- `Ctrl+P` pauses the game (single player). While paused you can't act in the world, but you can open windows and use the
-  mod's keys to find out what's around you. See Pausing in the Controls section.
+- `Ctrl+P` pauses the game (single player). While paused you can't act in the world or use menus and windows, but you
+  can use the mod's keys to find out what's around you. See Pausing in the Controls section.
 
 There are a lot of mechanics in this game, so in general Google or [the
 wiki](https://grimdawn.fandom.com/wiki/Grim_Dawn) are your friends. To help you with build planning however, we have [a
@@ -325,8 +325,8 @@ game's code; we have not tried every case yet, so tell us if you find otherwise:
 - Everything in the world freezes: monsters, projectiles, cooldowns, buffs.
 - You cannot act in the world. Moving, attacking and using skills are all refused, including skills you place at the
   cursor (runes, totems, traps).
-- The game's windows still work: inventory, character sheet, skills and devotion, the map. Pausing to sort gear or spend
-  points is fine.
+- Menus and windows do not work while paused: inventory, character sheet, skills and devotion, the map. Unpause to sort
+  gear or spend points.
 - The mod's own keys should keep working, since they don't need the game clock: the review keys (`.` `,` N B M V and the
   rest), `;` and `/`, `X` for the room, and reading things. So you can pause in a fight, find out what is around you and
   where, and then unpause.

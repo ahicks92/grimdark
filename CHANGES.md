@@ -15,7 +15,7 @@
 - Fix: Vire's Might, Nullification and the medal runes that charge, leap or teleport to a spot now show up in the hotbar manager. They fire at your target, or at the spot you have selected.
 - Fix: attaching a component or augment only offers items in your bags or equipped, no longer items in your personal and shared stashes.
 - Items now say "with component", "with augment" or "with component augment" in every list, not just the inventory: the vendor's buy and sell tabs, both stash lists, the equip and attach pickers, and the inventor.
-- `ctrl p` pauses the game in single player. It always worked, but it wasn't written down anywhere. The README has a new Pausing section on what you can and can't do while paused (short version: no acting in the world, but windows and the mod's own keys work).
+- `ctrl p` pauses the game in single player. It always worked, but it wasn't written down anywhere. The README has a new Pausing section on what you can and can't do while paused (short version: no acting in the world and no menus or windows, but the mod's own keys work).
 - `l` now walks to whatever you selected last: the thing you found with the finding keys, a map marker you picked or followed with `apostrophe`, or the unexplored area from `p`. Targets beyond about 200 units may not walk until you get closer.
 - New key `p`: find the nearest unexplored area you can walk to, within about 200 units. `apostrophe` pings it and `l` walks there; it says "explored" once you've seen it. Meant for when you're stuck and don't know where to go.
 - Fix: the hotbar manager's skill list now uses the game's own rules, so it no longer offers skills the game won't put on a bar, such as auto-toggled skills or skills from the weapon set you aren't holding.
