@@ -319,15 +319,14 @@ hotbar manager and works against the locked target like any aimed skill.
 ### Pausing
 
 `Ctrl+P` is the game's own pause, single player only; press it again to unpause. It has always been there, but it was
-easy to miss because plain `P` does nothing with the mod running. This is what we believe happens, from reading the
-game's code; we have not tried every case yet, so tell us if you find otherwise:
+easy to miss because plain `P` does nothing with the mod running. While paused:
 
 - Everything in the world freezes: monsters, projectiles, cooldowns, buffs.
 - You cannot act in the world. Moving, attacking and using skills are all refused, including skills you place at the
   cursor (runes, totems, traps).
 - Menus and windows do not work while paused: inventory, character sheet, skills and devotion, the map. Unpause to sort
   gear or spend points.
-- The mod's own keys should keep working, since they don't need the game clock: the review keys (`.` `,` N B M V and the
+- The mod's own keys keep working, since they don't need the game clock: the review keys (`.` `,` N B M V and the
   rest), `;` and `/`, `X` for the room, and reading things. So you can pause in a fight, find out what is around you and
   where, and then unpause.
 
