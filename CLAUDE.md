@@ -300,6 +300,8 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   `src/gd_names.h`; fails loudly if a pattern does not match exactly one export.
 - `tools/fow.py [character] [difficulty] [--region s] [--grid]` -- a character's saved fog of war (map.fow, every region).
 - `tools/arz.py <record-path-regex> [field-regex]` — reads `database.arz` offline (records + their fields).
+- `tools/telegraph_audit.py <monster-record-regex>` — a monster's skills per phase (follows `poolToSpawnOnDeath`), each with
+  its class and the telegraph verdict (shape / silent / UNKNOWN) from `src/telegraph.cpp`'s table. Offline.
 - `tools/stacks.py [pid|exe] [n]` — native stack dump of all threads via dbghelp; `tools/pe_survey.py`,
   `tools/dinput_hook_scan.py` — static analysis helpers; `tools/hookmon.py` — LL keyboard hook monitor.
 - Reference implementations in `reference/`: `iagd` (injected Detours hook DLL for this game, MIT) and
