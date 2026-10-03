@@ -32,7 +32,11 @@ std::string fetch(const std::string& path) {
   HINTERNET session = WinHttpOpen(agent.c_str(), WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
   if (!session) { log::writef("update: WinHttpOpen failed ({})", GetLastError()); return {}; }
   WinHttpSetTimeouts(session, 5000, 5000, 10000, 10000);
-  HINTERNET connect = WinHttpConnect(session, L"api.github.com", INTERNET_DEFAULT_HTTPS_PORT, 0);
+  // GRIMDARK_UPDATE_HOST (dev) replaces the host, e.g. "nonexistent.invalid" to exercise the offline path.
+  wchar_t host[256] = L"api.github.com";
+  DWORD n = GetEnvironmentVariableW(L"GRIMDARK_UPDATE_HOST", host, 256);
+  if (n == 0 || n >= 256) wcscpy_s(host, L"api.github.com");
+  HINTERNET connect = WinHttpConnect(session, host, INTERNET_DEFAULT_HTTPS_PORT, 0);
   HINTERNET request = connect ? WinHttpOpenRequest(connect, L"GET", widen(path).c_str(), nullptr, WINHTTP_NO_REFERER,
                                                    WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE) : nullptr;
   std::string body;
@@ -82,17 +86,19 @@ void run() {
 }
 }  // namespace
 
-// Called every frame on the game thread with the current screen. The startup announcements (the main menu, its
-// selected character, the loading screens) would talk over the line, so it waits until one screen other than a
-// loading screen has stayed current for kSettleSeconds -- the main menu normally, the world after a hot reload.
+// Called every frame on the game thread with the current screen. The startup speech would talk over the line, so it
+// waits until the main menu (or the world, after a hot reload) has stayed current for kSettleSeconds. "Any screen but
+// loading" was not enough: the title / intro sit on the "unsupported" fallback for seconds before the menu exists.
 void tick(std::string_view screen_key, double now) {
   static std::string last_key;
   static double since = 0;
   if (screen_key != last_key) { last_key = std::string(screen_key); since = now; }
-  if (screen_key.empty() || screen_key == "loading" || now - since < kSettleSeconds) return;
+  if ((screen_key != "main_menu" && screen_key != "in_game") || now - since < kSettleSeconds) return;
   std::string line;
   { std::lock_guard<std::mutex> l(g_mu); line.swap(g_pending); }
-  if (!line.empty()) speech::speak(line, false);
+  if (line.empty()) return;
+  log::writef("update: announced on {}", screen_key);
+  speech::speak(line, false);
 }
 
 bool enabled() { return settings::get_bool(kSettingKey, true); }

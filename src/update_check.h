@@ -6,7 +6,7 @@
 
 namespace gd::update {
 void start();      // after the mod is up; no-op for a dev build or with the setting off
-// Per frame (game thread): speaks the result once a non-loading screen has been current for a few seconds.
+// Per frame (game thread): speaks the result once the main menu (or the world) has been current for a few seconds.
 void tick(std::string_view screen_key, double now);
 void shutdown();   // cancels a request in flight and joins the worker (grimdark_unload, never DllMain)
 bool enabled();    // settings "updatecheck", default on

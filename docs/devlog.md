@@ -1142,4 +1142,7 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   both endpoints answer (latest v0.4.0, ci-latest 26ab370). NOT run inside the game: the user held it.
 - Follow-up (user test of v0.5.0 -> v0.5.1, it worked): the line was spoken right after load and stomped by the main
   menu's own announcements. The worker now only stores it; `update::tick` (from `app::tick`, game thread) speaks it once a
-  screen other than "loading" has been current for 3 s (the main menu, or the world after a hot reload). Not run in game.
+  screen other than "loading" has been current for 3 s. Live (build configured as v0.5.0): that spoke 2.4 s BEFORE "Main
+  menu" -- the title / intro sit on the "unsupported" fallback first. Now gated on `main_menu` / `in_game` only: "Main
+  menu" 17:02:18.649, the update line 17:02:21.674. Offline path via the new dev knob `GRIMDARK_UPDATE_HOST=nonexistent.invalid`:
+  `update: request failed (12007)`, nothing spoken, main menu normal. Build reconfigured back to dev afterwards.

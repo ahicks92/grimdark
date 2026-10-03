@@ -357,7 +357,8 @@ implementation notes in `docs/devlog.md`, the mechanisms in `docs/*.md`.
 
 Environment variables read by the DLL: `GRIMDARK_ANY_VERSION=1` (skip the version gate on an unknown game build -- for
 measuring a patch, expect crashes), `GRIMDARK_PORT` (dev server port; set = the server starts), `GRIMDARK_MUTE=1` (mute
-game audio and speech), `GRIMDARK_NOFOCUS=1` (block the game's own focus grabs, dev only), `GRIMDARK_HOOK_WIDGETS=1`
+game audio and speech), `GRIMDARK_NOFOCUS=1` (block the game's own focus grabs, dev only), `GRIMDARK_UPDATE_HOST` (replaces
+api.github.com for the update check, dev only: `nonexistent.invalid` tests the offline path), `GRIMDARK_HOOK_WIDGETS=1`
 (experimental, crashes the game -- leave unset).
 
 ## Building
