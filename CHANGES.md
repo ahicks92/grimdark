@@ -1,3 +1,7 @@
+# Unreleased
+
+- Fix: skill tooltips at a spirit guide (reclaiming skill points) are the full ones again, including what the next level gives, followed by the reclaim cost.
+
 # 0.5.3 (2026-10-05)
 
 - Fix: equipping a two-handed weapon while holding a weapon and a shield no longer loses the two-handed weapon. Before, it disappeared, and the old weapon and shield showed up in your bag while still being listed in your hands. Now both go to your bag and the two-handed weapon goes in your hands, the same as in the game. This works both with `enter` in the bag and from the Right Hand slot.

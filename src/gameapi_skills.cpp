@@ -513,10 +513,17 @@ void fill_skill_reasons(const void* s, unsigned char r[16]) {
 }
 }  // namespace
 std::vector<std::string> skill_tooltip(const void* skill) { return generate_skill_text(skill, nullptr, false, 0); }
+// The game's reclaim mode drops the Next Level block (a respec is when you most want it): at a spirit guide we speak
+// the full text and then only the lines reclaim mode adds (the cost, why a reclaim is refused).
 std::vector<std::string> skill_window_tooltip(const void* skill, bool reclaim) {
   alignas(16) unsigned char reasons[16];
   fill_skill_reasons(skill, reasons);
-  return generate_skill_text(skill, reasons, reclaim, (int)reclaim_cost());
+  std::vector<std::string> out = generate_skill_text(skill, reclaim ? nullptr : reasons, false, 0);
+  if (!reclaim) return out;
+  const std::vector<std::string> full = out;
+  for (std::string& l : generate_skill_text(skill, reasons, true, (int)reclaim_cost()))
+    if (std::find(full.begin(), full.end(), l) == full.end()) out.push_back(std::move(l));
+  return out;
 }
 // The exe's quickbar picker filter (exe+0x1e7860, run over Character::GetUISkillList for a number-bar slot):
 // learned (current level), a primary or secondary skill, not auto-toggled, and -- when it belongs to another skill
