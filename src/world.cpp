@@ -2816,12 +2816,20 @@ bool seh_move_to(void* ctrl, void* character, const void* wv) {
   } __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
 }
 }
+constexpr float kWalkSnapRadius = 8.0f;   // as /pathprobe's default
 bool walk_to(const Vec3& point) {
   void* p = player();
   if (!p || !g_controller || !g_api.ControllerAI_MoveTo || !g_api.GetRunSpeed) return false;
   Buf wv{};
   if (!world_vec3_at(point, wv.b)) return false;
   if (g_api.WorldVec3_PutOnFloor) g_api.WorldVec3_PutOnFloor(&wv);
+  // MoveTo silently refuses a destination off the navmesh, even by 0.1 u: a mine entrance's map marker and its door
+  // both sit just past the walkable floor, so "pick it, L" did nothing (Old Arkovia, 2026-10-05). Snap it on first.
+  void* nav = g_api.NavManager_Get ? g_api.NavManager_Get() : nullptr;
+  if (nav && g_api.FindClosestPointOnPathMesh) {
+    Buf on = wv;
+    if (seh_closest_on_mesh(nav, &wv, &on, kWalkSnapRadius) == 1) wv = on;   // 1 = found; 2 leaves `on` garbage
+  }
   if (!seh_move_to(g_controller, p, wv.b)) { log::write("world: ControllerAI::MoveTo faulted"); return false; }
   log::writef("walk: to {}", wv_text(wv.b));
   return true;

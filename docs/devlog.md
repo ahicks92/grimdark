@@ -1181,3 +1181,17 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   the conversation's Escape) share the synthetic queue, and filtering them made Ctrl+M the mod's "next loot" and never
   the game's map. `SynthKey::player` now marks dev keys (`/key`, `/keys`, `/keydown`): only those are recorded and
   filtered; injected keys go to the game alone. Verified live: Ctrl+M opens the map; P, N + L, W as above.
+
+## 2026-10-05: L and off-navmesh targets (Old Arkovia mine entrance)
+- Report: from Old Arkovia's riftgate, picking the Mine Entrance on the map and pressing L did nothing. Measured live on the
+  user's character: the target was right (the map marker `poi_genericmineentrance` at (-902.1, -16.3), the door at
+  (-902.7, -17.2)) and `NavManager::FindPath` found a route, but `ControllerAI::MoveTo` silently refuses a destination
+  that is off the navmesh -- by 0.1 u for the marker, 1 u for the door (inside the doorway); the mesh edge is z -16.2.
+  Every point on the mesh along the same line walked, across region boundaries too (the region-relative WorldVec3
+  hypothesis was tested and is not it). `walk_to` now snaps the floored target with `FindClosestPointOnPathMesh`
+  (8 u, as /pathprobe) before MoveTo. Verified: the marker and the door points both walk to the edge.
+- Devil's Crossing (Carlile, Sahdina from the rift or the dummies) is the other known limit: the Burrwitch Prison Gate
+  is closed until you are next to it (trigger volume), the pathfinder treats it as a wall, and MoveTo walks to the
+  nearest reachable point of its partial route instead. Not fixed.
+- Dev keys now take the player's path (`SynthKey::player`, see above); our follow statics can be read live by
+  resolving them in the PDB (dbghelp `SymEnumSymbols` on the injected grimdark.dll) and `/peek`.
