@@ -221,8 +221,9 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   key a read on the game's current tab (the one-class spirit guide bug). `WindowScreen::add_tabs` with no tabs throws
   and takes the game down.
 - Input: modifier state comes from the game's per-event flags, never our own down-tracking (alt-tab leaves Alt
-  "held"). Ctrl+<digit> chords must swallow the digit while Ctrl is held. Synthetic `/key` events reach the game AND
-  the mod, so dev keys cannot verify in-world Ctrl-chords or J (use `/action`, `/jkey`, `/keydown?name=enter`).
+  "held"). Ctrl+<digit> chords must swallow the digit while Ctrl is held. Synthetic `/key` events take the real keys'
+  path since 2026-10-05: the mod records them and the game sees only what the game-key filter passes, so drive the
+  mod with plain `/key` as a player would (before, a dev P also hit the game's pause and silently broke L).
   The game's key enum is NOT DIK above F10: F11 0x55, F12 0x56 (`tools/exports/keynames.txt`). A mouse-button
   transition delivered off-window is lost and the exe's held byte sticks, muting WASD (`world::mouse_key` presses
   only where there is an on-screen point). A press whose projected point lies on the HUD clicks the HUD.

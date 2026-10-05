@@ -1168,3 +1168,12 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   Hand slot over club + shield; over the club alone; full bag (refused via the real screen, spoken "no room in your bags",
   nothing moved); after dropping two items, the real Enter equips. Equipment tab reads the two-hander in both hands.
 - Dev routes added: `/inv?spawn=<record>` (a new item from a database record, via `Item::CreateItem`), `/inv?detach=<id>`, `/inv?give=<id>`.
+
+## 2026-10-05: dev keys take the player's path
+- Synthetic `/key` events used to be appended to the game's key queue unfiltered (and recorded for the mod only when
+  the game fetched them), so every dev key reached the game AND the mod. In the world that made a dev P the game's
+  pause as well as the mod's "find unexplored", and the following L walk silently did nothing -- the dev loop could
+  not reproduce a player's session. Now `GetNumKeyEvents_hook` records the frame's synthetic group for the mod once
+  per frame and serves the game only the events the game-key filter passes, exactly as for real keys.
+- Verified live in the world: P no longer pauses; N then L walks (Personal Rift, 4 away); a held W still moves the
+  character; `/key?name=1&ctrl=1` reaches the mod's quickbar read. `/action`, `/jkey` and `/keydown` remain.

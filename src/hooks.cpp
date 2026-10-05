@@ -301,6 +301,7 @@ static int g_real_keys = 0;                 // physical events exposed this poll
 static std::mutex g_synth_mu;
 static std::deque<std::vector<SynthKey>> g_synth_pending;  // one group per frame
 static std::vector<SynthKey> g_synth_active;               // the group visible this frame
+static std::vector<SynthKey> g_synth_pass;                 // the part of it the game-key filter lets the game see
 typedef int (*GetNumKeyEvents_t)(void*);
 static GetNumKeyEvents_t GetNumKeyEvents_hook_orig;
 typedef void* (*GetKeyEvent_t)(void*, void*, int);  // ButtonEvent returned by value -> hidden pointer
@@ -339,8 +340,22 @@ static int GetNumKeyEvents_hook(void* self) {
     if (g_ButtonEvent_dtor) g_ButtonEvent_dtor(buf);
   }
   g_real_keys = (int)g_pass_idx.size();
+  // Synthetic (dev) events take the real ones' path: the mod records them once per frame, and the game sees only
+  // those the same filter passes -- a dev P is the mod's P, never also the game's pause (2026-10-05).
   std::lock_guard lk(g_synth_mu);
-  return g_real_keys + (int)g_synth_active.size();
+  static uint64_t synth_frame = ~0ull;
+  if (synth_frame != g_frame) {
+    synth_frame = g_frame;
+    for (const SynthKey& k : g_synth_active) {
+      g_keys.record(k.code, k.released);
+      g_keys.record_mods(k.shift, k.alt, k.ctrl);
+      if (!k.released && k.ch >= 0x20 && k.ch != 0x7f) g_keys.typed.push_back(k.ch);
+    }
+  }
+  g_synth_pass.clear();
+  for (const SynthKey& k : g_synth_active)
+    if (!g_swallow_keys || (g_key_pass && g_key_pass(k.code, k.released, k.shift, k.ctrl))) g_synth_pass.push_back(k);
+  return g_real_keys + (int)g_synth_pass.size();
 }
 static void* GetKeyEvent_hook(void* self, void* out, int i) {
   if (i < g_real_keys) return GetKeyEvent_hook_orig(self, out, g_pass_idx[(size_t)i]);
@@ -348,8 +363,8 @@ static void* GetKeyEvent_hook(void* self, void* out, int i) {
   {
     std::lock_guard lk(g_synth_mu);
     size_t j = (size_t)(i - g_real_keys);
-    if (j >= g_synth_active.size()) return GetKeyEvent_hook_orig(self, out, 0);  // defensive: never index past the real queue
-    k = g_synth_active[j];
+    if (j >= g_synth_pass.size()) return GetKeyEvent_hook_orig(self, out, 0);  // defensive: never index past the real queue
+    k = g_synth_pass[j];
   }
   ++g_c_synthkey;
   unsigned char* b = (unsigned char*)out;
@@ -359,9 +374,6 @@ static void* GetKeyEvent_hook(void* self, void* out, int i) {
   *(int*)(b + 12) = k.released ? 1 : 0;
   b[16] = 1; b[17] = k.shift; b[18] = k.alt; b[19] = k.ctrl;
   *(uint16_t*)(b + 20) = (uint16_t)k.ch;
-  g_keys.record(k.code, k.released);
-  g_keys.record_mods(k.shift, k.alt, k.ctrl);
-  if (!k.released && k.ch >= 0x20 && k.ch != 0x7f) g_keys.typed.push_back(k.ch);
   return out;
 }
 void push_key_event(const SynthKey& k) { std::lock_guard lk(g_synth_mu); g_synth_pending.push_back({k}); }
