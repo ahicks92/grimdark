@@ -9,8 +9,9 @@ tools/gdmap/gamefiles.py) and a later record overrides an earlier one by path, l
 `d`/`strings` are a `Layered` view so `decode(d, strings, off, csz, dsz)` keeps working unchanged; set `P` to
 one file's path to read that file alone."""
 import os, re, struct, sys, lz4.block
+from gamepath import GAME_DIR
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-DEFAULT = r"C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn\database\database.arz"
+DEFAULT = os.path.join(GAME_DIR, "database", "database.arz")
 P = DEFAULT
 
 

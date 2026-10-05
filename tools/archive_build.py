@@ -11,8 +11,9 @@ was taken from a different exe (its PE header timestamp must match the file on d
 stale dump is worse than none. The archive is Crate's code: keep it OUT of the repo.
 """
 import argparse, datetime, hashlib, json, os, shutil, struct, sys
+from gamepath import GAME_DIR
 
-GAME = r"C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn"
+GAME = GAME_DIR
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DUMP = os.path.join(ROOT, "build", "GrimDawn.unpacked.bin")
 FILES = ["Grim Dawn.exe", "Engine.dll", "Game.dll", "DirectInput.dll"]

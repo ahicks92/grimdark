@@ -9,10 +9,11 @@ Usage: uv run --with pefile --with capstone tools/exe_dis.py <rva-hex> [count] [
 Needs build/GrimDawn.unpacked.bin (+ .base) from tools/dump_exe.py. RVAs are hex, with or without 0x.
 """
 import bisect, ctypes, ctypes.wintypes as wt, os, re, struct, subprocess, sys
+from gamepath import X64
 import capstone, pefile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-G = r"C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn\x64"
+G = X64
 img = open(os.path.join(ROOT, "build", "GrimDawn.unpacked.bin"), "rb").read()
 base = int(open(os.path.join(ROOT, "build", "GrimDawn.unpacked.bin.base")).read().strip(), 16)
 

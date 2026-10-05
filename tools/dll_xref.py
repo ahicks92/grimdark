@@ -9,9 +9,10 @@ Usage: uv run --with pefile --with capstone tools/dll_xref.py <Engine.dll|Game.d
 Disassembling all of .text takes ~20 s for Game.dll; results are cached per dll in build/xref_<dll>.txt.
 """
 import bisect, ctypes, os, struct, sys
+from gamepath import X64
 import capstone, pefile
 
-G = r"C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn\x64"
+G = X64
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 dbg = ctypes.windll.dbghelp
 def und(n):

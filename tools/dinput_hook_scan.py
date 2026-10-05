@@ -1,6 +1,8 @@
 """Find the low-level keyboard hook in DirectInput.dll and dump what VKs it compares against."""
 import pefile, capstone, struct, re
-P = r"C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn\x64\DirectInput.dll"
+import os
+from gamepath import X64
+P = os.path.join(X64, "DirectInput.dll")
 pe = pefile.PE(P)
 base = pe.OPTIONAL_HEADER.ImageBase
 text = next(s for s in pe.sections if s.Name.startswith(b".text"))

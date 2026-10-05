@@ -1,6 +1,7 @@
 """Survey Grim Dawn x64 binaries: interesting imports, exports, RTTI class names."""
 import pefile, re, sys, os
-G = r"C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn\x64"
+from gamepath import X64
+G = X64
 INTERESTING = re.compile(r"RawInput|DirectInput|SetWindowsHookEx|SendInput|keybd_event|BlockInput|GetAsyncKeyState|GetKeyState|GetKeyboardState|MapVirtualKey|SystemParametersInfo|RegisterHotKey|SetCursor|ClipCursor|XInput|GetRawInputData|DefRawInputProc|ToUnicode|ActivateKeyboardLayout", re.I)
 for name in ["Grim Dawn.exe", "Engine.dll", "DirectInput.dll", "Widget.dll", "Game.dll"]:
     path = os.path.join(G, name)

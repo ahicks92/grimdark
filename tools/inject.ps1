@@ -6,8 +6,10 @@
 #   .\tools\inject.ps1 -Eject     unload only
 #   -NoBuild                      skip the build step
 param([switch]$Launch, [switch]$Eject, [switch]$NoBuild, [switch]$Speak, [int]$Port = 8791,
-      [string]$GameExe = "C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn\x64\Grim Dawn.exe")
+      [string]$GameExe = "")
 $root = Split-Path $PSScriptRoot -Parent
+# The install folder: GRIMDARK_GAME_DIR, else Steam's library lookup (tools/gamepath.py, as gdlaunch does it).
+if (-not $GameExe) { $GameExe = Join-Path (& uv run --no-project python "$root\tools\gamepath.py") "x64\Grim Dawn.exe" }
 $dll = "$root\build\ninja\grimdark.dll"
 $inj = "$root\build\ninja\gdinject.exe"
 $running = [bool](Get-Process -Name "Grim Dawn" -ErrorAction SilentlyContinue)

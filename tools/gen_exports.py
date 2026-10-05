@@ -2,7 +2,8 @@
 Usage: uv run --with pefile tools/gen_exports.py [gamedir]
 """
 import ctypes, os, sys, pefile
-GAME = sys.argv[1] if len(sys.argv) > 1 else r"C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn"
+from gamepath import GAME_DIR
+GAME = sys.argv[1] if len(sys.argv) > 1 else GAME_DIR
 OUT = os.path.join(os.path.dirname(__file__), "exports")
 dbghelp = ctypes.windll.dbghelp
 UNDNAME_COMPLETE = 0

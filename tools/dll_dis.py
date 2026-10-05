@@ -4,9 +4,10 @@ Usage: uv run --with pefile --with capstone tools/dll_dis.py <Engine.dll|Game.dl
        (the substring must match exactly one export; add parameter text to disambiguate overloads)
 """
 import bisect, ctypes, os, re, struct, sys
+from gamepath import X64
 import capstone, pefile
 
-G = r"C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn\x64"
+G = X64
 dbg = ctypes.windll.dbghelp
 
 

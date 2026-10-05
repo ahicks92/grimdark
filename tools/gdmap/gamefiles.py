@@ -11,9 +11,10 @@ gdx2 table exactly). Every offline tool reads through here so it sees the same w
 layer set, e.g. `base` to build the base-game rooms db on a full install."""
 from __future__ import annotations
 
-import os
+import os, sys
 
-GAME_DIR = os.environ.get("GRIMDARK_GAME_DIR", r"C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from gamepath import GAME_DIR   # GRIMDARK_GAME_DIR, else Steam's library lookup
 # (layer name, database file); the resources live in <layer>/resources
 LAYERS = (("base", "database/database.arz"), ("gdx1", "gdx1/database/GDX1.arz"), ("gdx2", "gdx2/database/GDX2.arz"))
 
