@@ -174,7 +174,7 @@ static std::string handle(const std::string& path, const std::map<std::string, s
     char16_t ch = 0;
     if (q.count("ch") && !q.at("ch").empty()) { std::string c = q.at("ch"); wchar_t w[4]; MultiByteToWideChar(CP_UTF8, 0, c.c_str(), -1, w, 4); ch = (char16_t)w[0]; }
     bool shift = q.count("shift") && truthy(q.at("shift")), ctrl = q.count("ctrl") && truthy(q.at("ctrl")), alt = q.count("alt") && truthy(q.at("alt"));
-    hooks::push_key(code, shift, ctrl, alt, ch);
+    hooks::push_key(code, shift, ctrl, alt, ch, true);   // as the player's key (hooks.h SynthKey)
     return std::format("queued key {:#x}\n", code);
   }
   if (path == "/keys") {
@@ -185,7 +185,7 @@ static std::string handle(const std::string& path, const std::map<std::string, s
       if (c == ' ') name = "space";
       int code = key_code(name);
       if (code < 0) continue;
-      hooks::push_key(code, isupper((unsigned char)c) != 0, false, false, (char16_t)c);
+      hooks::push_key(code, isupper((unsigned char)c) != 0, false, false, (char16_t)c, true);
       ++n;
     }
     return std::format("queued {} keys\n", n);
@@ -268,7 +268,7 @@ static std::string handle(const std::string& path, const std::map<std::string, s
   if (path == "/keydown" || path == "/keyup") {  // hold a key across frames: /keydown?name=w ... /keyup?name=w
     int code = q.count("name") ? key_code(q.at("name")) : parse_int(q.count("code") ? q.at("code") : "", -1);
     if (code < 0) { status = 400; return "unknown key\n"; }
-    hooks::push_key_event({code, path == "/keyup", false, false, false, 0});
+    hooks::push_key_event({code, path == "/keyup", false, false, false, 0, true});
     return std::format("queued {} {:#x}\n", path == "/keyup" ? "up" : "down", code);
   }
   if (path == "/hazard") {   // painted damage ground (src/hazard.cpp): status + knobs; ?time=N times the probes

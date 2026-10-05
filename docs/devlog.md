@@ -1177,3 +1177,7 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   per frame and serves the game only the events the game-key filter passes, exactly as for real keys.
 - Verified live in the world: P no longer pauses; N then L walks (Personal Rift, 4 away); a held W still moves the
   character; `/key?name=1&ctrl=1` reaches the mod's quickbar read. `/action`, `/jkey` and `/keydown` remain.
+- Same day, a regression caught before release: the mod's own injected keys (the lifted Ctrl+M -> plain M for the game,
+  the conversation's Escape) share the synthetic queue, and filtering them made Ctrl+M the mod's "next loot" and never
+  the game's map. `SynthKey::player` now marks dev keys (`/key`, `/keys`, `/keydown`): only those are recorded and
+  filtered; injected keys go to the game alone. Verified live: Ctrl+M opens the map; P, N + L, W as above.

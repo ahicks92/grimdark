@@ -22,9 +22,12 @@ void detach_hooks(std::vector<Hook>& hooks);
 bool run_on_game_thread(std::function<void()> fn, unsigned timeout_ms = 5000);
 
 // ---- synthetic keyboard input, delivered through the game's own input poll ----
-struct SynthKey { int code; bool released; bool shift, ctrl, alt; char16_t ch; };
+// `player` = a dev key standing in for a physical one: the mod records it and the game sees it only through the
+// game-key filter, as for a real key. Otherwise it is the mod injecting a key for the GAME (the lifted Ctrl+M -> M,
+// the conversation's Escape): served to the game unfiltered, never recorded as the player's.
+struct SynthKey { int code; bool released; bool shift, ctrl, alt; char16_t ch; bool player = false; };
 void push_key_event(const SynthKey& k);                  // one event, its own frame
-void push_key(int code, bool shift, bool ctrl, bool alt, char16_t ch);  // press frame + release frame
+void push_key(int code, bool shift, bool ctrl, bool alt, char16_t ch, bool player = false);  // press frame + release frame
 void set_game_keys_muted(bool m);                        // the game sees no physical key events ...
 bool game_keys_muted();
 void set_game_key_filter(std::function<bool(int code, bool released, bool shift, bool ctrl)> pass);  // ... except events this says to pass through (game thread); the modifiers are the EVENT's own flags

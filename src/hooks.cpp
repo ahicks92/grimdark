@@ -340,13 +340,15 @@ static int GetNumKeyEvents_hook(void* self) {
     if (g_ButtonEvent_dtor) g_ButtonEvent_dtor(buf);
   }
   g_real_keys = (int)g_pass_idx.size();
-  // Synthetic (dev) events take the real ones' path: the mod records them once per frame, and the game sees only
-  // those the same filter passes -- a dev P is the mod's P, never also the game's pause (2026-10-05).
+  // Synthetic dev (`player`) events take the real ones' path: the mod records them once per frame, and the game sees
+  // only those the same filter passes -- a dev P is the mod's P, never also the game's pause (2026-10-05). The mod's
+  // own injected keys (Ctrl+M -> M for the game) are the game's alone: unrecorded, unfiltered.
   std::lock_guard lk(g_synth_mu);
   static uint64_t synth_frame = ~0ull;
   if (synth_frame != g_frame) {
     synth_frame = g_frame;
     for (const SynthKey& k : g_synth_active) {
+      if (!k.player) continue;
       g_keys.record(k.code, k.released);
       g_keys.record_mods(k.shift, k.alt, k.ctrl);
       if (!k.released && k.ch >= 0x20 && k.ch != 0x7f) g_keys.typed.push_back(k.ch);
@@ -354,7 +356,7 @@ static int GetNumKeyEvents_hook(void* self) {
   }
   g_synth_pass.clear();
   for (const SynthKey& k : g_synth_active)
-    if (!g_swallow_keys || (g_key_pass && g_key_pass(k.code, k.released, k.shift, k.ctrl))) g_synth_pass.push_back(k);
+    if (!k.player || !g_swallow_keys || (g_key_pass && g_key_pass(k.code, k.released, k.shift, k.ctrl))) g_synth_pass.push_back(k);
   return g_real_keys + (int)g_synth_pass.size();
 }
 static void* GetKeyEvent_hook(void* self, void* out, int i) {
@@ -377,9 +379,9 @@ static void* GetKeyEvent_hook(void* self, void* out, int i) {
   return out;
 }
 void push_key_event(const SynthKey& k) { std::lock_guard lk(g_synth_mu); g_synth_pending.push_back({k}); }
-void push_key(int code, bool shift, bool ctrl, bool alt, char16_t ch) {
-  push_key_event({code, false, shift, ctrl, alt, ch});
-  push_key_event({code, true, shift, ctrl, alt, ch});
+void push_key(int code, bool shift, bool ctrl, bool alt, char16_t ch, bool player) {
+  push_key_event({code, false, shift, ctrl, alt, ch, player});
+  push_key_event({code, true, shift, ctrl, alt, ch, player});
 }
 void set_game_keys_muted(bool m) { g_swallow_keys = m; }
 bool game_keys_muted() { return g_swallow_keys; }
