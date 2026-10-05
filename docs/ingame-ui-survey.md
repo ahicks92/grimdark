@@ -390,7 +390,8 @@ Confirmed in disassembly by two further passes and, where marked, live through t
 - **Items**: `ItemSource` 1 = bag, 2 = private stash, 3 = transfer, 4 = trade, 5 = station slot, 7 = caravan
   reagents; equipment slots are addressed by `SetEquipId`, not a source. Bag right-click = `PlayerInventoryCtrl::
   UseItem(id, 1)` for consumables, else `EquipmentCtrl::SmartAutoInsert(id, displaced&, false)` + `PlayerInventoryCtrl::
-  RemoveItem(id, true)` + `AddItem(displaced, true, false)` (verified live). Unequip = `AddItem(id, true, false)`
+  RemoveItem(id, true)` + `AddItem(displaced, true, false)` (verified live). A two-hander over weapon + off-hand: SmartAutoInsert
+  returns true with both listed and places NOTHING -- the caller swaps (`gameapi::swap_in_two_hander`, devlog 2026-10-05). Unequip = `AddItem(id, true, false)`
   then `EquipmentCtrl::RemoveItem(id)` (RemoveItem alone orphans the item -- verified live). `PlaceItem(loc, id,
   suppressSound, alt)` returns the displaced id and sends the attach/detach commands itself. The live cursor
   handler is `[[main_obj+0x90]+0x108]`. `mem::map<unsigned, Rect>` nodes: key +0x1c, Rect +0x20 (pixels, 32 per

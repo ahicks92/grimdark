@@ -132,6 +132,9 @@ ENTRIES = [
     ("Character_GetStaticClassInfo", "Game", r"GAME::Character::GetStaticClassInfo\(void\)"),
     ("Monster_GetStaticClassInfo", "Game", r"GAME::Monster::GetStaticClassInfo\(void\)"),
     ("ItemEquipment_GetStaticClassInfo", "Game", r"GAME::ItemEquipment::GetStaticClassInfo\(void\)"),
+    ("Weapon_GetStaticClassInfo", "Game", r"GAME::Weapon::GetStaticClassInfo\(void\)"),
+    ("Weapon_IsTwoHanded", "Game", r"GAME::Weapon::IsTwoHanded\(void\)const"),   # weapon type (vt+0x6b0) 8..9: the two-handed ranged
+    ("Weapon_IsTwoHandedMeleeWeapon", "Game", r"GAME::Weapon::IsTwoHandedMeleeWeapon\(void\)const"),   # weapon type 15..18
     ("ItemEquipment_HasRelic", "Game", r"GAME::ItemEquipment::HasRelic\(void\)"),   # a component is attached (docs/re_item_components_compare.md)
     ("Npc_GetStaticClassInfo", "Game", r"GAME::Npc::GetStaticClassInfo\(void\)"),
     ("ItemNote_GetStaticClassInfo", "Game", r"GAME::ItemNote::GetStaticClassInfo\(void\)"),
@@ -632,6 +635,7 @@ ENTRIES = [
     ("EquipmentCtrl_CanItemBePlaced", "Game", r"GAME::EquipmentCtrl::CanItemBePlaced\(enum"),
     ("InvCtrl_AddItem", "Game", r"GAME::PlayerInventoryCtrl::AddItem\(unsigned int,bool,bool\)"),
     ("InvCtrl_IsSpaceAvailable", "Game", r"GAME::PlayerInventoryCtrl::IsSpaceAvailable\(class GAME::Item const \* __ptr64\)const"),
+    ("InvCtrl_IsSpaceAvailable2", "Game", r"GAME::PlayerInventoryCtrl::IsSpaceAvailable\(class GAME::Item const \* __ptr64,class GAME::Item const \* __ptr64\)const"),   # room for both hands of a two-hander swap
     ("ControllerCharacter_PickupItem", "Game", r"GAME::ControllerCharacter::PickupItem\("),
     ("ControllerPlayer_ItemAction", "Game", r"GAME::ControllerPlayer::ItemAction\("),
     ("ControllerPlayer_InteractAction", "Game", r"GAME::ControllerPlayer::InteractAction\("),
@@ -694,5 +698,5 @@ for ident, dll, rx in ENTRIES:
     out.append(f'inline constexpr const char* {ident} = "{m[0][1]}";')
 out.append("}  // namespace gd::names")
 if not ok: sys.exit(1)
-with open(os.path.join(HERE, "..", "src", "gd_names.h"), "w", encoding="utf-8") as f: f.write("\n".join(out) + "\n")
+with open(os.path.join(HERE, "..", "src", "gd_names.h"), "w", encoding="utf-8", newline="\n") as f: f.write("\n".join(out) + "\n")
 print(f"wrote src/gd_names.h with {len(ENTRIES)} names")

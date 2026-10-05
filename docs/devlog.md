@@ -1146,3 +1146,25 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   menu" -- the title / intro sit on the "unsupported" fallback first. Now gated on `main_menu` / `in_game` only: "Main
   menu" 17:02:18.649, the update line 17:02:21.674. Offline path via the new dev knob `GRIMDARK_UPDATE_HOST=nonexistent.invalid`:
   `update: request failed (12007)`, nothing spoken, main menu normal. Build reconfigured back to dev afterwards.
+
+## 2026-10-05 -- two-handers lost on equip (tester report, reproduced and fixed live)
+- Report (0.5.2): Enter on a two-handed sword in the bag put the club + shield in the bag while the equipment still listed
+  them, and the sword was gone. Reproduced on a fresh character ("Testbot", Scrapmetal Greatsword spawned with the new
+  dev route `/inv?spawn=<record>`; `/cheat?xp=` + `/skills?attr=1` for its Physique 53).
+- Cause: `EquipmentCtrl::SmartAutoInsert` places the item itself only when it displaces at most one; for a two-hander
+  over weapon + off-hand it lists both and returns true WITHOUT placing (Game.dll+0x277090: `displaced.size() >= 2`
+  skips `PlaceItem_HandRight`). `use_item` took true as "equipped": the sword left the bag for nowhere (the object lives
+  on until the game exits -- `/inv?give=<id>` recovered it in-session) and the pair was added to the bag while still held.
+  The exe's own path (exe+0x1eb4c6..0x1eb985, read this session): bag RemoveItem(new) FIRST, then
+  `IsSpaceAvailable(a, b)` (the two-item overload); both fit -> AddItem both, `EquipmentCtrl::RemoveItem(off-hand)`,
+  `PlaceItem(RightHand, new)` (which detaches the weapon); one fits -> the other onto the cursor; none -> error sound and
+  the new item back into the bag. Ours: `swap_in_two_hander`, refusing (`kBagFull`) where the exe would use the cursor.
+- Second bug, found while testing: the equip picker's `equip(id, RightHand)` with a two-hander displaced only the right
+  hand and left the shield in the left hand beside it; putting gear back from that state lost the two-hander again.
+  Two-handed = is-a `Weapon` and (`Weapon::IsTwoHanded` -- weapon type vt+0x6b0 in 8..9, the ranged ones despite the
+  name -- or `Weapon::IsTwoHandedMeleeWeapon`, 15..18); such an equip into a hand slot takes the same swap. The
+  single-slot equip now also checks room for the displaced item (after removing the new one, as the exe does).
+- Verified live, every order from a clean state: bag Enter; club-first / shield-first back; the two-hander via the Right
+  Hand slot over club + shield; over the club alone; full bag (refused via the real screen, spoken "no room in your bags",
+  nothing moved); after dropping two items, the real Enter equips. Equipment tab reads the two-hander in both hands.
+- Dev routes added: `/inv?spawn=<record>` (a new item from a database record, via `Item::CreateItem`), `/inv?detach=<id>`, `/inv?give=<id>`.

@@ -214,7 +214,8 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   (merges back and is destroyed). `EquipmentCtrl::RemoveItem` only detaches: AddItem to the bag first. A by-value
   `std::string` argument is destroyed by the CALLEE (MSVC x64). The game validates skill reclaims only by greying the
   icon: `can_reclaim_skill` replicates the whole gate. `SendCreateArtifactCmd` validates nothing: press the window's
-  Combine instead.
+  Combine instead. `EquipmentCtrl::SmartAutoInsert` returns true WITHOUT placing a two-hander over weapon + off-hand
+  (two displaced ids): the caller swaps (`swap_in_two_hander`); trusting it lost the weapon.
 - Signatures / layouts: a byte signature longer than the 16-byte check buffer killed the game (`exe_ui` clamps);
   `push rdi` carries a 0x40 REX prefix in this exe. Our screen's tab and the game's window tab are independent: never
   key a read on the game's current tab (the one-class spirit guide bug). `WindowScreen::add_tabs` with no tabs throws

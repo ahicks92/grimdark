@@ -1,3 +1,9 @@
+# Unreleased
+
+- Fix: equipping a two-handed weapon while holding a weapon and a shield no longer loses the two-handed weapon. Before, it disappeared, and the old weapon and shield showed up in your bag while still being listed in your hands. Now both go to your bag and the two-handed weapon goes in your hands, the same as in the game. This works both with `enter` in the bag and from the Right Hand slot.
+- Fix: equipping a two-handed weapon from the Right Hand slot no longer leaves your shield in the other hand.
+- If your bag can't fit what you take off, equipping now says "no room in your bags" and nothing moves. Before, the item that didn't fit could be lost.
+
 # 0.5.2 (2026-10-02)
 
 - Fix: the update announcement now waits until the main menu has been up for a few seconds, so the game's own startup speech no longer talks over it.

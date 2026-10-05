@@ -346,6 +346,15 @@ inline constexpr const char* Monster_GetStaticClassInfo = "?GetStaticClassInfo@M
 // public: static class GAME::RTTI_ClassInfo const & __ptr64 __cdecl GAME::ItemEquipment::GetStaticClassInfo(void)
 inline constexpr const char* ItemEquipment_GetStaticClassInfo_DLL = "Game.dll";
 inline constexpr const char* ItemEquipment_GetStaticClassInfo = "?GetStaticClassInfo@ItemEquipment@GAME@@SAAEBVRTTI_ClassInfo@2@XZ";
+// public: static class GAME::RTTI_ClassInfo const & __ptr64 __cdecl GAME::Weapon::GetStaticClassInfo(void)
+inline constexpr const char* Weapon_GetStaticClassInfo_DLL = "Game.dll";
+inline constexpr const char* Weapon_GetStaticClassInfo = "?GetStaticClassInfo@Weapon@GAME@@SAAEBVRTTI_ClassInfo@2@XZ";
+// public: bool __cdecl GAME::Weapon::IsTwoHanded(void)const __ptr64
+inline constexpr const char* Weapon_IsTwoHanded_DLL = "Game.dll";
+inline constexpr const char* Weapon_IsTwoHanded = "?IsTwoHanded@Weapon@GAME@@QEBA_NXZ";
+// public: virtual bool __cdecl GAME::Weapon::IsTwoHandedMeleeWeapon(void)const __ptr64
+inline constexpr const char* Weapon_IsTwoHandedMeleeWeapon_DLL = "Game.dll";
+inline constexpr const char* Weapon_IsTwoHandedMeleeWeapon = "?IsTwoHandedMeleeWeapon@Weapon@GAME@@UEBA_NXZ";
 // public: bool __cdecl GAME::ItemEquipment::HasRelic(void)const __ptr64
 inline constexpr const char* ItemEquipment_HasRelic_DLL = "Game.dll";
 inline constexpr const char* ItemEquipment_HasRelic = "?HasRelic@ItemEquipment@GAME@@QEBA_NXZ";
@@ -1705,6 +1714,9 @@ inline constexpr const char* InvCtrl_AddItem = "?AddItem@PlayerInventoryCtrl@GAM
 // public: bool __cdecl GAME::PlayerInventoryCtrl::IsSpaceAvailable(class GAME::Item const * __ptr64)const __ptr64
 inline constexpr const char* InvCtrl_IsSpaceAvailable_DLL = "Game.dll";
 inline constexpr const char* InvCtrl_IsSpaceAvailable = "?IsSpaceAvailable@PlayerInventoryCtrl@GAME@@QEBA_NPEBVItem@2@@Z";
+// public: bool __cdecl GAME::PlayerInventoryCtrl::IsSpaceAvailable(class GAME::Item const * __ptr64,class GAME::Item const * __ptr64)const __ptr64
+inline constexpr const char* InvCtrl_IsSpaceAvailable2_DLL = "Game.dll";
+inline constexpr const char* InvCtrl_IsSpaceAvailable2 = "?IsSpaceAvailable@PlayerInventoryCtrl@GAME@@QEBA_NPEBVItem@2@0@Z";
 // public: virtual void __cdecl GAME::ControllerCharacter::PickupItem(unsigned int) __ptr64
 inline constexpr const char* ControllerCharacter_PickupItem_DLL = "Game.dll";
 inline constexpr const char* ControllerCharacter_PickupItem = "?PickupItem@ControllerCharacter@GAME@@UEAAXI@Z";

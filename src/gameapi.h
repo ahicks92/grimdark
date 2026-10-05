@@ -107,15 +107,16 @@ std::vector<int> equip_slots_by_class(unsigned item_id);   // the slots its clas
 bool swap_weapon_set();                          // toggle the active weapon set (the two hands); returns new state (true = alternate)
 unsigned money();                                // iron bits
 bool dev_add_money(unsigned bits);               // dev only: Character::AddMoney
+unsigned dev_spawn_item(const std::string& record);   // dev only: a new item of `record` into the bags (Item::CreateItem from the weapon's replica)
 std::string item_name(const void* item);         // Item::GetGameDescription (virtual)
 unsigned item_stack(const void* item);
 std::vector<std::string> item_tooltip(const void* item, bool simple, bool details = false);   // Item::GetUIDisplayText(details = the Ctrl-held form) / GetSimpleUIDisplayText, virtual
 bool item_requirements_met(const void* item);
 // Actions (each is the game's own call; the screens re-snapshot afterwards).
-bool use_item(unsigned id, int source);          // PlayerInventoryCtrl::UseItem (the bag's right-click: equip / drink / read)
+bool use_item(unsigned id, int source, bool* no_room = nullptr);   // the bag's right-click: equip / drink / read; *no_room = a two-hander's swap does not fit the bags
 bool drop_item(unsigned id);                     // ControllerCharacter::SendDropItemRandom
 bool unequip(int loc);                           // EquipmentCtrl::RemoveItem on the slot's item
-bool equip(unsigned id, int loc);                // EquipmentCtrl::PlaceItem(loc, id, ...)
+bool equip(unsigned id, int loc, bool* no_room = nullptr);   // into one slot (PlaceItem); a two-hander swaps out both hands; *no_room = the displaced item does not fit the bags
 bool pickup_item(unsigned id);                   // ControllerCharacter::PickupItem (the game's pickup command; no range check)
 // Components/augments (records/items/materia): activating one in a bag opens the attach picker.
 bool is_component(unsigned id);                                    // is this bag item a component/augment?

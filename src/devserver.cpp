@@ -468,7 +468,7 @@ static std::string handle(const std::string& path, const std::map<std::string, s
     for (const char* tag : {"tagFactionStateFriend1", "tagFactionStateFriend2", "tagFactionStateFriend4", "tagFactionStateFriend5"}) v += std::format("  {} -> {}\n", tag, gameapi::faction_level_value(tag));
     return v + gameapi::vendor_dump(q.count("id") ? (unsigned)parse_int(q.at("id"), 0) : 0u);
   }
-  if (path == "/inv") {      // ?tip=<id>[&simple=1] | ?use=<id>[&source=N] | ?drop=<id> | ?unequip=<loc> | ?equip=<id>&loc=<loc> | ?bag=<n> | ?source=N (the UseItem ItemSource knob)
+  if (path == "/inv") {      // ?tip=<id>[&simple=1] | ?use=<id>[&source=N] | ?drop=<id> | ?unequip=<loc> | ?equip=<id>&loc=<loc> | ?bag=<n> | ?spawn=<record> | ?source=N (the UseItem ItemSource knob)
     if (q.count("source")) screens::set_bag_item_source(parse_int(q.at("source"), 0));
     if (q.count("tip")) { std::string out; for (const std::string& l : gameapi::item_tooltip(gameapi::object_by_id((unsigned)parse_int(q.at("tip"), 0)), q.count("simple"), q.count("details"))) out += l + "\n"; return out.empty() ? "no text\n" : out; }
     if (q.count("use")) return gameapi::use_item((unsigned)parse_int(q.at("use"), 0), screens::bag_item_source()) ? "ok\n" : "failed\n";
@@ -476,6 +476,9 @@ static std::string handle(const std::string& path, const std::map<std::string, s
     if (q.count("unequip")) return gameapi::unequip(parse_int(q.at("unequip"), 0)) ? "ok\n" : "failed\n";
     if (q.count("equip")) return gameapi::equip((unsigned)parse_int(q.at("equip"), 0), parse_int(q.count("loc") ? q.at("loc") : "0", 0)) ? "ok\n" : "failed\n";
     if (q.count("bag")) return gameapi::select_bag(parse_int(q.at("bag"), 0)) ? "ok\n" : "failed\n";
+    if (q.count("detach")) return gameapi::inventory_detach((unsigned)parse_int(q.at("detach"), 0)) ? "ok\n" : "failed\n";   // bag grid only (dev repair)
+    if (q.count("give")) return gameapi::give_item_to_player((unsigned)parse_int(q.at("give"), 0)) ? "ok\n" : "failed\n";   // a detached item back into the bags
+    if (q.count("spawn")) { unsigned id = gameapi::dev_spawn_item(q.at("spawn")); return id ? std::format("ok id={}\n", id) : "failed\n"; }   // ?spawn=records/items/...dbr: a new item into the bags (dev)
     if (q.count("compat")) {   // ?compat=<component id> -> is it a component + the item ids it can attach to (with names)
       unsigned cid = (unsigned)parse_int(q.at("compat"), 0);
       std::string out = std::format("component {} is_component={}\n", cid, gameapi::is_component(cid));

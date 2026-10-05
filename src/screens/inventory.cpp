@@ -122,8 +122,9 @@ class InventoryScreen : public WindowScreen, public AssignSource {
             if (gameapi::can_equip(it.id, loc))
               items.push_back({it.id, item_label(it), {}});
         open_picker(label, std::move(items), [this, loc](unsigned pid) {
-          bool ok = pid ? gameapi::equip(pid, loc) : gameapi::unequip(loc);
-          if (!ok) speech::speak(strings::kCannot, true);
+          bool no_room = false;
+          bool ok = pid ? gameapi::equip(pid, loc, &no_room) : gameapi::unequip(loc);
+          if (!ok) speech::speak(no_room ? strings::kBagFull : strings::kCannot, true);
           invalidate();
         }, [](unsigned pid, bool detail) { item_tip(pid, detail)(); });   // Space / Ctrl+Space = the item's tooltip
       };
@@ -148,7 +149,8 @@ class InventoryScreen : public WindowScreen, public AssignSource {
           return;
         }
         if (p && !gameapi::is_equipment(p) && !gameapi::is_usable(p)) { speech::speak(strings::kNotUsable, true); return; }   // crafting materials / quest items: UseItem would remove them
-        gameapi::use_item(id, g_bag_source);
+        bool no_room = false;
+        if (!gameapi::use_item(id, g_bag_source, &no_room) && no_room) speech::speak(strings::kBagFull, true);   // a two-hander needs room for both hands' items
         invalidate();
       };
       auto v = row_item(item_label(it), {}, activate, item_tip(id, false), {}, item_tip(id, true));
