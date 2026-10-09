@@ -1400,7 +1400,7 @@ float free_distance_ray(float dir_x, float dir_z, float lateral, float max_dist,
 // leaves the shape. h0 = 1.5 is the rectangle half-width the DC corner case established (a slide 1.2 u sideways
 // round a corner is still "this way").
 namespace {
-constexpr float kWasdLookAhead = 1.25f;    // exe+0x2c69f [exe+0x31e9cc]
+constexpr float kWasdLookAhead = 1.25f;    // exe+0x2c69f [exe+0x31e9e4]
 constexpr float kPlayerSnapRadius = 10.0f; // Game+0x7771bc
 constexpr float kDetourMinLen = 15.0f;     // Game+0x7771c8
 constexpr size_t kPlayerDetourRatioOffset = 0x4bf0;   // Player::FindPath reads it (Game+0x3ba3dc)

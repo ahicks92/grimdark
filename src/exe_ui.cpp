@@ -16,33 +16,33 @@ namespace gd::exe_ui {
 namespace {
 namespace rva {
 constexpr uintptr_t kMainObj = 0x3ceef8;        // the exe's application object global (stored at exe+0x86cff)
-constexpr uintptr_t kButtonA1 = 0x30c018;       // framework A button vtable, HandleMouseEvent exe+0xa01d0
-constexpr uintptr_t kButtonA2 = 0x30bf40;       // framework A button vtable (text-width variant), exe+0xa22d0
-constexpr uintptr_t kMenuManagerVt = 0x30cca0;  // main-menu manager (ctor exe+0xd4fc0)
-constexpr uintptr_t kTextA = 0x30c5e8;          // framework A static text (draw exe+0xb1ba0: string +0xc0, wrap width +0xe0)
-constexpr uintptr_t kEditA = 0x30d588;          // framework A edit box (draw exe+0xee730: string +0x238, caret +0x21c; keys exe+0xedc80)
-constexpr uintptr_t kSliderA = 0x30d4c0;        // options slider (ctor exe+0xeac40; thumb math exe+0xebb46)
-constexpr uintptr_t kComboA = 0x30c278;         // drop-down (commit exe+0xab951)
-constexpr uintptr_t kListA = 0x30c530;          // key-binding table (ctor exe+0xaf8f0, rows exe+0xafe20)
-constexpr uintptr_t kOptionsScreenVt = 0x30cad0, kOptionsPanelVt = 0x30d650, kOptionsPageVt = 0x30cbb8;  // measured live 2026-08-22
-constexpr uintptr_t kConvWindowVt = 0x3157a8, kConvRowVt = 0x315710;  // ctors exe+0x16e9a0 / exe+0x16d9b0
-constexpr uintptr_t kPopupLayerVt = 0x30bd80;   // modal layer at the root holding a popup window (measured live: the name-exists box)
-constexpr uintptr_t kPopupWindowVt = 0x30d650;  // the popup window itself (text widgets + buttons)
-constexpr uintptr_t kButtonB = 0x313e78;        // framework B button vtable (ctor exe+0x124d60, size 0x388)
-constexpr uintptr_t kTextButtonB = 0x313ce8;    // framework B TextButton vtable (ctor exe+0x126fe0, size 0x3b0; caption +0x358)
-constexpr uintptr_t kTextB = 0x31c7c0;          // framework B text element vtable (draw exe+0x25b700)
-constexpr uintptr_t kTitleTextB = 0x31c2b0;     // framework B title/caption text element (the shrine windows' title +0x540; u16 at +0x40; set through vt+0x18 exe+0x1adb30)
-constexpr uintptr_t kNumberTextB = 0x31c4d0;    // framework B number/name text element (same ctor exe+0x2595c0 as the title text: string at +0x40; the Inventor's cost / dynamite numbers and NPC name)
-constexpr uintptr_t kEnchanterBoxSalvage = 0x316c28, kEnchanterBoxDismantle = 0x3169f8, kEnchanterBoxResult = 0x316878;   // the Inventor's item boxes (ctor exe+0x1ad7b0; item id +0xa0, SetItem = vt+0xa8)
-constexpr uintptr_t kTextBlockB = 0x31b830;     // framework B multi-line text block (the shrine windows' info +0x638; u16 at +0x38; set through vt+0xa0 exe+0x2401e0)
+constexpr uintptr_t kButtonA1 = 0x30c050;       // framework A button vtable, HandleMouseEvent exe+0xa01d0
+constexpr uintptr_t kButtonA2 = 0x30bf78;       // framework A button vtable (text-width variant), exe+0xa22d0
+constexpr uintptr_t kMenuManagerVt = 0x30cce8;  // main-menu manager (ctor exe+0xd4fc0)
+constexpr uintptr_t kTextA = 0x30c620;          // framework A static text (draw exe+0xb1ba0: string +0xc0, wrap width +0xe0)
+constexpr uintptr_t kEditA = 0x30d5d0;          // framework A edit box (draw exe+0xee730: string +0x238, caret +0x21c; keys exe+0xedc80)
+constexpr uintptr_t kSliderA = 0x30d508;        // options slider (ctor exe+0xeac40; thumb math exe+0xebb46)
+constexpr uintptr_t kComboA = 0x30c2b0;         // drop-down (commit exe+0xab951)
+constexpr uintptr_t kListA = 0x30c568;          // key-binding table (ctor exe+0xaf8f0, rows exe+0xafe20)
+constexpr uintptr_t kOptionsScreenVt = 0x30cb10, kOptionsPanelVt = 0x30d698, kOptionsPageVt = 0x30cc00;  // measured live 2026-08-22
+constexpr uintptr_t kConvWindowVt = 0x3157e8, kConvRowVt = 0x315750;  // ctors exe+0x16eb10 / exe+0x16db20
+constexpr uintptr_t kPopupLayerVt = 0x30bdb8;   // modal layer at the root holding a popup window (measured live: the name-exists box)
+constexpr uintptr_t kPopupWindowVt = 0x30d698;  // the popup window itself (text widgets + buttons)
+constexpr uintptr_t kButtonB = 0x313eb8;        // framework B button vtable (ctor exe+0x124ec0, size 0x388)
+constexpr uintptr_t kTextButtonB = 0x313d28;    // framework B TextButton vtable (ctor exe+0x127140, size 0x3b0; caption +0x358)
+constexpr uintptr_t kTextB = 0x31c7f8;          // framework B text element vtable (draw exe+0x25b890)
+constexpr uintptr_t kTitleTextB = 0x31c468;     // framework B title/caption text element (the shrine windows' title +0x540; u16 at +0x40; set through vt+0x18 exe+0x1adca0)
+constexpr uintptr_t kNumberTextB = 0x31c3a8;    // framework B number/name text element (same ctor exe+0x259750 as the title text: string at +0x40; the Inventor's cost / dynamite numbers and NPC name)
+constexpr uintptr_t kEnchanterBoxSalvage = 0x316c70, kEnchanterBoxDismantle = 0x316a38, kEnchanterBoxResult = 0x3168b8;   // the Inventor's item boxes (ctor exe+0x1ad920; item id +0xa0, SetItem = vt+0xa8)
+constexpr uintptr_t kTextBlockB = 0x31b868;     // framework B multi-line text block (the shrine windows' info +0x638; u16 at +0x38; set through vt+0xa0 exe+0x240370)
 }  // namespace rva
 namespace off {
 constexpr size_t kMainObj_UiRoot = 0x88;        // MenuManager (DisplayWidget) -- exe+0xa02f6
-constexpr size_t kMainObj_WorldScreen = 0x90;   // the world screen object -- exe+0x1099f0
-constexpr size_t kMainObj_App = 0x250;          // the exe's Display subclass -- main loop exe+0xeeb8
+constexpr size_t kMainObj_WorldScreen = 0x90;   // the world screen object -- exe+0x109a60
+constexpr size_t kMainObj_App = 0x250;          // the exe's Display subclass -- main loop exe+0xeea8
 constexpr size_t kApp_State = 0x260;            // current app state -- exe+0xbe3d0
 constexpr size_t kApp_MainMenu = 0x298;         // main-menu manager -- exe+0xbe4b5
-constexpr size_t kWorldScreen_InGameUI = 0x2f0; // exe+0x200dc
+constexpr size_t kWorldScreen_InGameUI = 0x2f0; // exe+0x200cc
 constexpr size_t kMI_Node = 8;                  // DisplayWidget at 0, tree node at +8 (thunks at exe+0xc324c)
 constexpr size_t kMenu_CurrentSub = 0xf8;       // exe+0xd88b2
 // framework A tree node (base class "B"): GetRect = exe+0xa2b70 (lea rax,[rcx+0x18]); child walk exe+0xa30a0
@@ -52,13 +52,13 @@ constexpr size_t kA_ListBegin = 0x230, kA_ListEnd = 0x238, kA_Hovered = 0x248, k
 constexpr size_t kA_TextString = 0xc0;          // static text widget -- exe+0xb1c5f (size at +0xd0)
 constexpr size_t kA_EditString = 0x238, kA_EditCaret = 0x21c, kA_EditFocus = 0x218;  // exe+0xeea41, +0xeebf2, +0xeebe5 (focus byte inferred)
 // framework B
-constexpr size_t kB_Text = 0x40;                // text element's u16 string -- exe+0x25b7cc
+constexpr size_t kB_Text = 0x40;                // text element's u16 string -- exe+0x25b95c
 constexpr size_t kB_Visible = 0x28, kB_Disabled = 0x281, kB_Pressed = 0x282;  // PromptBox::Update writes / TextButton render
-constexpr size_t kTB_Caption = 0x358;           // TextButton's localized caption -- exe+0x127510
-constexpr size_t kVt_HostClick = 0x80;          // listener registry: PressChild(control, playSound) -- exe+0x211c05, exe+0x12ac80
+constexpr size_t kTB_Caption = 0x358;           // TextButton's localized caption -- exe+0x127670
+constexpr size_t kVt_HostClick = 0x80;          // listener registry: PressChild(control, playSound) -- exe+0x211d75, exe+0x12ade0
 constexpr size_t kVt_Show = 0xb0, kVt_IsVisible = 0xb8;  // InGameUI::CloseAllWindows / IsAnyWindowOpen
-constexpr size_t kPrompt_Showing = 0x99;        // PromptBox "a prompt is on screen" -- exe+0x190581
-// GAME::DialogManager::Dialog (copy ctor exe+0x1905b0)
+constexpr size_t kPrompt_Showing = 0x99;        // PromptBox "a prompt is on screen" -- exe+0x1906f1
+// GAME::DialogManager::Dialog (copy ctor exe+0x190720)
 constexpr size_t kDialog_Text = 0x00, kDialog_Party = 0x60, kDialog_Type = 0x64;
 }  // namespace off
 
@@ -70,19 +70,19 @@ const Signature kSignatures[] = {
   {0xbb2c0, "App::RequestState", "\x40\x53\x48\x83\xec\x20\x8d\x42\xfa\x89\x91\x58"},
   {0xa01d0, "button A1 HandleMouseEvent", "\x48\x89\x5c\x24\x18\x57\x48\x83\xec\x40\x80\x79"},
   {0xa22d0, "button A2 HandleMouseEvent", "\x48\x89\x5c\x24\x10\x57\x48\x83\xec\x50\x80\x79"},
-  {0x1903b0, "PromptBox::Update", "\x40\x57\x48\x81\xec\xc0\x00\x00\x00\x48\xc7\x44"},
+  {0x190520, "PromptBox::Update", "\x40\x57\x48\x81\xec\xc0\x00\x00\x00\x48\xc7\x44"},
   {0xbe320, "App::ApplyPendingState", "\x48\x8b\xc4\x57\x48\x83\xec\x60\x48\xc7\x40\xc8"},
-  {0x213840, "InGameUI::Init", "\x48\x8b\xc4\x55\x53\x56\x57\x41\x54\x41\x55\x41"},
-  {0x211980, "InGameUI::HandleKeyAction", "\x48\x8b\xc4\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xec\x40"},
-  {0x27c580, "SkillsWindow::SetPane", "\x40\x57\x48\x83\xec\x30\x48\xc7\x44\x24\x20\xfe\xff\xff\xff\x48"},
-  {0x21be20, "riftgate map open", "\x40\x53\x48\x83\xec\x20\x48\x8d\x99\x60\x22\x04\x00\x48\x8b\x03"},
-  {0x25d890, "caravan tab list rebuild", "\x48\x89\x5c\x24\x18\x55\x56\x41\x56\x48\x83\xec\x20\x48\x8b\xd9"},
-  {0x12ec70, "caravan sack dims", "\x40\x57\x48\x83\xec\x20\x0f\x57\xc0\x48\x8b\xf9\x0f\x2e\x81\x28"},
-  {0x291520, "WorldMapWindow travel", "\x48\x89\x5c\x24\x08\x48\x89\x74\x24\x10\x57\x48\x81\xec\xa0\x00"},
-  {0x28ed20, "WorldMap Icon ctor", "\x48\x89\x5c\x24\x08\x48\x89\x6c\x24\x10\x48\x89\x74\x24\x18\x48"},
+  {0x2139d0, "InGameUI::Init", "\x48\x8b\xc4\x55\x53\x56\x57\x41\x54\x41\x55\x41"},
+  {0x211af0, "InGameUI::HandleKeyAction", "\x48\x8b\xc4\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x83\xec\x40"},
+  {0x27c720, "SkillsWindow::SetPane", "\x40\x57\x48\x83\xec\x30\x48\xc7\x44\x24\x20\xfe\xff\xff\xff\x48"},
+  {0x21bfb0, "riftgate map open", "\x40\x53\x48\x83\xec\x20\x48\x8d\x99\x60\x22\x04\x00\x48\x8b\x03"},
+  {0x25da20, "caravan tab list rebuild", "\x48\x89\x5c\x24\x18\x55\x56\x41\x56\x48\x83\xec\x20\x48\x8b\xd9"},
+  {0x12edd0, "caravan sack dims", "\x40\x57\x48\x83\xec\x20\x0f\x57\xc0\x48\x8b\xf9\x0f\x2e\x81\x28"},
+  {0x2916c0, "WorldMapWindow travel", "\x48\x89\x5c\x24\x08\x48\x89\x74\x24\x10\x57\x48\x81\xec\xa0\x00"},
+  {0x28eec0, "WorldMap Icon ctor", "\x48\x89\x5c\x24\x08\x48\x89\x6c\x24\x10\x48\x89\x74\x24\x18\x48"},
   {0x8a040, "CharacterPicker::HandleMouseEvent", "\x40\x53\x56\x57\x48\x83\xec\x50\x0f\x29\x74\x24\x40\x48\x8b\xd9"},
-  {0x185640, "DevotionWindow ctor", "\x48\x89\x4c\x24\x08\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57"},
-  {0x17ea10, "Star::HandleMouseEvent", "\x48\x8b\xc4\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81"},
+  {0x1857b0, "DevotionWindow ctor", "\x48\x89\x4c\x24\x08\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57"},
+  {0x17eb80, "Star::HandleMouseEvent", "\x48\x8b\xc4\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81"},
 };
 const size_t kSignatureLens[] = {5, 16, 12, 12, 12, 12, 12, 12, 16, 16, 16, 16, 16, 16, 16, 16};   // each <= kSignatureMax
 constexpr size_t kSignatureMax = 16;
@@ -303,7 +303,7 @@ int app_state() { return rd_or<int>(app(), off::kApp_State, 0); }
 WidgetA root() { void* mm = rdp(main_obj(), off::kMainObj_UiRoot); return mm ? WidgetA{(char*)mm + off::kMI_Node} : WidgetA{}; }
 MainMenu main_menu() { return {menu_manager_obj()}; }
 WidgetA MainMenu::button(unsigned slot_off) const { return {rdp(p, slot_off)}; }
-// CharacterPicker (static RE 2026-08-22, class size 0x610, vtable exe+0x30af80, HandleMouseEvent exe+0x8a040):
+// CharacterPicker (static RE 2026-08-22, class size 0x610, vtable exe+0x30afc0, HandleMouseEvent exe+0x8a040):
 // +0xc0 selected index, +0xc4 first visible, +0xc8/+0xd0 vector<Entry> (stride 0x90), +0x118 rows per page.
 // Entry: +0x20 u16 name, +0x60 std::string class tag (empty = no mastery), +0x80 level, +0x84 hardcore,
 // +0x85 female, +0x88 the preview Player's object id. A left-up on a row writes +0xc0 and nothing else.
@@ -365,13 +365,13 @@ namespace {
 // MiniMap (InGameUI+0x42260): +0x68 shown, +0x418 mode (1 = the local map, 0 = the riftgate world map); the
 // WorldMapWindow is its sub-object at +0x7940: +0x118 std::list of sections (node+0x30 = section; section
 // +0x08/+0x10 = vector<Icon*>), +0x200 = the object id of the gate being used (0 from the L key).
-// Icon (ctor exe+0x28ed20): +0x00 state (1 = current), +0x128 int[3] world position, +0x134 owner player id,
+// Icon (ctor exe+0x28eec0): +0x00 state (1 = current), +0x128 int[3] world position, +0x134 owner player id,
 // +0x138 the gate's object id, +0x140 u16string name, +0x160 UniqueId (4 ints).
 constexpr size_t kMM_Shown = 0x68, kMM_Mode = 0x418, kMM_WorldMap = 0x7940;
 constexpr size_t kWM_Sections = 0x118, kWM_Here = 0x200;
 constexpr size_t kSec_Begin = 0x08, kSec_End = 0x10, kNode_Section = 0x30;
 constexpr size_t kIcon_State = 0x00, kIcon_Pos = 0x128, kIcon_Owner = 0x134, kIcon_ObjId = 0x138, kIcon_Name = 0x140, kIcon_Uid = 0x160;
-constexpr uintptr_t kWorldMap_Travel = 0x291520;   // (unused this, const int pos[3]): the distance guard + InitiatePlayerTeleport
+constexpr uintptr_t kWorldMap_Travel = 0x2916c0;   // (unused this, const int pos[3]): the distance guard + InitiatePlayerTeleport
 typedef void (*TravelFn)(void*, const int*);
 void* worldmap() { void* ui = ingame_ui(); return ui ? (char*)ui + ingame::kMiniMap + kMM_WorldMap : nullptr; }
 }  // namespace
@@ -393,7 +393,7 @@ void aerial_map_close() {
   WindowB mm = ingame_window(ingame::kMiniMap);
   if (mm) mm.show(false);
 }
-// Zoom fields: the map-update method exe+0x174e80 runs on the aerial sub-object at MiniMap+0xba0 (its nugget vector
+// Zoom fields: the map-update method exe+0x174ff0 runs on the aerial sub-object at MiniMap+0xba0 (its nugget vector
 // at +0x210 = MiniMap+0xdb0, the one aerial_nugget_span reads); it lerps [+0xacc] toward [+0xad0] and builds the
 // icon frustum from the current value. Both written so the next update gathers at the new reach.
 constexpr size_t kMM_Zoom = 0xba0 + 0xacc, kMM_ZoomTarget = 0xba0 + 0xad0;
@@ -462,7 +462,7 @@ bool riftgate_travel(const Riftgate& g) {
 }
 void riftgate_map_close() { WindowB mm = ingame_window(ingame::kMiniMap); if (mm) mm.show(false); }
 
-// dev: the aerial map's cached MinimapGameNugget vector (built by the map-update method exe+0x174e80 via
+// dev: the aerial map's cached MinimapGameNugget vector (built by the map-update method exe+0x174ff0 via
 // GameEngine::GetDetailMapData; struct = 0xA0 stride, type/class int at +0x08, WorldVec3 position at +0x58).
 // Tries both candidate object bases (the MiniMap itself and its aerialMap sub at +0xb08).
 // POD, SEH-guarded: read region-relative fields (no world_point on unvalidated memory). WorldVec3 at
@@ -531,7 +531,7 @@ static bool hexdump_nugget(void* nug, char* buf16[10], std::string& out) {
   return true;
 }
 // The aerial map's live nugget vector: MiniMap+0xdb0 = {begin, end} of MinimapGameNugget (0xA0 stride),
-// filled by the map-update method (exe+0x174e80 via GameEngine::GetDetailMapData) while the map is open.
+// filled by the map-update method (exe+0x174ff0 via GameEngine::GetDetailMapData) while the map is open.
 bool aerial_nugget_span(void*& begin, size_t& count) {
   begin = nullptr;
   count = 0;
@@ -573,8 +573,8 @@ WindowB ingame_window(unsigned o) { void* ui = ingame_ui(); return ui ? WindowB{
 // ---- loot filter window (static RE 2026-08-29, docs/re_lootfilter_exe.md; map + bytes verified live) ----
 namespace {
 constexpr size_t kLF_Boxes = 0xd58;                 // std::map<CheckBox*, int option>: {head*, size}; MSVC node = {left, parent, right, color, isnil, key +0x20, value +0x28}
-constexpr size_t kWorldScreen_ActorCapture = 0x110; // InGameUIActorCapture -- exe+0x20fd8
-constexpr size_t kCapture_ShowAllItems = 0x129;     // Alt held (key action 0x23) -- exe+0x28ac00; read by exe+0x20ff8
+constexpr size_t kWorldScreen_ActorCapture = 0x110; // InGameUIActorCapture -- exe+0x20fc8
+constexpr size_t kCapture_ShowAllItems = 0x129;     // Alt held (key action 0x23) -- exe+0x28ada0; read by exe+0x20fe8
 bool write_byte(void* p, unsigned char v) {
   __try { *(unsigned char*)p = v; return true; } __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
 }
@@ -618,7 +618,7 @@ constexpr int kCW_Categories[kCraftingTabs] = {6, 2, 3, 1, 4};
 constexpr const char* kCW_TabTags[kCraftingTabs] = {"tagCraftTabArtifactA", "tagCraftTabMeleeA", "tagCraftTabRangedA", "tagCraftTabArmorA", "tagCraftTabMiscA"};
 constexpr size_t kCP_Selected = 0x60, kCP_Registry = 0x1e60, kCP_Combine = 0x1ea8, kCP_CombineDisabled = 0x2129, kCP_ListBox = 0x2fa0, kCP_RowsBegin = 0x3070, kCP_RowsEnd = 0x3078;
 constexpr size_t kRow_Stride = 0xd0, kRow_Text = 0x00, kRow_Selected = 0x58, kRow_New = 0x5e, kRow_Formula = 0x64;
-constexpr uintptr_t kListBox_SelectByData = 0x1f9f00;   // (listbox, int data) -> bool; signature-checked below
+constexpr uintptr_t kListBox_SelectByData = 0x1fa070;   // (listbox, int data) -> bool; signature-checked below
 typedef bool (*SelectByDataFn)(void*, int);
 char* crafting_window() { WindowB w = ingame_window(ingame::kCrafting); return w && w.visible() ? (char*)w.p : nullptr; }
 char* crafting_panel() { char* w = crafting_window(); return w ? w + kCW_Panel : nullptr; }
@@ -701,21 +701,21 @@ std::string crafting_dump() {
 
 // ---- the Inventor's window (static RE 2026-08-30, docs/re_inventor_exe.md; ids, tab, flags and texts verified live) ----
 namespace {
-// Window (ctor exe+0x26bd00, vtable exe+0x31d050): the frame's loader exe+0x26cd80 binds the record fields in this order.
+// Window (ctor exe+0x26bea0, vtable exe+0x31d078): the frame's loader exe+0x26cf20 binds the record fields in this order.
 constexpr size_t kEW_NameText = 0x2e0 /*enchanterNameText, the NPC*/, kEW_HeadingText = 0x3d8 /*enchanterHeadingText "Inventor"*/, kEW_NpcId = 0x9c;
 constexpr size_t kEW_Tab = 0x8bc0, kEW_TabRegistry = 0x8bc8;
-constexpr size_t kEW_TabButtons[kInventorTabs] = {0x8c08, 0x8f40, 0x9278, 0x95b0};   // Salvage, Dismantle, Convert, Reroll (the listener exe+0x26cad0 maps them to tab 0..3)
+constexpr size_t kEW_TabButtons[kInventorTabs] = {0x8c08, 0x8f40, 0x9278, 0x95b0};   // Salvage, Dismantle, Convert, Reroll (the listener exe+0x26cc70 maps them to tab 0..3)
 constexpr size_t kEW_Panels[kInventorTabs] = {0xa38, 0x1af8, 0x2d98, 0x5970};
 constexpr const char* kEW_TabTags[kInventorTabs] = {"tagDividerTab01", "tagDividerTab02", "tagConvertTab", "tagRerollTab"};
 constexpr const char* kEW_TabInfoTags[kInventorTabs] = {"tagDividerRoll01", "tagDividerRoll02B", "tagConvertInfoB", "tagRerollInfoB"};
-// Salvage ("recover") panel, ctor exe+0x1b1a40, vtable exe+0x316b90, size 0x10c0: loader exe+0x1b2700.
+// Salvage ("recover") panel, ctor exe+0x1b1bb0, vtable exe+0x316bd8, size 0x10c0: loader exe+0x1b2870.
 constexpr size_t kSP_Visible = 0x38, kSP_Box = 0x40, kSP_Registry = 0x268, kSP_KeepAddon = 0x2b0 /*recoverRelicButton*/, kSP_KeepItem = 0x660 /*recoverItemButton*/,
                  kSP_RemoveAugment = 0xa10, kSP_CostNumber = 0xdc0, kSP_DialogPending = 0x10a8, kSP_TooExpensive = 0x10a9;
-// Dismantle panel, ctor exe+0x1a97b0, vtable exe+0x316950, size 0x12a0.
+// Dismantle panel, ctor exe+0x1a9920, vtable exe+0x316990, size 0x12a0.
 constexpr size_t kDP_Visible = 0x40, kDP_Box = 0x108, kDP_Result1 = 0x330, kDP_Result2 = 0x558, kDP_Registry = 0x780, kDP_Button = 0x7c8, kDP_CostNumber = 0xb78,
                  kDP_DynamiteNumber = 0xd68, kDP_DialogPending = 0x1148, kDP_Cannot = 0x1149, kDP_NoMoney = 0x114a, kDP_NoDynamite = 0x114b;
-// The item box (ctor exe+0x1ad7b0, size 0x228): item id +0xa0, "holds an item detached from the inventory" +0x61,
-// "item is invalid" +0x220; SetItem(id) = vt+0xa8 (exe+0x1afc30), HasItem = vt+0xa0.
+// The item box (ctor exe+0x1ad920, size 0x228): item id +0xa0, "holds an item detached from the inventory" +0x61,
+// "item is invalid" +0x220; SetItem(id) = vt+0xa8 (exe+0x1afda0), HasItem = vt+0xa0.
 constexpr size_t kBox_ItemId = 0xa0, kBox_Detached = 0x61, kBox_Invalid = 0x220, kBox_SetItemSlot = 0xa8;
 constexpr size_t kBtn_Disabled = 0x281;
 typedef void (*BoxSetItemFn)(void*, unsigned);
@@ -754,7 +754,7 @@ std::vector<InventorTab> inventor_tabs() {
   for (int i = 0; i < kInventorTabs; ++i) {
     InventorTab t;
     WidgetB b{w + kEW_TabButtons[i]};
-    // All four buttons are constructed (ctor exe+0x10aee0, a bitmap button class of its own); the two the master
+    // All four buttons are constructed (ctor exe+0x10af50, a bitmap button class of its own); the two the master
     // table always has are present, the expansions' Convert / Reroll count as present only once the game enables
     // them (Show(true) greys them unless MainPlayerCanUseConvert/Reroll, which need the expansion loaded).
     t.enabled = b.enabled();
@@ -799,7 +799,7 @@ InventorDismantle inventor_dismantle() {
   d.dismantle = read_button(p + kDP_Button, "tagDismantleButton");
   return d;
 }
-// The exe's drop handlers (salvage exe+0x1afc70, dismantle exe+0x1b0190) after their own accept test: box
+// The exe's drop handlers (salvage exe+0x1afde0, dismantle exe+0x1b0300) after their own accept test: box
 // SetItem(id), PlayerInventoryCtrl::RemoveItem(id, true), box+0x220 = 0, box+0x61 = 1, then the cursor is cleared.
 // The accept test is the caller's (gameapi::inventor_accepts); here only "one item per chamber".
 bool inventor_put(unsigned item_id) {
@@ -815,7 +815,7 @@ bool inventor_put(unsigned item_id) {
   log::writef("exe_ui: inventor chamber <- {} (tab {})", item_id, tab);
   return true;
 }
-// The exe's return helper exe+0x1ae9b0 (a Shift-click on a box, and every panel's Hide): SetItem(0), +0x61 = 0,
+// The exe's return helper exe+0x1aeb20 (a Shift-click on a box, and every panel's Hide): SetItem(0), +0x61 = 0,
 // ControllerPlayer::GiveItemToPlayer(id, false) -- SendDropItemRandom if that fails (a full bag), which we leave
 // to the game's own Hide.
 bool inventor_take(int which) {
@@ -885,19 +885,19 @@ bool WidgetB::press(void* registry, bool sound) const {
   return ok;
 }
 ExitWindow exit_window() { return {ingame_window(ingame::kExit).p}; }
-// InGameUI::HandleKeyAction(this, action, bool, bool, bool) -- exe+0x211980, what the game's key bindings call
+// InGameUI::HandleKeyAction(this, action, bool, bool, bool) -- exe+0x211af0, what the game's key bindings call
 // (docs/ingame-ui-survey.md has the action ids: 1 character, 2 skills, 3 codex, 0x36 interact, 0x37 pickup ...).
 typedef bool (*KeyActionFn)(void*, int, bool, bool, bool);
-constexpr uintptr_t kInGameUI_HandleKeyAction = 0x211980;
-// The skills window (InGameUI+0x3fc20; 2026-08-22 readout): SetPane = exe+0x27c580(window, tab, paneIndex) puts a
+constexpr uintptr_t kInGameUI_HandleKeyAction = 0x211af0;
+// The skills window (InGameUI+0x3fc20; 2026-08-22 readout): SetPane = exe+0x27c720(window, tab, paneIndex) puts a
 // mastery's skill tree (paneIndex = mastery enumeration 0..) or the class-selection pane (0x50) on a tab; the
 // current tab index sits at +0x2630. Choosing a class this way is exactly the pane's own click path; it
 // becomes permanent when the mastery skill takes its first point.
 typedef void (*SetPaneFn)(void*, int, int);
-constexpr uintptr_t kSkillsWindow_SetPane = 0x27c580;
+constexpr uintptr_t kSkillsWindow_SetPane = 0x27c720;
 constexpr size_t kSkillsWindow_Tab = 0x2630;
 constexpr size_t kSkillsWindow_Reclaim = 0x1f4c;   // nonzero when a spirit guide opened the window in reclaim mode.
-                                                   // The click handler exe+0x248380 branches on [controller+0x1e1c]
+                                                   // The click handler exe+0x248510 branches on [controller+0x1e1c]
                                                    // where its `this` is the embedded controller at window+0x130, so
                                                    // the flag is window+0x1f4c (verified live: only DisplaySkill-
                                                    // ReallocationWindow flips window+0x1f49/+0x1f4c 0->1).
@@ -962,7 +962,7 @@ std::vector<VendorTab> vendor_tabs(const WindowB& w) {
 int vendor_selected_type(const WindowB& w) { return w ? rd_or<int>(w.p, kVendor_SelectedType, -1) : -1; }
 namespace {
 constexpr size_t kCaravan_PrivatePanel = 0x13c8, kCaravan_TransferPanel = 0x13d0, kPanel_Costs = 0x378, kPanel_TabList = 0x98;
-constexpr uintptr_t kCaravan_RebuildTabs = 0x25d890, kCaravan_SackDims = 0x12ec70;
+constexpr uintptr_t kCaravan_RebuildTabs = 0x25da20, kCaravan_SackDims = 0x12edd0;
 }  // namespace
 namespace {
 constexpr size_t kIngameUI_HudToolbar = 0xb748, kIngameUI_HudStatus = 0xb758, kIngameUI_HudTopLeft = 0xb768;
@@ -1024,26 +1024,26 @@ bool caravan_refresh(bool shared, const void* sack_vector) {
   return ok;
 }
 int quickbar_page() { void* ui = ingame_ui(); int p = ui ? rd_or<int>(ui, 0x72f0, -1) : -1; return p >= 0 && p < 4 ? p : (ui ? 0 : -1); }
-// Toggle UI's byte (InGameUI+0xac990: the ctor exe+0x206dca sets 1, key action 0x3c at exe+0x211f5e flips it, the
-// render pass exe+0x20a860 skips every window but the pause menu / options host / prompt box while it is 0).
+// Toggle UI's byte (InGameUI+0xac990: the ctor exe+0x206f3a sets 1, key action 0x3c at exe+0x2120ce flips it, the
+// render pass exe+0x20a9d0 skips every window but the pause menu / options host / prompt box while it is 0).
 int ui_visible() { void* ui = ingame_ui(); if (!ui) return -1; unsigned char b = rd_or<unsigned char>(ui, 0xac990, 1); return b ? 1 : 0; }
 int skills_tab() { void* ui = ingame_ui(); return ui ? rd_or<int>((char*)ui + ingame::kSkills, kSkillsWindow_Tab, -1) : -1; }
-// The skills window's mastery panes (UISkillPane, ctor exe+0x243510, 0x1ea8 bytes, vtable exe+0x31bd18; RE
+// The skills window's mastery panes (UISkillPane, ctor exe+0x2436a0, 0x1ea8 bytes, vtable exe+0x31bd48; RE
 // 2026-08-27): heap objects at window+0x100 (tab 0) / +0x108 (tab 1), replaced by the 0x3d0-byte class-selection
-// pane (vtable exe+0x31a1d8) while no class is chosen -- so the vtable is checked before any offset is used.
+// pane (vtable exe+0x31a220) while no class is chosen -- so the vtable is checked before any offset is used.
 // +0x80 the pane's own listener registry; +0x820 "Undo Class Selection" and +0xbd0 "Undo Points" (TextButtons;
-// Undo Points is enabled by Update exe+0x247a71 exactly while +0x1e45 "pending changes" is set, and its press
-// runs UISkillPane::UndoPoints exe+0x2494d0: every pending delta reverted + Character::AddToSkillPoints);
+// Undo Points is enabled by Update exe+0x247c01 exactly while +0x1e45 "pending changes" is set, and its press
+// runs UISkillPane::UndoPoints exe+0x249660: every pending delta reverted + Character::AddToSkillPoints);
 // +0x1e4c reclaim mode (the spirit guide's flag, per pane).
 namespace {
-constexpr uintptr_t kSkillPaneVt = 0x31bd18;
+constexpr uintptr_t kSkillPaneVt = 0x31bd48;
 constexpr size_t kSkillsWindow_Pane0 = 0x100, kSkillsWindow_Pane1 = 0x108;
 constexpr size_t kPane_Registry = 0x80, kPane_UndoPoints = 0xbd0, kPane_ReclaimMode = 0x1e4c;
-// The WINDOW's own reclaim byte (RE 2026-09-20, exe+0x21a6f0 = the target of GameEngine::DisplaySkillReallocationWindow):
+// The WINDOW's own reclaim byte (RE 2026-09-20, exe+0x21a880 = the target of GameEngine::DisplaySkillReallocationWindow):
 // with any mastery active it writes window+0x2639 = 1, the npc id to +0x2634, calls slot vt+0xa8(1) on BOTH pane
 // slots (UISkillPane: `mov [this+0x1e4c], dl`; the class-selection pane: a bare `ret`), then Show(true). The window
-// reads +0x2639 itself (exe+0x27a155/+0x27a1d0/+0x27c8d1) and clears it with the panes on teardown (exe+0x2795a2)
-// and through its set(bl) path (exe+0x27a0b2). So it is the authoritative "opened by a spirit guide" state.
+// reads +0x2639 itself (exe+0x27a2f5/+0x27a1d0/+0x27c8d1) and clears it with the panes on teardown (exe+0x279742)
+// and through its set(bl) path (exe+0x27a252). So it is the authoritative "opened by a spirit guide" state.
 constexpr size_t kSkillsWindow_ReclaimByte = 0x2639;
 char* skills_window() { void* ui = ingame_ui(); return ui && g_available ? (char*)ui + ingame::kSkills : nullptr; }
 // The mastery pane in tab slot 0 / 1, or null when that slot holds the class-selection pane (or nothing).
@@ -1080,7 +1080,7 @@ bool ingame_key_action(int action) {
 bool ExitWindow::visible() const { return WindowB{p}.visible(); }
 // The pane's skill icons: vector<SkillEntry> at pane+0x68/+0x70, stride 0x78 -- entry+0x00 the icon control,
 // +0x10 the pending undo delta (learn = -1, reclaim = +1), +0x50 the skill object id (RE 2026-08-27). Pressing an
-// icon through the pane's registry is the game's own learn / reclaim click (exe+0x248380, event 0): its gates, its
+// icon through the pane's registry is the game's own learn / reclaim click (exe+0x248510, event 0): its gates, its
 // sound, and the pending delta that makes Undo Points work.
 namespace {
 constexpr size_t kPane_EntriesBegin = 0x68, kPane_EntriesEnd = 0x70, kEntry_Stride = 0x78, kEntry_Control = 0x00, kEntry_Delta = 0x10, kEntry_SkillId = 0x50;
@@ -1268,11 +1268,11 @@ int OptionsScreen::tab_index() const { return rd_or<int>(screen.p, kOpt_TabIndex
 
 // ---- conversation window ----
 namespace {
-constexpr size_t kInGame_ConvWindow = 0x8efd0;  // exe+0x21a1e0 / IsOpen exe+0x21a630
+constexpr size_t kInGame_ConvWindow = 0x8efd0;  // exe+0x21a370 / IsOpen exe+0x21a7c0
 constexpr size_t kCw_Visible = 0x28, kCw_Speaker = 0x2a0, kCw_Page = 0x378, kCw_Speech = 0x1ac0, kCw_Fade = 0x1ab8, kCw_RowsBegin = 0x1a60, kCw_RowsEnd = 0x1a68;
 constexpr size_t kCr_Step = 0x48, kCr_Text = 0x1c8, kCr_Rect = 0x38;
-constexpr size_t kCw_Rect = 0x40;         // the window's absolute rect (measured live 2026-08-22: 543,626 548x146 -- a different base than exe+0x123390's)
-constexpr size_t kCwText_String = 0x38;   // the speaker/page text class (vtable exe+0x31b830) keeps its u16 string at +0x38 (measured live)
+constexpr size_t kCw_Rect = 0x40;         // the window's absolute rect (measured live 2026-08-22: 543,626 548x146 -- a different base than exe+0x1234f0's)
+constexpr size_t kCwText_String = 0x38;   // the speaker/page text class (vtable exe+0x31b868) keeps its u16 string at +0x38 (measured live)
 }  // namespace
 ConvWindow conv_window() {
   void* w = rdp(ingame_ui(), kInGame_ConvWindow);
@@ -1315,9 +1315,9 @@ bool ConvWindow::choose(const ConvRow& r) const {
 
 // ---- tips ----
 namespace {
-constexpr size_t kMainObj_TipManager = 0xbe0;                    // exe+0x262167
+constexpr size_t kMainObj_TipManager = 0xbe0;                    // exe+0x2622f7
 constexpr size_t kTipMgr_Deque = 0x08;                           // std::deque<Tip*>: map +0x10, mapsize +0x18, off +0x20, size +0x28
-constexpr size_t kTip_Lines = 0x00, kTip_State = 0x18, kTip_Timer = 0x1c, kTip_Kind = 0xd98, kTip_Page = 0xda0;  // ctor exe+0x109070, exe+0x1099f0
+constexpr size_t kTip_Lines = 0x00, kTip_State = 0x18, kTip_Timer = 0x1c, kTip_Kind = 0xd98, kTip_Page = 0xda0;  // ctor exe+0x1090e0, exe+0x109a60
 }  // namespace
 std::vector<Tip> tips() {
   std::vector<Tip> out;

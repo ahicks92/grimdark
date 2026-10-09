@@ -4,7 +4,7 @@ Injected DLL that hooks the game's own engine exports. Design lineage: `../wotr-
 project by the same author) — see `docs/design-notes-from-wotr.md` for the decisions we carry over.
 
 ## Game facts
-- Grim Dawn v1.3.0.8 (x64), Steam build. Install: `C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn`.
+- Grim Dawn v1.3.1.1 (x64), Steam build (relocated from 1.3.0.8 on 2026-10-08). Install: `C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn`.
   The 64-bit game is `x64\Grim Dawn.exe`; **its working directory must be the install root** (where
   `database.arz` and the `.arc` archives live) or it starts with no data and crashes in a string compare.
 - Closed-source C++ (Titan Quest engine lineage), split into DLLs that **export named, MSVC-decorated C++
@@ -181,14 +181,20 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
 
 ## Game patches (quantified 2026-08-25)
 - Exports (367, by decorated name) survive a game rebuild unless a signature changes and degrade per feature;
-  Engine/Game object offsets (~30) survive unless the class changed and fail SILENTLY; the exe layer (19 RVAs + ~75
+  Engine/Game object offsets (~55 raw field offsets + mirrored layouts and ~6 hardcoded vtable slots, inventoried
+  2026-10-08) survive unless the class changed and fail SILENTLY; the exe layer (19 RVAs + ~75
   offsets in `exe_ui`, 14 byte signatures checked by `available()`) dies on ANY relink of the exe -- every menu and
   window, deterministically -- while the export-driven world layer keeps running. Since 2026-09-18 the version gate
   refuses an unknown build outright, so a patch is "the mod is off" for players, not a crash.
-- Procedure on a patch: dump the new exe (`tools/dump_exe.py`), relocate against the previous build's archive in
-  `../grim-dawn-archive/<version>-<pe-ts>/` (match the 14 signatures + the vtable ctors, emit a version-keyed RVA
-  table -- the tool does not exist yet; it needs old + new images), add the row to `src/game_versions.h`, and archive
-  the new build (`tools/archive_build.py`) once the mod works on it. Never skip archiving a build the mod works on.
+- Procedure on a patch (first run 2026-10-08, 1.3.0.8 -> 1.3.1.1; `tools/exe_reloc.py`, docs/devlog.md): launch with
+  `GRIMDARK_ANY_VERSION=1`, dump the exe (`tools/dump_exe.py`), `gen_exports.py` + `gen_names.py` (a changed hooked
+  signature fails loudly), then `uv run tools/exe_reloc.py - - --scan <every src file with exe+0x>`: functions are
+  matched by normalized body + vote propagation over .pdata, data/vtables through the refs of matched pairs, every
+  `exe+0x` evidence instruction is re-checked at its new address and every vtable slot by slot. Clean -> `--apply`
+  on the same files (rewrites constants + evidence in one pass, re-checks the byte signatures). The world layer:
+  `exe_reloc.py <old dll> <new dll> exports|xdiff <regex>|vtcmp <regex>` -- a class whose ctor is unchanged kept
+  its layout; check the hardcoded vtable slots with vtcmp. Then replace the row in `src/game_versions.h` (one build
+  at a time: the old build lives in git + the archive), test live, and archive (`tools/archive_build.py`). Never skip archiving a build the mod works on.
 
 ## Traps and lessons (details in docs/devlog.md and the doc named)
 - Pointers: never hold a `GraphNode*` or a game entity pointer across frames; hold ids (`ControlId`, object id) and

@@ -1,5 +1,7 @@
 # Unreleased
 
+- Works with Grim Dawn 1.3.1.1 (the October 8 hotfix). The previous game version is no longer supported.
+
 - Fix: `l` walks to places that sit just off the walkable ground, such as a mine or cave entrance picked from the map. Before, the game refused the walk and nothing happened.
 - Fix: skill tooltips at a spirit guide (reclaiming skill points) are the full ones again, including what the next level gives, followed by the reclaim cost.
 

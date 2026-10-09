@@ -8377,6 +8377,7 @@ EXPORTS
     ?AddItem@PlayerInventoryCtrl@GAME@@QEAA_NI_N0@Z
     ?AddItem@PlayerInventoryCtrl@GAME@@QEAA_NVVec2@2@IH_N@Z
     ?AddItemAndReturnPoint@InventorySack@GAME@@QEAA?AVVec2@2@PEAVItem@2@@Z
+    ?AddItemAscensionMod@GameEngine@GAME@@QEAAXM@Z
     ?AddItemSkillModifiers@Character@GAME@@QEAAXIAEBV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UItemSkillModifierInfo@ItemSkillModifiers@GAME@@@mem@@@Z
     ?AddItemSkillModifiers@SkillManager@GAME@@QEAAXIAEBV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UItemSkillModifierInfo@ItemSkillModifiers@GAME@@@mem@@@Z
     ?AddItemSkills@Character@GAME@@QEAAXIAEBV?$vector@UItemSkillInfo@ItemSkillAugment@GAME@@@mem@@_N@Z
@@ -8539,12 +8540,13 @@ EXPORTS
     ?AddTemporaryState@?$ControllerAIStateT@VControllerTyphonChained@GAME@@VMonster@2@@GAME@@IEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBVControllerAIStateData@2@@Z
     ?AddTemporaryState@ControllerAI@GAME@@IEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBVControllerAIStateData@2@@Z
     ?AddTemporaryState@ControllerAI@GAME@@IEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PEAVControllerAIState@2@@Z
-    ?AddTimeToLive@Skill@GAME@@UEAAXH@Z
-    ?AddTimeToLive@SkillBuff@GAME@@UEAAXH@Z
-    ?AddTimeToLive@Skill_BuffSelfDuration@GAME@@UEAAXH@Z
-    ?AddTimeToLive@Skill_PassiveOnHitBuffSelf@GAME@@UEAAXH@Z
-    ?AddTimeToLive@Skill_PassiveOnLifeBuffSelf@GAME@@UEAAXH@Z
-    ?AddTimeToLive@Skill_Shapeshift@GAME@@UEAAXH@Z
+    ?AddTimeToLive@Skill@GAME@@UEAAXIH@Z
+    ?AddTimeToLive@SkillBuff@GAME@@UEAAXIH@Z
+    ?AddTimeToLive@Skill_BuffRadius@GAME@@UEAAXIH@Z
+    ?AddTimeToLive@Skill_BuffSelfDuration@GAME@@UEAAXIH@Z
+    ?AddTimeToLive@Skill_PassiveOnHitBuffSelf@GAME@@UEAAXIH@Z
+    ?AddTimeToLive@Skill_PassiveOnLifeBuffSelf@GAME@@UEAAXIH@Z
+    ?AddTimeToLive@Skill_Shapeshift@GAME@@UEAAXIH@Z
     ?AddToAccumulator@CharAttributeMod@GAME@@UEBAMAEAVCharAttributeAccumulator@2@IM@Z
     ?AddToAccumulator@CharAttributeMod_AttackSpeed@GAME@@UEBAMAEAVCharAttributeAccumulator@2@IM@Z
     ?AddToAccumulator@CharAttributeMod_LifeMultiplier@GAME@@UEBAMAEAVCharAttributeAccumulator@2@IM@Z
@@ -8848,8 +8850,10 @@ EXPORTS
     ?ApplyGridPositioning@SetPiece@GAME@@AEAAXXZ
     ?ApplyLifeLeech@CombatManager@GAME@@QEAAXM@Z
     ?ApplyMeleeDamage@SkillActivated@GAME@@MEAAXAEAVCharacter@2@AEBV?$vector@I@mem@@AEBUAttackInfo@2@@Z
+    ?ApplyMeleeDamage@Skill_WPAttack_Radius@GAME@@UEAAXAEAVCharacter@2@AEBV?$vector@I@mem@@AEBUAttackInfo@2@@Z
     ?ApplyMeleeDamageInherent@SkillActivated@GAME@@MEAAXAEAVCharacter@2@AEBV?$vector@I@mem@@AEBVWorldCoords@2@I@Z
     ?ApplyRangedDamage@SkillActivated@GAME@@MEAAXAEAVCharacter@2@AEBV?$vector@I@mem@@AEBUAttackInfo@2@@Z
+    ?ApplyRangedDamage@Skill_WPAttack_Radius@GAME@@UEAAXAEAVCharacter@2@AEBV?$vector@I@mem@@AEBUAttackInfo@2@@Z
     ?ApplyReplicationData@AscendantAltar@GAME@@UEAAXXZ
     ?ApplyReplicationData@Destructible@GAME@@UEAAXXZ
     ?ApplyReplicationData@DynamicDoor@GAME@@UEAAXXZ
@@ -8881,6 +8885,7 @@ EXPORTS
     ?AreRequirementsMet@ItemRelic@GAME@@UEBA_NPEBVCharacter@2@@Z
     ?AreSkillsEnabled@Monster@GAME@@QEBA_NXZ
     ?ArrangeUnpositionedItems@InventorySack@GAME@@QEAA_NXZ
+    ?AscendantReduceSpawnKills@FactionPack@GAME@@QEAAXXZ
     ?AssignParent@CombatManager@GAME@@QEAAXPEAVCharacter@2@@Z
     ?AssignParent@FixedItemSkill@GAME@@UEAAXPEAVFixedItem@2@@Z
     ?AssignParents@DurationDamageManager@GAME@@QEAAXPEAVCharacter@2@PEAVCombatManager@2@@Z
@@ -9382,6 +9387,7 @@ EXPORTS
     ?CalculateDamageValues@Player@GAME@@QEAAX_N@Z
     ?CalculateDps@Player@GAME@@QEBAXAEAMI@Z
     ?CalculateExperienceReward@GameEngine@GAME@@QEAAIIIIAEBVWorldVec3@2@@Z
+    ?CalculateItemAscensionChance@GameEngine@GAME@@QEAAXMW4ItemClassification@2@@Z
     ?CalculateMemoryUsage@Character@GAME@@UEBAIXZ
     ?CalculateMemoryUsage@Monster@GAME@@UEBAIXZ
     ?CalculateMemoryUsage@Skill@GAME@@UEBAIXZ
@@ -9689,6 +9695,7 @@ EXPORTS
     ?ClearAnger@ControllerMonster@GAME@@QEAAXXZ
     ?ClearAnger@Monster@GAME@@QEAAXXZ
     ?ClearAwakenedFormulas@GameEngine@GAME@@QEAAXXZ
+    ?ClearComboCharges@Character@GAME@@QEAAXXZ
     ?ClearCooldownBlock@SkillAutoCastController@GAME@@QEAAXXZ
     ?ClearCooldownBlock@SkillServices_Character@GAME@@UEAAXI@Z
     ?ClearCurrentCharFxPaks@SkillManager@GAME@@AEAAXXZ
@@ -9705,6 +9712,7 @@ EXPORTS
     ?ClearHighlight@CursorHandlerRelicCombine@GAME@@MEAAXXZ
     ?ClearHitIteration@Skill@GAME@@UEAAXXZ
     ?ClearHitIteration@Skill_WPAttack@GAME@@UEAAXXZ
+    ?ClearItemAscensionFormulas@GameEngine@GAME@@QEAAXXZ
     ?ClearItemsCompatibleWithEnchant@PlayerInventoryCtrl@GAME@@QEAAXXZ
     ?ClearItemsCompatibleWithRelic@PlayerInventoryCtrl@GAME@@QEAAXXZ
     ?ClearMutators@GameEngineInboundInterface@GAME@@UEAAXW4MutatorMode@2@@Z
@@ -11977,6 +11985,8 @@ EXPORTS
     ?GetAllNonWeapons@EquipManager@GAME@@QEBAXAEAV?$vector@I@mem@@@Z
     ?GetAllPlayerTokens@Quest2Repository@GAME@@QEBAXAEAV?$map@IV?$vector@UTriggerToken@GAME@@@mem@@@mem@@@Z
     ?GetAllPlayersInGame@PlayerManagerClient@GAME@@QEBAAEBV?$vector@I@mem@@XZ
+    ?GetAllSkillMasteries@Character@GAME@@QEBAXAEAV?$vector@I@mem@@@Z
+    ?GetAllSkillMasteries@SkillManager@GAME@@QEBAXAEAV?$vector@I@mem@@@Z
     ?GetAllTargetsInRadius@GameEngine@GAME@@QEBAXIAEBVFactionPack@2@AEBVWorldVec3@2@MAEAV?$vector@I@mem@@I_N@Z
     ?GetAllowMove@Skill@GAME@@UEBA_NXZ
     ?GetAllowMove@Skill_AttackRadiusSpin@GAME@@UEBA_NXZ
@@ -12052,6 +12062,7 @@ EXPORTS
     ?GetAscendantSuffixOverride@GameEngine@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBV34@@Z
     ?GetAscendantSuperBossSpawnMod@GameEngine@GAME@@QEBA?BMXZ
     ?GetAscendantTreasureTroveChance@GameEngine@GAME@@QEBAMXZ
+    ?GetAscendedItemName@GameEngine@GAME@@QEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAV34@AEAVRandomUniform@2@@Z
     ?GetAscendedItemSymbolName@GameEngine@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4ItemClassification@2@@Z
     ?GetAscendedName@ItemAscensionFormula@GAME@@QEAA_NV?$vector@I@mem@@IAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAVRandomUniform@2@@Z
     ?GetAscensionReagentDropChance@GameEngine@GAME@@QEBAXW4MonsterClassification@2@AEAV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@M@mem@@@Z
@@ -12443,6 +12454,7 @@ EXPORTS
     ?GetConvertLevel@Monster@GAME@@UEBAIXZ
     ?GetConverted@CombatAttribute@GAME@@QEBA_NXZ
     ?GetCooldownCharges@Skill@GAME@@UEBAHXZ
+    ?GetCooldownCharges@SkillSecondary_PetModifier@GAME@@QEBAXAEAVSkillProfile_Modifiers@2@H@Z
     ?GetCooldownCharges@Skill_Modifier@GAME@@UEBAHXZ
     ?GetCooldownCompletion@HotSlotOption@GAME@@UEAAMXZ
     ?GetCooldownCompletion@HotSlotOptionPotion@GAME@@UEAAMXZ
@@ -12665,6 +12677,7 @@ EXPORTS
     ?GetDefenseAttrStore@SkillProfile@GAME@@QEBAAEBVDefenseAttributeStore_Skill@2@XZ
     ?GetDefenseAttributeCap@Character@GAME@@UEBAMXZ
     ?GetDefenseAttributeCap@Monster@GAME@@UEBAMXZ
+    ?GetDefenseAttributeCap@Pet@GAME@@UEBAMXZ
     ?GetDefenseAttributeCap@Player@GAME@@UEBAMXZ
     ?GetDefenseAttributes@AttributePak@GAME@@UEBAXAEAVCombatAttributeAccumulator@2@IM@Z
     ?GetDefenseAttributes@CharacterBio@GAME@@QEBAXAEAVCombatAttributeAccumulator@2@@Z
@@ -15881,7 +15894,7 @@ EXPORTS
     ?GetReflectLinkDamageReduction@SkillManager@GAME@@QEBAMXZ
     ?GetRefreshCooldownSkillName@Skill@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
     ?GetRefreshCooldownTrigger@Skill@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
-    ?GetRefreshDurationModifierData@Skill@GAME@@QEAAXAEAVSkillProfile_Modifiers@2@H@Z
+    ?GetRefreshDurationModifierData@Skill@GAME@@QEAAXAEAV?$map@IH@mem@@H@Z
     ?GetRefreshDurationSkillName@Skill@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
     ?GetRefreshDurationTrigger@Skill@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
     ?GetRefreshSkillTag@Skill@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBV34@@Z

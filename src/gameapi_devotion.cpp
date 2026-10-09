@@ -2,7 +2,7 @@
 // docs/re_devotion_{data,gamedll,exe}.md). The GRAPH (which stars form which constellation, their links,
 // requirements and bonuses) is the exe's own object graph, read by exe_ui::devotion_constellations; every
 // STATE read and every ACTION is a Game.dll export -- the same calls the devotion window's click handler makes
-// (Star::HandleMouseEvent exe+0x17ea10, BindCelestialPower exe+0x1867f0). Spends apply immediately; the game's
+// (Star::HandleMouseEvent exe+0x17eb80, BindCelestialPower exe+0x186960). Spends apply immediately; the game's
 // window merely holds the autosave while open, so nothing here needs it shown. Reclaiming (a Tonic of Clarity)
 // is not modelled.
 #include "gameapi.h"
@@ -274,7 +274,7 @@ std::string can_take_star(const DevotionConstellation& c, const DevotionStar& s)
   if (pts == 0) return std::string(strings::kNoPoints);
   return {};
 }
-// Star::HandleMouseEvent's SPEND branch (exe+0x17ebfc): IncrementSkillLevel(1), SubtractDevotionPoint,
+// Star::HandleMouseEvent's SPEND branch (exe+0x17ed6c): IncrementSkillLevel(1), SubtractDevotionPoint,
 // IncrementDevotionLevel when the devotion level is still 0, then GrantAffinity if the constellation just completed.
 bool take_star(unsigned skill_id, bool& completed) {
   load_devotion();
@@ -298,7 +298,7 @@ bool take_star(unsigned skill_id, bool& completed) {
         ok = true;
       });
       if (!ok) return false;
-      if (!was_complete && c.learned + 1 == c.stars.size()) {   // GrantAffinity (exe+0x181870): the completion bonus
+      if (!was_complete && c.learned + 1 == c.stars.size()) {   // GrantAffinity (exe+0x1819e0): the completion bonus
         completed = true;
         if (g.AddAffinity) guarded("AddAffinity", [&] { for (const auto& [type, amount] : c.given) g.AddAffinity(p, type, amount); });
       }
@@ -308,7 +308,7 @@ bool take_star(unsigned skill_id, bool& completed) {
   }
   return false;
 }
-// The star rollover exactly as the window builds it (Star::BuildRollover exe+0x17f0d0), with the 14-byte
+// The star rollover exactly as the window builds it (Star::BuildRollover exe+0x17f240), with the 14-byte
 // SkillReasons filled the way Star::UpdateState does: +0 unlearned and no points, +2/+0xa link unmet, +3 maxed,
 // +9 affinity met, +0xb unlearned, +0xc affinity unmet (+8 reclaim cost, never set outside reclaim mode).
 std::vector<std::string> star_tooltip(unsigned skill_id) {
@@ -341,7 +341,7 @@ std::vector<std::string> star_tooltip(unsigned skill_id) {
   }
   return out;
 }
-// The constellation rollover (Constellation::BuildRollover exe+0x180fd0): name, description, what it requires
+// The constellation rollover (Constellation::BuildRollover exe+0x181140): name, description, what it requires
 // (with what the character has), what completing it gives.
 std::vector<std::string> constellation_tooltip(const DevotionConstellation& c) {
   std::vector<std::string> out;
@@ -355,7 +355,7 @@ std::vector<std::string> constellation_tooltip(const DevotionConstellation& c) {
   if (!c.given.empty()) { core::MessageBuilder m; m.fragment(strings::kGives).fragment(pairs_text(c.given)); out.push_back(m.build()); }
   return out;
 }
-// The picker's candidate filter (SkillSelect::AddCandidates exe+0x1d4af0): the character's class skills (of its
+// The picker's candidate filter (SkillSelect::AddCandidates exe+0x1d4c60): the character's class skills (of its
 // own masteries), item-granted skills and the item skill cache; not a mastery, a default attack, a modifier, a
 // skill with its own record autocast, or a devotion skill (operation != 0); the power's own class filter
 // (IsSkillA on the host's RTTI) and record blacklist. The window lists unlearned ones greyed; here only
@@ -414,7 +414,7 @@ void unbind(void* power, void* star) {
   if (star) exe_ui::devotion_set_star_host(star, 0);
 }
 }  // namespace
-// BindCelestialPower (exe+0x1867f0): the power's template autocast name goes onto the host with SetAutocastSkill,
+// BindCelestialPower (exe+0x186960): the power's template autocast name goes onto the host with SetAutocastSkill,
 // the host's id into the power's devotion parent. A host that already carries another power loses it first
 // (the window asks "replace?"; the caller speaks `replaced_power` instead).
 bool bind_power(unsigned power_skill_id, unsigned host_skill_id, std::string* replaced_power) {
@@ -455,7 +455,7 @@ bool bind_power(unsigned power_skill_id, unsigned host_skill_id, std::string* re
 }
 // ---- reclaiming (a spirit guide's reclaim mode; the star map's own RECLAIM branch, re_devotion_exe.md 2.2/2.3) ----
 unsigned devotion_reclaim_cost() { load_devotion(); void* p = player(); const void* sm = p && g.GetSkillManager ? g.GetSkillManager(p) : nullptr; unsigned n = 0; if (sm && g.SM_GetCurrentDevotionReclamationCost) guarded("devotion reclaim cost", [&] { n = g.SM_GetCurrentDevotionReclamationCost(sm); }); return n; }
-// The celestial power a skill hosts, the way the skills window's SkillReasons byte 7 (exe+0x249445..) decides it: an
+// The celestial power a skill hosts, the way the skills window's SkillReasons byte 7 (exe+0x2495d5..) decides it: an
 // autocast that is NOT the skill's own DBR autocast and whose operation is a power. 0 when it hosts none.
 unsigned hosted_power_id(const void* host_skill) {
   load_devotion();
@@ -472,7 +472,7 @@ unsigned devotion_reclaim_aether_cost() { load_devotion(); void* p = player(); c
 unsigned aether() { load_devotion(); void* p = player(); unsigned n = 0; if (p && g.Player_GetCurrentAether) guarded("GetCurrentAether", [&] { n = g.Player_GetCurrentAether(p); }); return n; }
 bool dev_add_aether(unsigned n) { load_devotion(); void* p = player(); bool ok = p && g.Player_AddAether && guarded("AddAether", [&] { g.Player_AddAether(p, n); }); log::writef("gameapi: dev aether +{} ok={}", n, ok); return ok; }
 // RefreshEligibility's reclaim-mode gates: a learned star that links to this one blocks it; then ComputeReclaimBlockers
-// (exe+0x18c3f0): with this constellation's affinityGiven subtracted (only if it is complete -- the bonus is only
+// (exe+0x18c560): with this constellation's affinityGiven subtracted (only if it is complete -- the bonus is only
 // held while complete), every constellation with a learned star must still meet its affinityRequired; the failing
 // one being this constellation is the "self-lock" (tagRemoveBase). Then the costs.
 std::string can_reclaim_star(const DevotionConstellation& c, const DevotionStar& s, const std::vector<DevotionConstellation>& all) {
@@ -519,7 +519,7 @@ bool reclaim_star(unsigned skill_id, bool& uncompleted) {
         ok = true;
       });
       if (!ok) return false;
-      if (c.complete) {   // RevokeAffinity (exe+0x181910)
+      if (c.complete) {   // RevokeAffinity (exe+0x181a80)
         uncompleted = true;
         if (g.SubtractAffinity) guarded("SubtractAffinity", [&] { for (const auto& [type, amount] : c.given) g.SubtractAffinity(p, type, amount); });
       }

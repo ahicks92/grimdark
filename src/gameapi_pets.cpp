@@ -97,7 +97,7 @@ bool set_pet_stance(unsigned pet_id, int stance) {
   void* pet = object_by_id(pet_id);
   unsigned skill = owner_skill(pet_id);
   if (!p || !pet || !g.SetPetControllerType || !g.UseController || stance < 0 || stance > 2) return false;
-  // The exe's portrait menu sequence (exe+0x252b41): the skill-keyed map first, then every live pet of that skill
+  // The exe's portrait menu sequence (exe+0x252cd1): the skill-keyed map first, then every live pet of that skill
   // switches controller. The map is what the game persists and what a resummon reads.
   bool ok = guarded("SetPetControllerType", [&] { g.SetPetControllerType(p, skill, stance); });
   for (unsigned id : pet_ids()) {

@@ -8375,6 +8375,7 @@ public: bool __cdecl GAME::InventorySack::AddItem(class GAME::Item * __ptr64,boo
 public: bool __cdecl GAME::PlayerInventoryCtrl::AddItem(unsigned int,bool,bool) __ptr64	?AddItem@PlayerInventoryCtrl@GAME@@QEAA_NI_N0@Z
 public: bool __cdecl GAME::PlayerInventoryCtrl::AddItem(class GAME::Vec2,unsigned int,int,bool) __ptr64	?AddItem@PlayerInventoryCtrl@GAME@@QEAA_NVVec2@2@IH_N@Z
 public: class GAME::Vec2 __cdecl GAME::InventorySack::AddItemAndReturnPoint(class GAME::Item * __ptr64) __ptr64	?AddItemAndReturnPoint@InventorySack@GAME@@QEAA?AVVec2@2@PEAVItem@2@@Z
+public: void __cdecl GAME::GameEngine::AddItemAscensionMod(float) __ptr64	?AddItemAscensionMod@GameEngine@GAME@@QEAAXM@Z
 public: void __cdecl GAME::Character::AddItemSkillModifiers(unsigned int,class mem::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct GAME::ItemSkillModifiers::ItemSkillModifierInfo> const & __ptr64) __ptr64	?AddItemSkillModifiers@Character@GAME@@QEAAXIAEBV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UItemSkillModifierInfo@ItemSkillModifiers@GAME@@@mem@@@Z
 public: void __cdecl GAME::SkillManager::AddItemSkillModifiers(unsigned int,class mem::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct GAME::ItemSkillModifiers::ItemSkillModifierInfo> const & __ptr64) __ptr64	?AddItemSkillModifiers@SkillManager@GAME@@QEAAXIAEBV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UItemSkillModifierInfo@ItemSkillModifiers@GAME@@@mem@@@Z
 public: void __cdecl GAME::Character::AddItemSkills(unsigned int,class mem::vector<struct GAME::ItemSkillAugment::ItemSkillInfo> const & __ptr64,bool) __ptr64	?AddItemSkills@Character@GAME@@QEAAXIAEBV?$vector@UItemSkillInfo@ItemSkillAugment@GAME@@@mem@@_N@Z
@@ -8537,12 +8538,13 @@ protected: void __cdecl GAME::ControllerAIStateT<class GAME::ControllerTerracott
 protected: void __cdecl GAME::ControllerAIStateT<class GAME::ControllerTyphonChained,class GAME::Monster>::AddTemporaryState(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const & __ptr64,class GAME::ControllerAIStateData const & __ptr64) __ptr64	?AddTemporaryState@?$ControllerAIStateT@VControllerTyphonChained@GAME@@VMonster@2@@GAME@@IEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBVControllerAIStateData@2@@Z
 protected: void __cdecl GAME::ControllerAI::AddTemporaryState(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const & __ptr64,class GAME::ControllerAIStateData const & __ptr64) __ptr64	?AddTemporaryState@ControllerAI@GAME@@IEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBVControllerAIStateData@2@@Z
 protected: void __cdecl GAME::ControllerAI::AddTemporaryState(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const & __ptr64,class GAME::ControllerAIState * __ptr64) __ptr64	?AddTemporaryState@ControllerAI@GAME@@IEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PEAVControllerAIState@2@@Z
-public: virtual void __cdecl GAME::Skill::AddTimeToLive(int) __ptr64	?AddTimeToLive@Skill@GAME@@UEAAXH@Z
-public: virtual void __cdecl GAME::SkillBuff::AddTimeToLive(int) __ptr64	?AddTimeToLive@SkillBuff@GAME@@UEAAXH@Z
-public: virtual void __cdecl GAME::Skill_BuffSelfDuration::AddTimeToLive(int) __ptr64	?AddTimeToLive@Skill_BuffSelfDuration@GAME@@UEAAXH@Z
-public: virtual void __cdecl GAME::Skill_PassiveOnHitBuffSelf::AddTimeToLive(int) __ptr64	?AddTimeToLive@Skill_PassiveOnHitBuffSelf@GAME@@UEAAXH@Z
-public: virtual void __cdecl GAME::Skill_PassiveOnLifeBuffSelf::AddTimeToLive(int) __ptr64	?AddTimeToLive@Skill_PassiveOnLifeBuffSelf@GAME@@UEAAXH@Z
-public: virtual void __cdecl GAME::Skill_Shapeshift::AddTimeToLive(int) __ptr64	?AddTimeToLive@Skill_Shapeshift@GAME@@UEAAXH@Z
+public: virtual void __cdecl GAME::Skill::AddTimeToLive(unsigned int,int) __ptr64	?AddTimeToLive@Skill@GAME@@UEAAXIH@Z
+public: virtual void __cdecl GAME::SkillBuff::AddTimeToLive(unsigned int,int) __ptr64	?AddTimeToLive@SkillBuff@GAME@@UEAAXIH@Z
+public: virtual void __cdecl GAME::Skill_BuffRadius::AddTimeToLive(unsigned int,int) __ptr64	?AddTimeToLive@Skill_BuffRadius@GAME@@UEAAXIH@Z
+public: virtual void __cdecl GAME::Skill_BuffSelfDuration::AddTimeToLive(unsigned int,int) __ptr64	?AddTimeToLive@Skill_BuffSelfDuration@GAME@@UEAAXIH@Z
+public: virtual void __cdecl GAME::Skill_PassiveOnHitBuffSelf::AddTimeToLive(unsigned int,int) __ptr64	?AddTimeToLive@Skill_PassiveOnHitBuffSelf@GAME@@UEAAXIH@Z
+public: virtual void __cdecl GAME::Skill_PassiveOnLifeBuffSelf::AddTimeToLive(unsigned int,int) __ptr64	?AddTimeToLive@Skill_PassiveOnLifeBuffSelf@GAME@@UEAAXIH@Z
+public: virtual void __cdecl GAME::Skill_Shapeshift::AddTimeToLive(unsigned int,int) __ptr64	?AddTimeToLive@Skill_Shapeshift@GAME@@UEAAXIH@Z
 public: virtual float __cdecl GAME::CharAttributeMod::AddToAccumulator(class GAME::CharAttributeAccumulator & __ptr64,unsigned int,float)const __ptr64	?AddToAccumulator@CharAttributeMod@GAME@@UEBAMAEAVCharAttributeAccumulator@2@IM@Z
 public: virtual float __cdecl GAME::CharAttributeMod_AttackSpeed::AddToAccumulator(class GAME::CharAttributeAccumulator & __ptr64,unsigned int,float)const __ptr64	?AddToAccumulator@CharAttributeMod_AttackSpeed@GAME@@UEBAMAEAVCharAttributeAccumulator@2@IM@Z
 public: virtual float __cdecl GAME::CharAttributeMod_LifeMultiplier::AddToAccumulator(class GAME::CharAttributeAccumulator & __ptr64,unsigned int,float)const __ptr64	?AddToAccumulator@CharAttributeMod_LifeMultiplier@GAME@@UEBAMAEAVCharAttributeAccumulator@2@IM@Z
@@ -8846,8 +8848,10 @@ protected: void __cdecl GAME::ProjectileBase::ApplyFumbleDamage(void) __ptr64	?A
 private: void __cdecl GAME::SetPiece::ApplyGridPositioning(void) __ptr64	?ApplyGridPositioning@SetPiece@GAME@@AEAAXXZ
 public: void __cdecl GAME::CombatManager::ApplyLifeLeech(float) __ptr64	?ApplyLifeLeech@CombatManager@GAME@@QEAAXM@Z
 protected: virtual void __cdecl GAME::SkillActivated::ApplyMeleeDamage(class GAME::Character & __ptr64,class mem::vector<unsigned int> const & __ptr64,struct GAME::AttackInfo const & __ptr64) __ptr64	?ApplyMeleeDamage@SkillActivated@GAME@@MEAAXAEAVCharacter@2@AEBV?$vector@I@mem@@AEBUAttackInfo@2@@Z
+public: virtual void __cdecl GAME::Skill_WPAttack_Radius::ApplyMeleeDamage(class GAME::Character & __ptr64,class mem::vector<unsigned int> const & __ptr64,struct GAME::AttackInfo const & __ptr64) __ptr64	?ApplyMeleeDamage@Skill_WPAttack_Radius@GAME@@UEAAXAEAVCharacter@2@AEBV?$vector@I@mem@@AEBUAttackInfo@2@@Z
 protected: virtual void __cdecl GAME::SkillActivated::ApplyMeleeDamageInherent(class GAME::Character & __ptr64,class mem::vector<unsigned int> const & __ptr64,class GAME::WorldCoords const & __ptr64,unsigned int) __ptr64	?ApplyMeleeDamageInherent@SkillActivated@GAME@@MEAAXAEAVCharacter@2@AEBV?$vector@I@mem@@AEBVWorldCoords@2@I@Z
 protected: virtual void __cdecl GAME::SkillActivated::ApplyRangedDamage(class GAME::Character & __ptr64,class mem::vector<unsigned int> const & __ptr64,struct GAME::AttackInfo const & __ptr64) __ptr64	?ApplyRangedDamage@SkillActivated@GAME@@MEAAXAEAVCharacter@2@AEBV?$vector@I@mem@@AEBUAttackInfo@2@@Z
+public: virtual void __cdecl GAME::Skill_WPAttack_Radius::ApplyRangedDamage(class GAME::Character & __ptr64,class mem::vector<unsigned int> const & __ptr64,struct GAME::AttackInfo const & __ptr64) __ptr64	?ApplyRangedDamage@Skill_WPAttack_Radius@GAME@@UEAAXAEAVCharacter@2@AEBV?$vector@I@mem@@AEBUAttackInfo@2@@Z
 public: virtual void __cdecl GAME::AscendantAltar::ApplyReplicationData(void) __ptr64	?ApplyReplicationData@AscendantAltar@GAME@@UEAAXXZ
 public: virtual void __cdecl GAME::Destructible::ApplyReplicationData(void) __ptr64	?ApplyReplicationData@Destructible@GAME@@UEAAXXZ
 public: virtual void __cdecl GAME::DynamicDoor::ApplyReplicationData(void) __ptr64	?ApplyReplicationData@DynamicDoor@GAME@@UEAAXXZ
@@ -8879,6 +8883,7 @@ public: virtual bool __cdecl GAME::ItemEquipment::AreRequirementsMet(class GAME:
 public: virtual bool __cdecl GAME::ItemRelic::AreRequirementsMet(class GAME::Character const * __ptr64)const __ptr64	?AreRequirementsMet@ItemRelic@GAME@@UEBA_NPEBVCharacter@2@@Z
 public: bool __cdecl GAME::Monster::AreSkillsEnabled(void)const __ptr64	?AreSkillsEnabled@Monster@GAME@@QEBA_NXZ
 public: bool __cdecl GAME::InventorySack::ArrangeUnpositionedItems(void) __ptr64	?ArrangeUnpositionedItems@InventorySack@GAME@@QEAA_NXZ
+public: void __cdecl GAME::FactionPack::AscendantReduceSpawnKills(void) __ptr64	?AscendantReduceSpawnKills@FactionPack@GAME@@QEAAXXZ
 public: void __cdecl GAME::CombatManager::AssignParent(class GAME::Character * __ptr64) __ptr64	?AssignParent@CombatManager@GAME@@QEAAXPEAVCharacter@2@@Z
 public: virtual void __cdecl GAME::FixedItemSkill::AssignParent(class GAME::FixedItem * __ptr64) __ptr64	?AssignParent@FixedItemSkill@GAME@@UEAAXPEAVFixedItem@2@@Z
 public: void __cdecl GAME::DurationDamageManager::AssignParents(class GAME::Character * __ptr64,class GAME::CombatManager * __ptr64) __ptr64	?AssignParents@DurationDamageManager@GAME@@QEAAXPEAVCharacter@2@PEAVCombatManager@2@@Z
@@ -9380,6 +9385,7 @@ public: void __cdecl GAME::Player::CalculateDamageModifiers(void) __ptr64	?Calcu
 public: void __cdecl GAME::Player::CalculateDamageValues(bool) __ptr64	?CalculateDamageValues@Player@GAME@@QEAAX_N@Z
 public: void __cdecl GAME::Player::CalculateDps(float & __ptr64,unsigned int)const __ptr64	?CalculateDps@Player@GAME@@QEBAXAEAMI@Z
 public: unsigned int __cdecl GAME::GameEngine::CalculateExperienceReward(unsigned int,unsigned int,unsigned int,class GAME::WorldVec3 const & __ptr64) __ptr64	?CalculateExperienceReward@GameEngine@GAME@@QEAAIIIIAEBVWorldVec3@2@@Z
+public: void __cdecl GAME::GameEngine::CalculateItemAscensionChance(float,enum GAME::ItemClassification) __ptr64	?CalculateItemAscensionChance@GameEngine@GAME@@QEAAXMW4ItemClassification@2@@Z
 public: virtual unsigned int __cdecl GAME::Character::CalculateMemoryUsage(void)const __ptr64	?CalculateMemoryUsage@Character@GAME@@UEBAIXZ
 public: virtual unsigned int __cdecl GAME::Monster::CalculateMemoryUsage(void)const __ptr64	?CalculateMemoryUsage@Monster@GAME@@UEBAIXZ
 public: virtual unsigned int __cdecl GAME::Skill::CalculateMemoryUsage(void)const __ptr64	?CalculateMemoryUsage@Skill@GAME@@UEBAIXZ
@@ -9687,6 +9693,7 @@ public: void __cdecl GAME::GameEngine::ClearAltarFormulas(void) __ptr64	?ClearAl
 public: void __cdecl GAME::ControllerMonster::ClearAnger(void) __ptr64	?ClearAnger@ControllerMonster@GAME@@QEAAXXZ
 public: void __cdecl GAME::Monster::ClearAnger(void) __ptr64	?ClearAnger@Monster@GAME@@QEAAXXZ
 public: void __cdecl GAME::GameEngine::ClearAwakenedFormulas(void) __ptr64	?ClearAwakenedFormulas@GameEngine@GAME@@QEAAXXZ
+public: void __cdecl GAME::Character::ClearComboCharges(void) __ptr64	?ClearComboCharges@Character@GAME@@QEAAXXZ
 public: void __cdecl GAME::SkillAutoCastController::ClearCooldownBlock(void) __ptr64	?ClearCooldownBlock@SkillAutoCastController@GAME@@QEAAXXZ
 public: virtual void __cdecl GAME::SkillServices_Character::ClearCooldownBlock(unsigned int) __ptr64	?ClearCooldownBlock@SkillServices_Character@GAME@@UEAAXI@Z
 private: void __cdecl GAME::SkillManager::ClearCurrentCharFxPaks(void) __ptr64	?ClearCurrentCharFxPaks@SkillManager@GAME@@AEAAXXZ
@@ -9703,6 +9710,7 @@ protected: virtual void __cdecl GAME::CursorHandlerEnchant::ClearHighlight(void)
 protected: virtual void __cdecl GAME::CursorHandlerRelicCombine::ClearHighlight(void) __ptr64	?ClearHighlight@CursorHandlerRelicCombine@GAME@@MEAAXXZ
 public: virtual void __cdecl GAME::Skill::ClearHitIteration(void) __ptr64	?ClearHitIteration@Skill@GAME@@UEAAXXZ
 public: virtual void __cdecl GAME::Skill_WPAttack::ClearHitIteration(void) __ptr64	?ClearHitIteration@Skill_WPAttack@GAME@@UEAAXXZ
+public: void __cdecl GAME::GameEngine::ClearItemAscensionFormulas(void) __ptr64	?ClearItemAscensionFormulas@GameEngine@GAME@@QEAAXXZ
 public: void __cdecl GAME::PlayerInventoryCtrl::ClearItemsCompatibleWithEnchant(void) __ptr64	?ClearItemsCompatibleWithEnchant@PlayerInventoryCtrl@GAME@@QEAAXXZ
 public: void __cdecl GAME::PlayerInventoryCtrl::ClearItemsCompatibleWithRelic(void) __ptr64	?ClearItemsCompatibleWithRelic@PlayerInventoryCtrl@GAME@@QEAAXXZ
 public: virtual void __cdecl GAME::GameEngineInboundInterface::ClearMutators(enum GAME::MutatorMode) __ptr64	?ClearMutators@GameEngineInboundInterface@GAME@@UEAAXW4MutatorMode@2@@Z
@@ -11975,6 +11983,8 @@ public: class mem::vector<struct std::pair<class std::basic_string<char,struct s
 public: void __cdecl GAME::EquipManager::GetAllNonWeapons(class mem::vector<unsigned int> & __ptr64)const __ptr64	?GetAllNonWeapons@EquipManager@GAME@@QEBAXAEAV?$vector@I@mem@@@Z
 public: void __cdecl GAME::Quest2Repository::GetAllPlayerTokens(class mem::map<unsigned int,class mem::vector<struct GAME::TriggerToken> > & __ptr64)const __ptr64	?GetAllPlayerTokens@Quest2Repository@GAME@@QEBAXAEAV?$map@IV?$vector@UTriggerToken@GAME@@@mem@@@mem@@@Z
 public: class mem::vector<unsigned int> const & __ptr64 __cdecl GAME::PlayerManagerClient::GetAllPlayersInGame(void)const __ptr64	?GetAllPlayersInGame@PlayerManagerClient@GAME@@QEBAAEBV?$vector@I@mem@@XZ
+public: void __cdecl GAME::Character::GetAllSkillMasteries(class mem::vector<unsigned int> & __ptr64)const __ptr64	?GetAllSkillMasteries@Character@GAME@@QEBAXAEAV?$vector@I@mem@@@Z
+public: void __cdecl GAME::SkillManager::GetAllSkillMasteries(class mem::vector<unsigned int> & __ptr64)const __ptr64	?GetAllSkillMasteries@SkillManager@GAME@@QEBAXAEAV?$vector@I@mem@@@Z
 public: void __cdecl GAME::GameEngine::GetAllTargetsInRadius(unsigned int,class GAME::FactionPack const & __ptr64,class GAME::WorldVec3 const & __ptr64,float,class mem::vector<unsigned int> & __ptr64,unsigned int,bool)const __ptr64	?GetAllTargetsInRadius@GameEngine@GAME@@QEBAXIAEBVFactionPack@2@AEBVWorldVec3@2@MAEAV?$vector@I@mem@@I_N@Z
 public: virtual bool __cdecl GAME::Skill::GetAllowMove(void)const __ptr64	?GetAllowMove@Skill@GAME@@UEBA_NXZ
 public: virtual bool __cdecl GAME::Skill_AttackRadiusSpin::GetAllowMove(void)const __ptr64	?GetAllowMove@Skill_AttackRadiusSpin@GAME@@UEBA_NXZ
@@ -12050,6 +12060,7 @@ public: void __cdecl GAME::GameEngine::GetAscendantSkillAttributes(enum GAME::Mo
 public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl GAME::GameEngine::GetAscendantSuffixOverride(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const & __ptr64)const __ptr64	?GetAscendantSuffixOverride@GameEngine@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBV34@@Z
 public: float const __cdecl GAME::GameEngine::GetAscendantSuperBossSpawnMod(void)const __ptr64	?GetAscendantSuperBossSpawnMod@GameEngine@GAME@@QEBA?BMXZ
 public: float __cdecl GAME::GameEngine::GetAscendantTreasureTroveChance(void)const __ptr64	?GetAscendantTreasureTroveChance@GameEngine@GAME@@QEBAMXZ
+public: void __cdecl GAME::GameEngine::GetAscendedItemName(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const & __ptr64,class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > & __ptr64,class GAME::RandomUniform & __ptr64) __ptr64	?GetAscendedItemName@GameEngine@GAME@@QEAAXAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAV34@AEAVRandomUniform@2@@Z
 public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl GAME::GameEngine::GetAscendedItemSymbolName(enum GAME::ItemClassification)const __ptr64	?GetAscendedItemSymbolName@GameEngine@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4ItemClassification@2@@Z
 public: bool __cdecl GAME::ItemAscensionFormula::GetAscendedName(class mem::vector<unsigned int>,unsigned int,class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > & __ptr64,class GAME::RandomUniform & __ptr64) __ptr64	?GetAscendedName@ItemAscensionFormula@GAME@@QEAA_NV?$vector@I@mem@@IAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAVRandomUniform@2@@Z
 public: void __cdecl GAME::GameEngine::GetAscensionReagentDropChance(enum GAME::MonsterClassification,class mem::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,float> & __ptr64)const __ptr64	?GetAscensionReagentDropChance@GameEngine@GAME@@QEBAXW4MonsterClassification@2@AEAV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@M@mem@@@Z
@@ -12441,6 +12452,7 @@ public: virtual unsigned int __cdecl GAME::Character::GetConvertLevel(void)const
 public: virtual unsigned int __cdecl GAME::Monster::GetConvertLevel(void)const __ptr64	?GetConvertLevel@Monster@GAME@@UEBAIXZ
 public: bool __cdecl GAME::CombatAttribute::GetConverted(void)const __ptr64	?GetConverted@CombatAttribute@GAME@@QEBA_NXZ
 public: virtual int __cdecl GAME::Skill::GetCooldownCharges(void)const __ptr64	?GetCooldownCharges@Skill@GAME@@UEBAHXZ
+public: void __cdecl GAME::SkillSecondary_PetModifier::GetCooldownCharges(class GAME::SkillProfile_Modifiers & __ptr64,int)const __ptr64	?GetCooldownCharges@SkillSecondary_PetModifier@GAME@@QEBAXAEAVSkillProfile_Modifiers@2@H@Z
 public: virtual int __cdecl GAME::Skill_Modifier::GetCooldownCharges(void)const __ptr64	?GetCooldownCharges@Skill_Modifier@GAME@@UEBAHXZ
 public: virtual float __cdecl GAME::HotSlotOption::GetCooldownCompletion(void) __ptr64	?GetCooldownCompletion@HotSlotOption@GAME@@UEAAMXZ
 public: virtual float __cdecl GAME::HotSlotOptionPotion::GetCooldownCompletion(void) __ptr64	?GetCooldownCompletion@HotSlotOptionPotion@GAME@@UEAAMXZ
@@ -12663,6 +12675,7 @@ public: class GAME::CombatAttributeAccumulator & __ptr64 __cdecl GAME::CharAttri
 public: class GAME::DefenseAttributeStore_Skill const & __ptr64 __cdecl GAME::SkillProfile::GetDefenseAttrStore(void)const __ptr64	?GetDefenseAttrStore@SkillProfile@GAME@@QEBAAEBVDefenseAttributeStore_Skill@2@XZ
 public: virtual float __cdecl GAME::Character::GetDefenseAttributeCap(void)const __ptr64	?GetDefenseAttributeCap@Character@GAME@@UEBAMXZ
 public: virtual float __cdecl GAME::Monster::GetDefenseAttributeCap(void)const __ptr64	?GetDefenseAttributeCap@Monster@GAME@@UEBAMXZ
+public: virtual float __cdecl GAME::Pet::GetDefenseAttributeCap(void)const __ptr64	?GetDefenseAttributeCap@Pet@GAME@@UEBAMXZ
 public: virtual float __cdecl GAME::Player::GetDefenseAttributeCap(void)const __ptr64	?GetDefenseAttributeCap@Player@GAME@@UEBAMXZ
 public: virtual void __cdecl GAME::AttributePak::GetDefenseAttributes(class GAME::CombatAttributeAccumulator & __ptr64,unsigned int,float)const __ptr64	?GetDefenseAttributes@AttributePak@GAME@@UEBAXAEAVCombatAttributeAccumulator@2@IM@Z
 public: void __cdecl GAME::CharacterBio::GetDefenseAttributes(class GAME::CombatAttributeAccumulator & __ptr64)const __ptr64	?GetDefenseAttributes@CharacterBio@GAME@@QEBAXAEAVCombatAttributeAccumulator@2@@Z
@@ -15879,7 +15892,7 @@ public: virtual float __cdecl GAME::Player::GetReflectCap(void)const __ptr64	?Ge
 public: float __cdecl GAME::SkillManager::GetReflectLinkDamageReduction(void)const __ptr64	?GetReflectLinkDamageReduction@SkillManager@GAME@@QEBAMXZ
 public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl GAME::Skill::GetRefreshCooldownSkillName(void)const __ptr64	?GetRefreshCooldownSkillName@Skill@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
 public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl GAME::Skill::GetRefreshCooldownTrigger(void)const __ptr64	?GetRefreshCooldownTrigger@Skill@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
-public: void __cdecl GAME::Skill::GetRefreshDurationModifierData(class GAME::SkillProfile_Modifiers & __ptr64,int) __ptr64	?GetRefreshDurationModifierData@Skill@GAME@@QEAAXAEAVSkillProfile_Modifiers@2@H@Z
+public: void __cdecl GAME::Skill::GetRefreshDurationModifierData(class mem::map<unsigned int,int> & __ptr64,int) __ptr64	?GetRefreshDurationModifierData@Skill@GAME@@QEAAXAEAV?$map@IH@mem@@H@Z
 public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl GAME::Skill::GetRefreshDurationSkillName(void)const __ptr64	?GetRefreshDurationSkillName@Skill@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
 public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl GAME::Skill::GetRefreshDurationTrigger(void)const __ptr64	?GetRefreshDurationTrigger@Skill@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
 public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl GAME::Skill::GetRefreshSkillTag(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const & __ptr64)const __ptr64	?GetRefreshSkillTag@Skill@GAME@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBV34@@Z

@@ -385,7 +385,7 @@ std::vector<Faction> factions() {
     const void* pack = g.GetFactionPack(p);
     if (!pack) return;
     for (int t = -3; t <= 46; ++t) {   // FactionType runs -3..46 (the 50-entry jump table in GetFactionTag)
-      // The game's own window (exe+0x1c1ba0) shows a faction iff the player has touched it or it is a starting
+      // The game's own window (exe+0x1c1d10) shows a faction iff the player has touched it or it is a starting
       // faction, and it is not hidden. NOT GameEngine::IsFactionPlayerVisible: that export is a hardcoded
       // base-game whitelist (types 1, 6, 8, 10, 11, 13, 14) and says no to every expansion faction (User9..User16).
       if (g.FactionPack_IsModified && g.IsStartingFaction && g.IsHiddenFaction) {

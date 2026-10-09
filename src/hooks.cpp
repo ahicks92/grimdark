@@ -649,7 +649,7 @@ static void ProcessUserInput_hook(void* self) {
 }
 
 // ======================= per-frame tick: Engine::Update() on the game thread =======================
-// The exe's main loop (exe+0xee4d..0xef91, read 2026-08-21) runs per iteration: display->Update(dt) (render),
+// The exe's main loop (exe+0xee3d..0xef91, read 2026-08-21) runs per iteration: display->Update(dt) (render),
 // the input device poll, SoundManager::Update, PresentSurface, Steamworks::Update, Engine::Update(0,0,0,0).
 // The display object is the engine's Display in the menus but the exe's own subclass in the world, whose
 // Update override never reaches the exported Display::Update -- so the tick rides Engine::Update, which both
@@ -777,7 +777,7 @@ static void remove_existing_game_hook(HMODULE di) {
 
 // Alt+Enter. WinWindow::WindowProc turns WM_SYSKEYDOWN VK_RETURN with the Alt bit (Engine.dll+0x217e1a) into the
 // exported WinWindow::OnToggleFullscreen, which walks its WindowEventHandlers; the exe's handler switches the display
-// mode and, in the world, rebuilds the whole InGameUI (exe+0x20890 from the main loop's resize block) "restoring" the
+// mode and, in the world, rebuilds the whole InGameUI (exe+0x20880 from the main loop's resize block) "restoring" the
 // Options screen's tab: it reads the OLD Options screen's tab index (-1 when that screen was never created, i.e. the
 // pause menu's Options was never opened this session), re-shows the new host (which constructs a fresh Options screen
 // whose ctor ends with SetCurrentTab(0)), then calls SetCurrentTab(-1): exe+0xcd300 has no bounds check and takes

@@ -33,7 +33,7 @@ void load_loot() {
   GAPI_LOAD(g, IsExpansion3Loaded, Engine_IsExpansion3Loaded);
   GAPI_LOAD(g, gEngine, gEngine);
 }
-// The window's own order (four columns, ctor exe+0x1c7c30), each option's caption tag, its column and the
+// The window's own order (four columns, ctor exe+0x1c7da0), each option's caption tag, its column and the
 // factory default (Player::Player: 0..17 and 39 on). The English is the base game's text for the fallback only;
 // the spoken label is the localized tag. Tag numbers are NOT index+1 past 17 (later additions were appended to
 // the enum but numbered by window position); 39 is built only with expansion 3 loaded.

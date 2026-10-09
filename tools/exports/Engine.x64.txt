@@ -3039,6 +3039,7 @@ public: class GAME::WorldVec3 __cdecl GAME::WorldABBox::GetMax(void)const __ptr6
 public: unsigned int __cdecl GAME::GameInfo::GetMaxLevel(void)const __ptr64	?GetMaxLevel@GameInfo@GAME@@QEBAIXZ
 public: int __cdecl GAME::GraphicsEngine::GetMaxNumBones(void)const __ptr64	?GetMaxNumBones@GraphicsEngine@GAME@@QEBAHXZ
 public: unsigned int __cdecl GAME::GameInfo::GetMaxPlayers(void) __ptr64	?GetMaxPlayers@GameInfo@GAME@@QEAAIXZ
+public: float __cdecl GAME::GraphicsEngine::GetMaxShadowDistance(void)const __ptr64	?GetMaxShadowDistance@GraphicsEngine@GAME@@QEBAMXZ
 public: float __cdecl GAME::CurveData::GetMaxY(void)const __ptr64	?GetMaxY@CurveData@GAME@@QEBAMXZ
 public: unsigned int __cdecl GAME::BaseResourceManager::GetMemoryUsage(void)const __ptr64	?GetMemoryUsage@BaseResourceManager@GAME@@QEBAIXZ
 public: class GAME::GraphicsMesh const * __ptr64 __cdecl GAME::GraphicsMeshInstance::GetMesh(void)const __ptr64	?GetMesh@GraphicsMeshInstance@GAME@@QEBAPEBVGraphicsMesh@2@XZ
@@ -4688,8 +4689,8 @@ public: void __cdecl GAME::Decal::RebuildMesh(void) __ptr64	?RebuildMesh@Decal@G
 public: void __cdecl GAME::ImpassableData::RecalculateRegionBox(void) __ptr64	?RecalculateRegionBox@ImpassableData@GAME@@QEAAXXZ
 protected: class GAME::NetPacket * __ptr64 __cdecl GAME::ConnectionManager::ReceiveControlPacket(class GAME::Socket * __ptr64 & __ptr64) __ptr64	?ReceiveControlPacket@ConnectionManager@GAME@@IEAAPEAVNetPacket@2@AEAPEAVSocket@2@@Z
 protected: void __cdecl GAME::TerrainPatch::RecreateGrassBlocks(void) __ptr64	?RecreateGrassBlocks@TerrainPatch@GAME@@IEAAXXZ
-public: void __cdecl GAME::GraphicsMTRenderer::RecreateRenderTargets(unsigned int,unsigned int) __ptr64	?RecreateRenderTargets@GraphicsMTRenderer@GAME@@QEAAXII@Z
-public: void __cdecl GAME::GraphicsCanvas::RecreateSceneRenderTargets(unsigned int,unsigned int) __ptr64	?RecreateSceneRenderTargets@GraphicsCanvas@GAME@@QEAAXII@Z
+public: void __cdecl GAME::GraphicsMTRenderer::RecreateRenderTargets(unsigned int,unsigned int,unsigned int,unsigned int) __ptr64	?RecreateRenderTargets@GraphicsMTRenderer@GAME@@QEAAXIIII@Z
+public: void __cdecl GAME::GraphicsCanvas::RecreateSceneRenderTargets(unsigned int,unsigned int,unsigned int,unsigned int) __ptr64	?RecreateSceneRenderTargets@GraphicsCanvas@GAME@@QEAAXIIII@Z
 public: bool __cdecl GAME::DecalTypeMgr::ReferenceDecalType(class GAME::DecalType const * __ptr64) __ptr64	?ReferenceDecalType@DecalTypeMgr@GAME@@QEAA_NPEBVDecalType@2@@Z
 public: float & __ptr64 __cdecl GAME::WaterType::Reflectivity(void) __ptr64	?Reflectivity@WaterType@GAME@@QEAAAEAMXZ
 public: float __cdecl GAME::WaterType::Reflectivity(void)const __ptr64	?Reflectivity@WaterType@GAME@@QEBAMXZ
@@ -5382,6 +5383,7 @@ public: void __cdecl GAME::Decal::SetMaxAngle(float) __ptr64	?SetMaxAngle@Decal@
 public: void __cdecl GAME::GraphicsMeshInstance::SetMaxGlobalBlendAlphaMultiplier(float) __ptr64	?SetMaxGlobalBlendAlphaMultiplier@GraphicsMeshInstance@GAME@@QEAAXM@Z
 public: void __cdecl GAME::ConnectionManager::SetMaxHosts(unsigned int) __ptr64	?SetMaxHosts@ConnectionManager@GAME@@QEAAXI@Z
 public: void __cdecl GAME::GameInfo::SetMaxPlayers(unsigned int) __ptr64	?SetMaxPlayers@GameInfo@GAME@@QEAAXI@Z
+public: void __cdecl GAME::GraphicsEngine::SetMaxShadowDistance(float) __ptr64	?SetMaxShadowDistance@GraphicsEngine@GAME@@QEAAXM@Z
 public: void __cdecl GAME::BaseResourceManager::SetMemoryBudget(unsigned int) __ptr64	?SetMemoryBudget@BaseResourceManager@GAME@@QEAAXI@Z
 public: void __cdecl GAME::Options::SetMenuSceneToDefault(void) __ptr64	?SetMenuSceneToDefault@Options@GAME@@QEAAXXZ
 public: void __cdecl GAME::Actor::SetMesh(char const * __ptr64) __ptr64	?SetMesh@Actor@GAME@@QEAAXPEBD@Z
@@ -6206,8 +6208,6 @@ public: static float const GAME::FogOfWar::kInvScale	?kInvScale@FogOfWar@GAME@@2
 private: static unsigned int const GAME::FOWManager::kMagic	?kMagic@FOWManager@GAME@@0IB
 private: static int const GAME::SoundManager::kMaxConcurrentSounds	?kMaxConcurrentSounds@SoundManager@GAME@@0HB
 private: static unsigned int const GAME::DecalSet::kMaxDecals	?kMaxDecals@DecalSet@GAME@@0IB
-protected: static unsigned int const GAME::GraphicsMTRenderer::kMaxLargePointShadowTargets	?kMaxLargePointShadowTargets@GraphicsMTRenderer@GAME@@1IB
-protected: static unsigned int const GAME::GraphicsMTRenderer::kMaxSmallPointShadowTargets	?kMaxSmallPointShadowTargets@GraphicsMTRenderer@GAME@@1IB
 private: static unsigned int const GAME::NavManager::kMaxTileCacheMemUsage	?kMaxTileCacheMemUsage@NavManager@GAME@@0IB
 private: static unsigned int const GAME::DecalSet::kMaxTypes	?kMaxTypes@DecalSet@GAME@@0IB
 private: static int const GAME::Jukebox::kMusicSwitchDelay	?kMusicSwitchDelay@Jukebox@GAME@@0HB

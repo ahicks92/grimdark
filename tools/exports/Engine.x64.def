@@ -3041,6 +3041,7 @@ EXPORTS
     ?GetMaxLevel@GameInfo@GAME@@QEBAIXZ
     ?GetMaxNumBones@GraphicsEngine@GAME@@QEBAHXZ
     ?GetMaxPlayers@GameInfo@GAME@@QEAAIXZ
+    ?GetMaxShadowDistance@GraphicsEngine@GAME@@QEBAMXZ
     ?GetMaxY@CurveData@GAME@@QEBAMXZ
     ?GetMemoryUsage@BaseResourceManager@GAME@@QEBAIXZ
     ?GetMesh@GraphicsMeshInstance@GAME@@QEBAPEBVGraphicsMesh@2@XZ
@@ -4690,8 +4691,8 @@ EXPORTS
     ?RecalculateRegionBox@ImpassableData@GAME@@QEAAXXZ
     ?ReceiveControlPacket@ConnectionManager@GAME@@IEAAPEAVNetPacket@2@AEAPEAVSocket@2@@Z
     ?RecreateGrassBlocks@TerrainPatch@GAME@@IEAAXXZ
-    ?RecreateRenderTargets@GraphicsMTRenderer@GAME@@QEAAXII@Z
-    ?RecreateSceneRenderTargets@GraphicsCanvas@GAME@@QEAAXII@Z
+    ?RecreateRenderTargets@GraphicsMTRenderer@GAME@@QEAAXIIII@Z
+    ?RecreateSceneRenderTargets@GraphicsCanvas@GAME@@QEAAXIIII@Z
     ?ReferenceDecalType@DecalTypeMgr@GAME@@QEAA_NPEBVDecalType@2@@Z
     ?Reflectivity@WaterType@GAME@@QEAAAEAMXZ
     ?Reflectivity@WaterType@GAME@@QEBAMXZ
@@ -5384,6 +5385,7 @@ EXPORTS
     ?SetMaxGlobalBlendAlphaMultiplier@GraphicsMeshInstance@GAME@@QEAAXM@Z
     ?SetMaxHosts@ConnectionManager@GAME@@QEAAXI@Z
     ?SetMaxPlayers@GameInfo@GAME@@QEAAXI@Z
+    ?SetMaxShadowDistance@GraphicsEngine@GAME@@QEAAXM@Z
     ?SetMemoryBudget@BaseResourceManager@GAME@@QEAAXI@Z
     ?SetMenuSceneToDefault@Options@GAME@@QEAAXXZ
     ?SetMesh@Actor@GAME@@QEAAXPEBD@Z
@@ -6208,8 +6210,6 @@ EXPORTS
     ?kMagic@FOWManager@GAME@@0IB
     ?kMaxConcurrentSounds@SoundManager@GAME@@0HB
     ?kMaxDecals@DecalSet@GAME@@0IB
-    ?kMaxLargePointShadowTargets@GraphicsMTRenderer@GAME@@1IB
-    ?kMaxSmallPointShadowTargets@GraphicsMTRenderer@GAME@@1IB
     ?kMaxTileCacheMemUsage@NavManager@GAME@@0IB
     ?kMaxTypes@DecalSet@GAME@@0IB
     ?kMusicSwitchDelay@Jukebox@GAME@@0HB

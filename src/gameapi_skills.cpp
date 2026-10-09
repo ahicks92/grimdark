@@ -425,7 +425,7 @@ unsigned mastery_enum_of(const void* s) {
   if (!m || !g.Skill_IsSkillTheMasterySkill || !g.Skill_IsSkillTheMasterySkill(m) || !g.Mastery_GetEnumeration) return ~0u;
   return g.Mastery_GetEnumeration(m);
 }
-// exe+0x2487c0: at the cap -- augmented skills against the ultimate level, the rest against the max.
+// exe+0x248950: at the cap -- augmented skills against the ultimate level, the rest against the max.
 bool at_cap(const void* s) {
   unsigned max = g.Skill_GetMaxLevel ? g.Skill_GetMaxLevel(s) : 0;
   if (g.Skill_IsAugmented && g.Skill_IsAugmented(s)) {
@@ -434,7 +434,7 @@ bool at_cap(const void* s) {
   }
   return current_level(s) >= max;
 }
-// exe+0x248850: the skillDependancy records -- all learned when skillDependancyAll, else at least one. A record the
+// exe+0x2489e0: the skillDependancy records -- all learned when skillDependancyAll, else at least one. A record the
 // character does not have is skipped in "all" mode and counts as unlearned in "any" mode, as in the exe.
 bool dependencies_unmet(const void* s) {
   const void* sm = skill_manager();
@@ -453,7 +453,7 @@ bool dependencies_unmet(const void* s) {
   }
   return all ? false : !any_learned;
 }
-// exe+0x2489f0: an exclusive skill loses to a learned exclusive skill of higher level; on a tie, to one of a
+// exe+0x248b80: an exclusive skill loses to a learned exclusive skill of higher level; on a tie, to one of a
 // higher mastery enumeration, then to one of higher augmented level. The exe walks SkillManager::GetActiveSkillList
 // (which it lets the game fill); the learned UI skills stand in for it here.
 bool exclusive_conflict(const void* s) {
@@ -481,7 +481,7 @@ const SkillInfo* mastery_dependant(const std::vector<SkillInfo>& list, unsigned 
   for (const SkillInfo& s : list) if (!s.is_mastery && s.mastery_id == mastery_id && s.level > 0 && s.mastery_req >= lvl) return &s;
   return nullptr;
 }
-// The skills window's SkillReasons, as its builder exe+0x2492b0 fills it for an icon (14 bytes):
+// The skills window's SkillReasons, as its builder exe+0x249440 fills it for an icon (14 bytes):
 //   0 no skill points   1 mastery rank too low   2 base skill not learned   3 at the cap
 //   4 a new mastery with no mastery slot left   5 skill dependencies unmet   6 exclusive-skill conflict
 //   7 level 1 hosting a celestial power   8 reclaim costs more than you have   0xa level 1 with modifiers holding points
@@ -525,7 +525,7 @@ std::vector<std::string> skill_window_tooltip(const void* skill, bool reclaim) {
     if (std::find(full.begin(), full.end(), l) == full.end()) out.push_back(std::move(l));
   return out;
 }
-// The exe's quickbar picker filter (exe+0x1e7860, run over Character::GetUISkillList for a number-bar slot):
+// The exe's quickbar picker filter (exe+0x1e79d0, run over Character::GetUISkillList for a number-bar slot):
 // learned (current level), a primary or secondary skill, not auto-toggled, and -- when it belongs to another skill
 // set (a weapon set's item skills) -- only a global, non-sub skill the manager allows. Mouse slot 10 additionally
 // requires IsPrimary and the potion slots take no skill; neither applies to the number bars.
@@ -604,7 +604,7 @@ std::string dump_masteries(std::string (*aim)(const void* skill)) {
   return out;
 }
 // Whether the character can put a point into this skill right now, and if not, a spoken reason. Replicates the
-// game's own skill-icon gate (the SkillReasons builder exe+0x2492b0): points>0, below max, and either the
+// game's own skill-icon gate (the SkillReasons builder exe+0x249440): points>0, below max, and either the
 // mastery skill (with a free mastery slot when committing a new one) or a non-mastery whose mastery bar has
 // reached its GetMasteryLevelRequirement and whose base skill (for a sub-skill) is learned -- that last test is the
 // game's own Skill::IsBaseSkillEnabled (walks GetBaseSkills; true when there is none), so it covers Skill_Modifier
@@ -639,8 +639,8 @@ unsigned reclaim_cost() {
   return n;
 }
 // Why a point can't be reclaimed right now (spirit-guide mode assumed), or "" if it can. Replicates the game's
-// reclaim gate, which lives in the skills window's icon-enable pass (SkillReasons builder exe+0x2492b0, consumed by
-// the pane update exe+0x247bf6..0x247cde), NOT in Game.dll: the exe's "-" click only refuses a mastery at level 1
+// reclaim gate, which lives in the skills window's icon-enable pass (SkillReasons builder exe+0x249440, consumed by
+// the pane update exe+0x247d86..0x247cde), NOT in Game.dll: the exe's "-" click only refuses a mastery at level 1
 // and trusts Skill::DecrementSkillLevel, which validates nothing (level > 0 -> subtract, return true). So a direct
 // DecrementSkillLevel orphans modifiers / hosted powers / a mastery's dependants -- every reclaim path must pass here.
 //   byte 0xb  level 0                                        -> nothing to reclaim
@@ -690,7 +690,7 @@ std::string can_reclaim_skill(const void* skill) {
   });
   return reason;
 }
-// The skills window's own "+" (exe+0x248505): points left, below max, ReleasePets, IncrementSkillLevel(1),
+// The skills window's own "+" (exe+0x248695): points left, below max, ReleasePets, IncrementSkillLevel(1),
 // SubtractSkillPoint. Gated by can_learn_skill so requirements (mastery rank, modifier base) are respected.
 bool learn_skill(const void* skill) {
   load_skills(); void* p = player();
@@ -710,7 +710,7 @@ bool learn_skill(const void* skill) {
   log::writef("gameapi: learn skill {} ok={}", skill, ok);
   return ok;
 }
-// The window's reallocation "-" (exe+0x248459): never the mastery's last point; DecrementSkillLevel(1), then
+// The window's reallocation "-" (exe+0x2485e9): never the mastery's last point; DecrementSkillLevel(1), then
 // UseReclamationPoints(1) (undone on refusal), ReleasePets, AddSkillPoints(1). Gated by can_reclaim_skill, because
 // the game's own gate is the greyed icon, which this direct path does not see.
 bool refund_skill(const void* skill) {
@@ -771,7 +771,7 @@ std::string dump_skills() {
 }
 
 // ---- the character sheet ----
-// The first stat tab's rows (exe+0x13d870): level and class, the attributes (CharAttributeType 4 health, 5
+// The first stat tab's rows (exe+0x13d9d0): level and class, the attributes (CharAttributeType 4 health, 5
 // energy, 1 physique, 2 cunning, 3 spirit), offensive / defensive ability, DPS, and the ten resistances by
 // defense type. Resistances use the character's own defense accumulator (the exe adds the skill manager's and
 // bio's contributions and the reductions on top; first pass).
@@ -831,8 +831,8 @@ std::vector<Stat> character_sheet() {
   }
   return out;
 }
-// ---- armor: the sheet's "Armor Rating" and its breakdown (static RE 2026-09-23, exe+0x13e28b..0x13ed2b; the rollover
-// exe+0x268600) ----
+// ---- armor: the sheet's "Armor Rating" and its breakdown (static RE 2026-09-23, exe+0x13e3eb..0x13ed2b; the rollover
+// exe+0x2687a0) ----
 // Grim Dawn armor is per body region: every hit rolls one region (CombatManager::PickRegion, weights from
 // combatformulas.dbr: torso 26, legs 20, head 15, shoulders 15, arms 12, feet 12) and only protection tagged with that
 // region or with region 0 ("all": skills, devotions, jewelry, weapons) applies (CombatAttributeDefense_
@@ -917,7 +917,7 @@ bool armor_breakdown(ArmorBreakdown& out) {
   return ok && !out.parts.empty();
 }
 
-// The sheet's "+" buttons (exe+0x141090): through the controller, with the life / energy increments.
+// The sheet's "+" buttons (exe+0x1411f0): through the controller, with the life / energy increments.
 bool spend_attribute_point(int which) {
   load_skills(); void* p = player(); void* c = controller();
   if (!p || !c || !g.GetModifierPoints || !g.Inc_Life) return false;

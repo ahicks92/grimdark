@@ -33,7 +33,7 @@ void add_button(GraphBuilder& b, const std::string& id, const WidgetB& btn, void
 // Progress"), questNameString +0x2b0, XPValue +0x7e0, the Close button +0x388 through registry +0x738. The game
 // opens it from the quest-completed event while the conversation window is still up and positions it beside the
 // dialog, so this screen sits ABOVE the conversation (30). Shown-ness is the base control's +0x28 byte (the
-// window's handler sets it directly and its Close routine exe+0x2285e0 clears it); the generic IsVisible slot
+// window's handler sets it directly and its Close routine exe+0x228770 clears it); the generic IsVisible slot
 // reads +0x68 and stays 0 for this window (verified live 2026-09-06, "Old Scars"). The reward rows are what the
 // task handed out, captured from the game's reward pipeline (src/quest_rewards.cpp) -- the window itself only
 // draws icons for them; the XP line is the window's own text.
@@ -75,7 +75,7 @@ class ShrineScreen : public WindowScreen {
     add_text(b, "shrine.title", at(w, 0x540));
     add_text(b, "shrine.info", at(w, 0x638));
     // What it asks for: the game's own offering names off the shrine object the window shows (its id at +0xa4,
-    // read by the exe's fill at exe+0x1d170a). The three offering boxes (+0x8e0/+0xbd0/+0xec0) are item icons;
+    // read by the exe's fill at exe+0x1d187a). The three offering boxes (+0x8e0/+0xbd0/+0xec0) are item icons;
     // their text elements read empty (the user's report 2026-08-26).
     unsigned shrine_id = 0; exe_ui::peek_u32((char*)w.p + 0xa4, shrine_id);
     int i = 0;
