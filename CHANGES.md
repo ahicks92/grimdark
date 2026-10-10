@@ -1,4 +1,4 @@
-# Unreleased
+# 0.5.4 (2026-10-09)
 
 - Works with Grim Dawn 1.3.1.1 (the October 8 hotfix). The previous game version is no longer supported.
 
