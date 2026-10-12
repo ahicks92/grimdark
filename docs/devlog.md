@@ -1222,3 +1222,11 @@ CLAUDE.md "Traps and lessons"; the mechanism docs are `docs/*.md`.
   Start, vitals, NPC review, inventory and skills windows through HandleKeyAction. Not verified: synthetic Ctrl+C did
   not open the inventory and Tab from a window's column back to its tab row did nothing (navigator side, not game
   data; may predate the patch -- needs real keys).
+
+## 2026-10-12: Shift+W/A/S/D dropped in text fields (issue #4)
+The game-key filter in `app.cpp` applied the world's chord rules (Shift+W/A/S/D = free cursor, Ctrl+digit = quickbar
+read) on every screen, after the screen's `passes_key`, so an edit session's capital W/A/S/D press was swallowed
+("DELETE" typed "ELETE"). `Screen::passes_key` now takes the event's released/shift/ctrl flags and both rules live in
+`InGameScreen::passes_key`; the filter just asks the current screen. Reported with a verified alternative fix by
+ohylli (gate on `captures_raw_input()`); this version scopes the rules to the screen that owns them instead. Not
+re-tested live.

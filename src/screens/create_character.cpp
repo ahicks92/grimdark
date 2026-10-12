@@ -41,7 +41,7 @@ class CreateCharacterScreen : public Screen {
   bool exclusive() const override { return true; }
   bool captures_raw_input() const override { return edit_.active(); }
   bool allows_typeahead() const override { return !edit_.active(); }
-  bool passes_key(int code) const override { return edit_.passes_key(code); }
+  bool passes_key(int code, bool, bool, bool) const override { return edit_.passes_key(code); }
   std::vector<ScreenAction> actions() override {
     return {{std::string(action_ids::Back), [] { Form f = form(); if (f) f.buttons[1].activate(); }}};
   }

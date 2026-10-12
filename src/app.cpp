@@ -296,16 +296,7 @@ void init() {
   register_actions();
   hooks::set_game_key_filter([](int code, bool released, bool shift, bool ctrl) {
     Screen* s = g_screens.current();
-    if (!s || !s->passes_key(code)) return false;
-    // Shift+W/A/S/D move the free cursor (cursor.*), not the character: the press is ours. The RELEASE always
-    // passes: a W held before Shift went down is the game's own move, and swallowing its release would leave the
-    // exe's held byte set (the character runs on) -- a spurious up for a key the game never saw down is harmless.
-    if ((code == 0x11 || code == 0x1e || code == 0x1f || code == 0x20) && !released && shift) return false;
-    // Ctrl+<digit> is the mod's quickbar-read chord (read.slot1..10), never the game's -- the game binds
-    // single buttons only, so it never wants a modified digit. The passthrough is by code alone (modifier
-    // blind), so without this a real Ctrl+1 would ALSO activate the game's slot 1 you only meant to read.
-    if ((code >= 0x02 && code <= 0x0b) && ctrl) return false;
-    return true;
+    return s && s->passes_key(code, released, shift, ctrl);
   });
   g_screens.register_screen(screens::make_unsupported());
   g_screens.register_screen(screens::make_main_menu());

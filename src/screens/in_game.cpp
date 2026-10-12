@@ -152,7 +152,16 @@ class InGameScreen : public Screen {
   // lifted to Ctrl + its default key by app.cpp's "game.*" actions (which inject the plain key), and the
   // rest of the keyboard is ours. See docs/controls.md for the game's defaults.
   bool owns_keyboard() const override { return true; }
-  bool passes_key(int code) const override {
+  bool passes_key(int code, bool released, bool shift, bool ctrl) const override {
+    // Shift+W/A/S/D move the free cursor (cursor.*), not the character: the press is ours. The RELEASE always
+    // passes: a W held before Shift went down is the game's own move, and swallowing its release would leave the
+    // exe's held byte set (the character runs on) -- a spurious up for a key the game never saw down is harmless.
+    // (World-only: a text field passes Shift+letters, which are capitals.)
+    if ((code == 0x11 || code == 0x1e || code == 0x1f || code == 0x20) && !released && shift) return false;
+    // Ctrl+<digit> is the mod's quickbar-read chord (read.slot1..10), never the game's -- the game binds
+    // single buttons only, so it never wants a modified digit. The passthrough is by code alone, so without
+    // this a real Ctrl+1 would ALSO activate the game's slot 1 you only meant to read.
+    if ((code >= 0x02 && code <= 0x0b) && ctrl) return false;
     static const int direct[] = {0x11, 0x1e, 0x1f, 0x20,                                       // W A S D
                                  0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,   // 1..9 0 quickbar slots
                                  0x15,                                                         // Y quickbar switch (the game's own; we announce the page in quickbar_tick)

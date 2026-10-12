@@ -58,8 +58,8 @@ class Screen {
   // or the game itself must handle the keys (in-game movement, a text field being typed into).
   virtual bool owns_keyboard() const { return true; }
   // While this screen owns the keyboard: key codes it still lets through to the game (a text field being
-  // typed into gets the letters; our navigation keys stay ours).
-  virtual bool passes_key(int /*code*/) const { return false; }
+  // typed into gets the letters; our navigation keys stay ours). The modifiers are the event's own flags.
+  virtual bool passes_key(int /*code*/, bool /*released*/, bool /*shift*/, bool /*ctrl*/) const { return false; }
   // A true modal: blocks the categories of screens below it. (Any screen that owns_keyboard() already does
   // that for key actions -- see ScreenManager::live_categories; exclusive also marks intent for the stack.)
   virtual bool exclusive() const { return false; }
