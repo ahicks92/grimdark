@@ -363,6 +363,10 @@ ENTRIES = [
     ("Player_GetCompatibleItems", "Game", r"GAME::Player::GetCompatibleItems\("),
     ("Character_UseItemOn", "Game", r"GAME::Character::UseItemOn\("),
     ("ControllerCharacter_SendDropItemRandom", "Game", r"GAME::ControllerCharacter::SendDropItemRandom\("),
+    # The game's drop-to-world gate (CursorHandlerItemMove::ActivateWorld, Game.dll+0x1845f0): a soulbound or
+    # untradeable item is not dropped but destroyed after a confirm dialog (SendRemoveItemFromInventory).
+    ("Item_IsSoulbound", "Game", r"GAME::Item::IsSoulbound\("),
+    ("Item_IsUntradeable", "Game", r"GAME::Item::IsUntradeable\("),
     ("Item_GetUIDisplayText", "Game", r"GAME::Item::GetUIDisplayText\("),
     ("Item_GetSimpleUIDisplayText", "Game", r"GAME::Item::GetSimpleUIDisplayText\("),
     ("Item_GetStackSize", "Game", r"GAME::Item::GetStackSize\(void\)"),

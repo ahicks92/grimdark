@@ -1,5 +1,6 @@
 # Unreleased
 
+- New key `delete`: on an item in your bags, drops it on the ground around you, where you can pick it up again like any loot. A whole stack drops together. Items that can't be dropped (soulbound or untradeable) ask whether to destroy them instead, the same as in the game.
 - Fix: capital W, A, S and D can be typed in text boxes, such as the character name. Before, `shift w`, `shift a`, `shift s` and `shift d` typed nothing there.
 
 # 0.5.4 (2026-10-09)

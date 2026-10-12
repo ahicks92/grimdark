@@ -61,6 +61,33 @@ class InventoryScreen : public WindowScreen, public AssignSource {
     invalidate();
   }
   void on_focus() override { invalidate(); WindowScreen::on_focus(); }
+  // Delete on a bag item: drop it on the ground around the player, as the game's release of a held item over the
+  // world does. A soulbound or untradeable item is never dropped there; the game asks to destroy it, so do we.
+  void drop_focused() {
+    GraphNavigator* nav = app::navigator();
+    std::optional<ControlId> fid = nav ? nav->focused_id() : std::nullopt;
+    unsigned id = 0;
+    if (fid && fid->structural_key().is_string()) {
+      const std::string& k = fid->structural_key().text();
+      if (k.rfind("inventory.item", 0) == 0) id = (unsigned)std::strtoul(k.c_str() + 14, nullptr, 10);
+    }
+    void* p = id ? gameapi::object_by_id(id) : nullptr;
+    if (!p) { speech::speak(strings::kNotAnItem, true); return; }
+    std::string name = gameapi::item_name(p);
+    if (!gameapi::drop_destroys(p)) {
+      MessageBuilder m; m.fragment(name).list_item().fragment(gameapi::drop_item(id) ? strings::kDropped : strings::kCannot);
+      speech::speak(m.build(), true);
+      invalidate();
+      return;
+    }
+    MessageBuilder t; t.fragment(name).list_item().fragment(strings::kCantDropDestroy);
+    open_picker(t.build(), {{0, std::string(strings::kNo), {}}, {1, std::string(strings::kYes), {}}}, [this, id, name](unsigned pick) {
+      if (pick != 1) return;
+      MessageBuilder m; m.fragment(name).list_item().fragment(gameapi::destroy_item(id) ? strings::kDestroyed : strings::kCannot);
+      speech::speak(m.build(), true);
+      invalidate();
+    });
+  }
 
   void build(GraphBuilder& b) override {
     const std::vector<gameapi::Bag>& bags = bags_.get([] { return gameapi::bags(); }, 30);
@@ -203,6 +230,10 @@ class InventoryScreen : public WindowScreen, public AssignSource {
 void set_receiving_bag_focused() {
   InventoryScreen* s = dynamic_cast<InventoryScreen*>(app::screens().current());
   if (s) s->set_receiving_bag();   // a Windows-category chord (Ctrl+Enter): silent in the other windows
+}
+void drop_focused() {
+  InventoryScreen* s = dynamic_cast<InventoryScreen*>(app::screens().current());
+  if (s) s->drop_focused();   // a Windows-category key: silent in the other windows
 }
 std::unique_ptr<Screen> make_inventory() { return std::make_unique<InventoryScreen>(); }
 }  // namespace gd::screens

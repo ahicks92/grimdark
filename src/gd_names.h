@@ -1000,6 +1000,12 @@ inline constexpr const char* Character_UseItemOn = "?UseItemOn@Character@GAME@@Q
 // public: void __cdecl GAME::ControllerCharacter::SendDropItemRandom(unsigned int) __ptr64
 inline constexpr const char* ControllerCharacter_SendDropItemRandom_DLL = "Game.dll";
 inline constexpr const char* ControllerCharacter_SendDropItemRandom = "?SendDropItemRandom@ControllerCharacter@GAME@@QEAAXI@Z";
+// public: bool const __cdecl GAME::Item::IsSoulbound(void)const __ptr64
+inline constexpr const char* Item_IsSoulbound_DLL = "Game.dll";
+inline constexpr const char* Item_IsSoulbound = "?IsSoulbound@Item@GAME@@QEBA?B_NXZ";
+// public: bool const __cdecl GAME::Item::IsUntradeable(void)const __ptr64
+inline constexpr const char* Item_IsUntradeable_DLL = "Game.dll";
+inline constexpr const char* Item_IsUntradeable = "?IsUntradeable@Item@GAME@@QEBA?B_NXZ";
 // public: virtual void __cdecl GAME::Item::GetUIDisplayText(class GAME::Character const * __ptr64,class mem::vector<struct GAME::GameTextLine> & __ptr64,bool)const __ptr64
 inline constexpr const char* Item_GetUIDisplayText_DLL = "Game.dll";
 inline constexpr const char* Item_GetUIDisplayText = "?GetUIDisplayText@Item@GAME@@UEBAXPEBVCharacter@2@AEAV?$vector@UGameTextLine@GAME@@@mem@@_N@Z";

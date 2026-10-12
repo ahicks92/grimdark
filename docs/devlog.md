@@ -1230,3 +1230,13 @@ read) on every screen, after the screen's `passes_key`, so an edit session's cap
 `InGameScreen::passes_key`; the filter just asks the current screen. Reported with a verified alternative fix by
 ohylli (gate on `captures_raw_input()`); this version scopes the rules to the screen that owns them instead. Not
 re-tested live.
+
+## 2026-10-12: dropping items (Delete in a bag)
+Requested by testers. Read statically: the game's release of a held item over the world is
+`CursorHandlerItemMove::ActivateWorld` (Game.dll+0x1845f0). A held item is already off the grid; a soulbound (+0xc00,
+`Item::IsSoulbound`) or untradeable (+0xc02, `IsUntradeable`) item gets dialog 0x15 ("destroy?") and on Yes
+`SendRemoveItemFromInventory` (`CursorHandlerItemMove::Update`, +0x187016); anything else goes to
+`ControllerCharacter::SendDropItemRandom(id)` (a `GameEngine::CreateItemCopy` at a random point in a ring around the
+character + `RemoveInventoryItemConfigCmd`). The mod mirrors it from a bag row: `PlayerInventoryCtrl::RemoveItem(id,
+true)` then the drop or (after our own no/yes picker) the destroy. Not yet verified live: check the item lands and
+does not come back in the bag or duplicate across a save and reload.

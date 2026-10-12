@@ -10,6 +10,7 @@ namespace gd::screens {
 std::unique_ptr<gd::core::Screen> make_inventory();
 // Ctrl+Enter on a bag tab: that bag becomes the game's selected bag = where pickups go once bag 1 is full.
 void set_receiving_bag_focused();
+void drop_focused();   // Delete on a bag item: drop it (or, soulbound / untradeable, confirm destroying it)
 // Dev: the ItemSource value passed to PlayerInventoryCtrl::UseItem for a bag item (until RE settles it).
 void set_bag_item_source(int source);
 int bag_item_source();

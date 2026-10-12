@@ -47,6 +47,8 @@ struct Api {
   MsvcStringW* (*ShrineOffering3)(const void*, MsvcStringW*) = nullptr;
   void (*AddMoney)(void*, unsigned) = nullptr;   // dev: Character::AddMoney (iron bits)
   void (*SendDropItemRandom)(void*, unsigned) = nullptr;
+  bool (*Item_IsSoulbound)(const void*) = nullptr;
+  bool (*Item_IsUntradeable)(const void*) = nullptr;
   void (*PickupItem)(void*, unsigned) = nullptr;               // virtual on the controller; the export is the implementation
   void (*GetCompatibleItems)(void*, unsigned, MemVec*) = nullptr;   // Player: item ids a component can attach to (bags+equipped+stashes+reagent slot)
   void (*Character_UseItemOn)(void*, unsigned, unsigned, int, unsigned, unsigned, bool) = nullptr;  // attach used->target (ItemSource)
@@ -151,6 +153,8 @@ void load_items() {
   GAPI_LOAD(g, ShrineOffering2, StaticShrine_GetOffering2DisplayName);
   GAPI_LOAD(g, ShrineOffering3, StaticShrine_GetOffering3DisplayName);
   GAPI_LOAD(g, SendDropItemRandom, ControllerCharacter_SendDropItemRandom);
+  GAPI_LOAD(g, Item_IsSoulbound, Item_IsSoulbound);
+  GAPI_LOAD(g, Item_IsUntradeable, Item_IsUntradeable);
   GAPI_LOAD(g, PickupItem, ControllerCharacter_PickupItem);
   GAPI_LOAD(g, GetCompatibleItems, Player_GetCompatibleItems);
   GAPI_LOAD(g, Character_UseItemOn, Character_UseItemOn);
@@ -674,11 +678,42 @@ bool attach_component(unsigned component_id, unsigned target_id, int source) {
   log::writef("gameapi: attach component {} -> item {} source {} ok={}", component_id, target_id, source, ok);
   return ok;
 }
+// The game's drop to the world (CursorHandlerItemMove::ActivateWorld, Game.dll+0x1845f0): the held item is already
+// off the grid, then SendDropItemRandom puts a copy at a random spot around the player and removes the original.
+// A soulbound or untradeable item is never dropped there: the game asks to destroy it (drop_destroys).
+bool drop_destroys(const void* item) {
+  load_items();
+  if (!item || !g.Item_IsSoulbound || !g.Item_IsUntradeable) return true;   // unknown: never drop what might be bound
+  bool r = true;
+  guarded("Item::IsSoulbound/IsUntradeable", [&] { r = g.Item_IsSoulbound(item) || g.Item_IsUntradeable(item); });
+  return r;
+}
 bool drop_item(unsigned id) {
-  void* c = controller(); load_items();
-  if (!c || !g.SendDropItemRandom || !id) return false;
-  bool ok = guarded("SendDropItemRandom", [&] { g.SendDropItemRandom(c, id); });
+  void* c = controller(); void* ic = inv_ctrl(); load_items();
+  if (!c || !ic || !g.SendDropItemRandom || !g.Inv_RemoveItem || !id) return false;
+  if (drop_destroys(object_by_id(id))) return false;
+  bool ok = false;
+  guarded("drop item", [&] {
+    if (!g.Inv_RemoveItem(ic, id, true)) return;
+    g.SendDropItemRandom(c, id);
+    ok = true;
+  });
   invalidate_objects();
+  log::writef("gameapi: drop bag item {} ok={}", id, ok);
+  return ok;
+}
+// The game's answer to a confirmed destroy (CursorHandlerItemMove::Update, Game.dll+0x187016).
+bool destroy_item(unsigned id) {
+  void* c = controller(); void* ic = inv_ctrl(); load_items();
+  if (!c || !ic || !g.SendRemoveItemFromInventory || !g.Inv_RemoveItem || !id) return false;
+  bool ok = false;
+  guarded("destroy item", [&] {
+    if (!g.Inv_RemoveItem(ic, id, true)) return;
+    g.SendRemoveItemFromInventory(c, id);
+    ok = true;
+  });
+  invalidate_objects();
+  log::writef("gameapi: destroy bag item {} ok={}", id, ok);
   return ok;
 }
 // Unequip into the bag, in the exe's order (exe+0x1eb961): room check, AddItem to the bag, then the slot's

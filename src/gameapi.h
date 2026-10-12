@@ -114,7 +114,9 @@ std::vector<std::string> item_tooltip(const void* item, bool simple, bool detail
 bool item_requirements_met(const void* item);
 // Actions (each is the game's own call; the screens re-snapshot afterwards).
 bool use_item(unsigned id, int source, bool* no_room = nullptr);   // the bag's right-click: equip / drink / read; *no_room = a two-hander's swap does not fit the bags
-bool drop_item(unsigned id);                     // ControllerCharacter::SendDropItemRandom
+bool drop_destroys(const void* item);            // soulbound or untradeable: the game destroys it instead of dropping (true when unsure)
+bool drop_item(unsigned id);                     // a bag item to the ground around the player (PlayerInventoryCtrl::RemoveItem + SendDropItemRandom); refuses drop_destroys items
+bool destroy_item(unsigned id);                  // a bag item destroyed (PlayerInventoryCtrl::RemoveItem + SendRemoveItemFromInventory); confirm first
 bool unequip(int loc);                           // EquipmentCtrl::RemoveItem on the slot's item
 bool equip(unsigned id, int loc, bool* no_room = nullptr);   // into one slot (PlaceItem); a two-hander swaps out both hands; *no_room = the displaced item does not fit the bags
 bool pickup_item(unsigned id);                   // ControllerCharacter::PickupItem (the game's pickup command; no range check)

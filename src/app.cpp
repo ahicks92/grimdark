@@ -140,6 +140,8 @@ static void register_actions() {
   // Ctrl+Enter in a window: the vendor's Sell tab sells part of a stack; the inventory's bag tab makes that bag the
   // receiving one. Each is silent when its screen is not the current one.
   m.register_action("window.ctrlEnter", "Sell part of a stack / receiving bag", InputCategory::Windows, [] { screens::sell_partial_focused(); screens::set_receiving_bag_focused(); }).bind(keys::Enter, true, false, false);
+  // Delete on a bag item in the inventory: drop it on the ground (a soulbound / untradeable one asks to destroy it).
+  m.register_action("window.drop", "Drop item", InputCategory::Windows, [] { screens::drop_focused(); }).bind(0x81);
   m.register_action("assign.secondary", "Assign to right mouse", InputCategory::Windows, [] { screens::assign_focused(-1); }).bind(0x17, true, false, false);
   m.register_action("ingame.where", "Where am I", InputCategory::InGame, [] { screens::speak_where(); }).bind(keys::P, true, true).bind(0x25);  // K
   // Health and energy in full, in the player's own voice (bare H; Ctrl+H stays the game's Help window).
