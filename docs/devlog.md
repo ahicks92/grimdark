@@ -1238,5 +1238,4 @@ Requested by testers. Read statically: the game's release of a held item over th
 `SendRemoveItemFromInventory` (`CursorHandlerItemMove::Update`, +0x187016); anything else goes to
 `ControllerCharacter::SendDropItemRandom(id)` (a `GameEngine::CreateItemCopy` at a random point in a ring around the
 character + `RemoveInventoryItemConfigCmd`). The mod mirrors it from a bag row: `PlayerInventoryCtrl::RemoveItem(id,
-true)` then the drop or (after our own no/yes picker) the destroy. Not yet verified live: check the item lands and
-does not come back in the bag or duplicate across a save and reload.
+true)` then the drop or (after our own no/yes picker) the destroy. Verified live by the user 2026-10-12.
