@@ -315,7 +315,6 @@ hotbar manager and works against the locked target like any aimed skill.
 | Ctrl+1..0, Ctrl+J, Ctrl+I | Inside inventory / skills: put the focused skill (or, on a weapon slot, the weapon's basic attack) on quickbar slot 1..10 / the left mouse / the right mouse |
 | Ctrl+O | Loot filter config |
 | Ctrl+P | Pause / unpause (single player only), see Pausing below |
-| Ctrl+K, Ctrl+G, Ctrl+H, Ctrl+V, Ctrl+B, Ctrl+X, Ctrl+Z, Ctrl+], Ctrl+\, Ctrl+Enter | The game's own group, game menu, help, achievements, drop item, item tooltips, show items, toggle UI, party display, chat. We do not yet support these. |
 
 ### Pausing
 
