@@ -3,7 +3,7 @@
 - Telegraph cues are more accurate:
   - New cue "aura": an enemy is wrapping itself in something harmful that moves with it for a few seconds, such as Kilrian's ring of fire. Keep away from the enemy. It has its own on/off row in `t`.
   - Fire pools, sigils and lightning strikes now say "area" instead of "shot": they land on the spot you were standing on when the enemy started casting, so move off that spot.
-  - Two narrow "rings" that are really aimed fans now say "shot".
+  - Two narrow "rings" that are really fans of projectiles in front of the enemy now say "wave": step sideways out of them.
   - The sound glossary in the F1 menu now has the area, charge and aura cues.
 - New: enemy projectiles make a sound. Slow ones you can step around, such as fireballs, orbs and deathbolts, tick from where they are while they fly, so you can hear them travel, including the ones that will miss you; one heading straight for you ticks higher. Fast ones such as crossbow bolts, which arrive too quickly to dodge, tick once, more quietly, from where they were fired, so you know where the shooter is. Your own projectiles and your pets' stay silent.
   - This is a first version: in a big fight it can get busy, and the sound and levels will change.

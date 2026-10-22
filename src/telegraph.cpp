@@ -81,12 +81,13 @@ bool mode_admits(const Cast& c) {
 //          orbiting projectiles, the stormcaller's zapping aura) -- keep away from the caster (the user, 2026-10-22:
 //          "area" read as a spot on the ground)
 // Per-record exceptions come first: a class says how a skill works, not always its shape. Of every Ring/Burst/Fan
-// record (2026-10-22 survey by projectileLaunchRotation) two "rings" are narrow aimed fans; the 180-degree bursts
-// launch only 2 projectiles, one to each side, so they stay shots.
+// record (2026-10-22 survey by projectileLaunchRotation) two "rings" are narrow frontal fans -- a cone in front of the
+// caster, step sideways out of it: wave (the user); the 180-degree bursts launch only 2 projectiles, one to each side,
+// so they stay shots.
 const char* shape_of(const std::string& k, float dist, const std::string& record) {
   static const std::map<std::string, const char*> by_record = {
-    {"records/skills/nonplayerskills/heroskills/bloodclaw_bloodyhook.dbr", "shot"},   // Skill_AttackProjectileRing, 6 over 35 degrees
-    {"records/skills/nonplayerskills/heroskills/baldim_chaoswave.dbr", "shot"},       // Skill_AttackProjectileRing, 8 over 90 degrees
+    {"records/skills/nonplayerskills/heroskills/bloodclaw_bloodyhook.dbr", "wave"},   // Skill_AttackProjectileRing, 6 over 35 degrees
+    {"records/skills/nonplayerskills/heroskills/baldim_chaoswave.dbr", "wave"},       // Skill_AttackProjectileRing, 8 over 90 degrees
   };
   if (!record.empty()) {
     std::string r = record;
