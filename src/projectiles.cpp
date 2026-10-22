@@ -29,6 +29,7 @@ const char* (*g_obj_name)(const void*) = nullptr;
 float (*g_speed)(void*) = nullptr;
 float (*g_hit_time)(const void*) = nullptr;
 float (*g_miss_time)(const void*) = nullptr;
+float (*g_get_distance)(const void*) = nullptr;   // the flight range (+0x538, Game.dll 0x406e50): projectileDistance
 bool g_loaded = false;
 template <class F> void load(F& f, const char* dll, const char* name) { f = (F)GetProcAddress(GetModuleHandleA(dll), name); }
 void load_api() {
@@ -42,12 +43,13 @@ void load_api() {
   load(g_speed, ProjectileBase_GetTotalSpeed_DLL, ProjectileBase_GetTotalSpeed);
   load(g_hit_time, ProjectileBase_GetHitTime_DLL, ProjectileBase_GetHitTime);
   load(g_miss_time, ProjectileBase_GetMissTime_DLL, ProjectileBase_GetMissTime);
+  load(g_get_distance, ProjectileBase_GetDistance_DLL, ProjectileBase_GetDistance);
   log::writef("projectiles: exports class={} id={} owner={} name={} speed={} hit={} miss={}", (void*)g_proj_ci, (void*)g_get_id,
               (void*)g_get_owner, (void*)g_obj_name, (void*)g_speed, (void*)g_hit_time, (void*)g_miss_time);
 }
 
 // One projectile's readout under an SEH guard (the sphere query returns every Object in range; plain data only).
-struct Raw { unsigned id = 0, owner = 0; float speed = -1, hit = -1, miss = -1; char rec[160] = {}; };
+struct Raw { unsigned id = 0, owner = 0; float speed = -1, hit = -1, miss = -1, range = -1; char rec[160] = {}; };
 bool read_raw(void* e, Raw& r) {
   __try {
     r.id = g_get_id(e);
@@ -55,6 +57,7 @@ bool read_raw(void* e, Raw& r) {
     if (g_speed) r.speed = g_speed(e);
     if (g_hit_time) r.hit = g_hit_time(e);
     if (g_miss_time) r.miss = g_miss_time(e);
+    if (g_get_distance) r.range = g_get_distance(e);
     const char* n = g_obj_name ? g_obj_name(e) : nullptr;
     if (n && !IsBadStringPtrA(n, 512)) strncpy_s(r.rec, n, sizeof r.rec - 1);
     return true;
@@ -125,6 +128,9 @@ struct Track {
   bool probed = false;
   float radius = -1;      // the area's own radius once landed (area_radius); -1 = not read / implausible
   double next_cue = 0;   // when this projectile's next tick plays (foes only; a fast one never ticks again)
+  float range = -1;       // its flight range (GetDistance); -1 = unknown: it flies on, as far as the prediction knows
+  float flown = 0;        // path length since first seen
+  int ticks = 0, accented = 0;
   double t0 = 0, t_last = 0, t_min = 0;
   world::Vec3 p0, p_last, me_min;
   float min_d = 1e9f, min_dy = 0;
@@ -138,11 +144,14 @@ std::mutex g_mu;
 bool g_on = false, g_with_samples = false;
 // The cue (2026-10-22 prototype): every slow enemy projectile ticks projectile.wav from where it is, every
 // g_cue_interval while it flies -- all of them, not only the ones aimed at you, so stepping away from one never walks
-// you into the next unheard (the user's rule). One whose current line of travel passes within g_accent_miss of you,
-// still approaching, ticks g_accent_st semitones higher. A fast one (g_fast_speed and up) ticks once, at launch, at
+// you into the next unheard (the user's rule). One that will come within g_accent_miss of you ticks g_accent_st
+// semitones higher: its current line of travel, still approaching, cut short at its range -- past it the projectile
+// explodes where it is (explodeOnMiss), so the end point counts, not the line beyond it. 2.5 u = a fireball's 1.5-1.8
+// explosion + the body + margin: the 1.5 u centre-to-centre first cut missed the Flame Revenant's fireballs that hit
+// (the user, 2026-10-22; 16 of 123 came within 1.5-3 u). A fast one (g_fast_speed and up) ticks once, at launch, at
 // g_fast_vol of the level: by the time a second tick could play it has arrived.
 bool g_cue = true;
-float g_cue_vol = 0.6f, g_cue_interval = 0.15f, g_accent_miss = 1.5f, g_accent_st = 5.0f;
+float g_cue_vol = 0.6f, g_cue_interval = 0.15f, g_accent_miss = 2.5f, g_accent_st = 5.0f;
 float g_fast_speed = 25.0f, g_fast_vol = 0.6f;
 uint64_t g_ticks = 0, g_accents = 0, g_fast_ticks = 0;
 // Enemy ground effects -> the hazard sounds (2026-10-22, the user: "the ground hazard sounds aren't playing for ground
@@ -171,9 +180,9 @@ void gone(unsigned id, const Track& k, double t) {
   float travelled = flat(k.p0, k.p_last);
   double life = k.t_last - k.t0;
   std::string pred = k.predicted ? std::format(" pred_miss={:.1f} pred_t=+{:.2f}s", k.pred_miss, k.pred_t) : " pred=none";
-  note(g_lines, std::format("{:.3f} GONE #{} {} {} life={:.2f}s frames={} {} -> {} travelled={:.1f}u avg={:.1f}u/s min_d={:.1f} dy={:+.1f} at +{:.2f}s{} (unseen {:.0f}ms)",
+  note(g_lines, std::format("{:.3f} GONE #{} {} {} life={:.2f}s frames={} {} -> {} travelled={:.1f}u avg={:.1f}u/s min_d={:.1f} dy={:+.1f} at +{:.2f}s{} range={:.1f} flown={:.1f} accented={}/{} (unseen {:.0f}ms)",
                             t, id, k.who, k.cls, life, k.frames, pos(k.p0), pos(k.p_last), travelled, life > 0 ? travelled / life : 0.0,
-                            k.min_d, k.min_dy, k.t_min - k.t0, pred, (t - k.t_last) * 1000), 5000);
+                            k.min_d, k.min_dy, k.t_min - k.t0, pred, k.range, k.flown, k.accented, k.ticks, (t - k.t_last) * 1000), 5000);
 }
 // Level by distance: full within 3 u, linear down to 0.15 at 30 u (the sweep radius).
 float cue_gain(float d) { return d <= 3.0f ? 1.0f : std::max(0.15f, 1.0f - 0.85f * (d - 3.0f) / 27.0f); }
@@ -218,17 +227,22 @@ void tick() {
       ++g_spawns;
       k.t0 = t; k.p0 = p; k.next_cue = t;
       k.pace = r.speed <= 0.5f ? Pace::Still : r.speed < g_fast_speed ? Pace::Slow : Pace::Fast;
+      k.range = r.range > 0.5f && r.range < 200.0f ? r.range : -1.0f;
       k.area = g_area_ci && world::object_is_a(e, g_area_ci());
       if (g_on) {   // the names only while recording: the label lookup is the expensive part of a spawn
         k.cls = world::object_class_name(e);
         k.who = std::format("[{} #{} \"{}\"]", rel, r.owner, r.owner == pid ? std::string("you") : world::label_of(r.owner));
-        note(g_lines, std::format("{:.3f} SPAWN #{} {} {} {} at {} d={:.1f} dy={:+.1f} speed={:.1f} hit={:.0f} miss={:.0f}", t, r.id, k.who, k.cls,
-                                k.rec, pos(p), d, p.y - me.y, r.speed, r.hit, r.miss), 5000);
+        note(g_lines, std::format("{:.3f} SPAWN #{} {} {} {} at {} d={:.1f} dy={:+.1f} speed={:.1f} range={:.1f}", t, r.id, k.who, k.cls,
+                                k.rec, pos(p), d, p.y - me.y, r.speed, r.range), 5000);
       }
       it = g_live.emplace(r.id, std::move(k)).first;
     }
     Track& k = it->second;
-    if (k.frames > 0) k.still_frames = flat(p, k.p_last) < 0.02f ? k.still_frames + 1 : 0;
+    if (k.frames > 0) {
+      float step = flat(p, k.p_last);
+      k.still_frames = step < 0.02f ? k.still_frames + 1 : 0;
+      k.flown += step;
+    }
     bool landed = k.area && k.still_frames >= 2;   // a ground effect from here on: the hazard sounds own it
     if (landed && k.radius < 0) k.radius = area_radius(e);
     if (g_zones && k.foe && landed) zones.push_back({p, k.radius > 0 ? k.radius : g_zone_radius});
@@ -254,14 +268,24 @@ void tick() {
       ++g_fast_ticks;
       k.next_cue = 1e300;
     } else if (g_cue && k.foe && k.pace == Pace::Slow && !landed && t >= k.next_cue) {
-      // Accent from the CURRENT line of travel (last frame's step): it passes within g_accent_miss of the player and
-      // is still approaching. Before it has moved, no accent.
+      // Accent from the CURRENT line of travel (last frame's step), still approaching: the closest point of the line,
+      // or the end of the flight when the range runs out first. Before it has moved, no accent.
       bool accent = false;
       float vx = p.x - k.p_last.x, vz = p.z - k.p_last.z, len = std::hypot(vx, vz);
       if (k.frames > 0 && len > 0.01f) {
         float ux = vx / len, uz = vz / len, rx = me.x - p.x, rz = me.z - p.z;
-        accent = rx * ux + rz * uz > 0 && std::fabs(rx * uz - rz * ux) < g_accent_miss;
+        float along = rx * ux + rz * uz;
+        if (along > 0) {
+          float miss = std::fabs(rx * uz - rz * ux);
+          if (k.range > 0) {
+            float left = std::max(0.0f, k.range - k.flown);
+            if (along > left) miss = std::hypot(rx - ux * left, rz - uz * left);   // it explodes short of the closest point
+          }
+          accent = miss < g_accent_miss;
+        }
       }
+      ++k.ticks;
+      if (accent) ++k.accented;
       play_cue(p, d, accent);
       k.next_cue = t + g_cue_interval;
     }
