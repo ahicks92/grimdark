@@ -6,13 +6,14 @@
 #include <mutex>
 #include "audio.h"
 #include "log.h"
+#include "telegraph_records.h"
 #include "settings.h"
 
 namespace gd::telegraph {
-const char* const kShapeNames[kShapes] = {"swing", "stomp", "wave", "shot", "ring", "area", "charge", "aura"};
+const char* const kShapeNames[kShapes] = {"swing", "stomp", "wave", "shot", "ring", "area", "charge", "aura", "beam", "frontal"};
 namespace {
 Mode g_mode = Mode::All;
-bool g_shape_on[kShapes] = {true, true, true, true, true, true, true, true};
+bool g_shape_on[kShapes] = {true, true, true, true, true, true, true, true, true, true};
 float g_vol = 1.0f;
 int g_variant = 200;                     // the 200 ms words; the only shipped set (a 100 ms set was tried and dropped, 2026-09-01)
 float g_radius = 25.0f;                  // the sonar's radius: casts farther than this are not ours to hear
@@ -80,15 +81,19 @@ bool mode_admits(const Cast& c) {
 //   aura   harm centred on the caster that moves with it for seconds (timed auras such as Kilrian's Ring of Fire,
 //          orbiting projectiles, the stormcaller's zapping aura) -- keep away from the caster (the user, 2026-10-22:
 //          "area" read as a spot on the ground)
-// Per-record exceptions come first: a class says how a skill works, not always its shape. Of every Ring/Burst/Fan
-// record (2026-10-22 survey by projectileLaunchRotation) two "rings" are narrow frontal fans -- a cone in front of the
-// caster, step sideways out of it: wave (the user); the 180-degree bursts launch only 2 projectiles, one to each side,
-// so they stay shots.
+//   beam   a zap or tendril locked on its target (Skill_AttackSpellChaos: an Aether Crystal Cluster's zap hit 0.42 s
+//          after the cast start with the player 3.6 u from the cast-start point, 2026-10-22) -- moving does not dodge
+//          it; range or line of sight before it starts does
+//   frontal projectiles spread over 90 degrees or more in front of the caster (45 either side), less than 270 --
+//          get behind or well to the side (the user, after WoW's frontals)
+// Per-record shapes come first (src/telegraph_records.h, tools/gen_telegraph_records.py): a class says how a skill
+// works, not always its shape, so the projectile spreads and waves are sorted by their own arc.
 const char* shape_of(const std::string& k, float dist, const std::string& record) {
-  static const std::map<std::string, const char*> by_record = {
-    {"records/skills/nonplayerskills/heroskills/bloodclaw_bloodyhook.dbr", "wave"},   // Skill_AttackProjectileRing, 6 over 35 degrees
-    {"records/skills/nonplayerskills/heroskills/baldim_chaoswave.dbr", "wave"},       // Skill_AttackProjectileRing, 8 over 90 degrees
-  };
+  static const std::map<std::string, const char*> by_record = [] {
+    std::map<std::string, const char*> m;
+    for (const RecordShape& r : kRecordShapes) m.emplace(r.record, r.shape);
+    return m;
+  }();
   if (!record.empty()) {
     std::string r = record;
     std::transform(r.begin(), r.end(), r.begin(), [](unsigned char ch) { return (char)std::tolower(ch); });
@@ -110,7 +115,8 @@ const char* shape_of(const std::string& k, float dist, const std::string& record
     // aimed at you
     {"Skill_AttackProjectile", "shot"}, {"Skill_AttackProjectileBurst", "shot"},
     {"Skill_AttackProjectileDebuf", "shot"}, {"Skill_AttackSpell", "shot"},
-    {"Skill_AttackSpellChaos", "shot"}, {"Skill_AttackChain", "shot"}, {"SkillSecondary_ChainLightning", "shot"}, {"ChaosBeam", "shot"},
+    {"Skill_AttackChain", "shot"}, {"SkillSecondary_ChainLightning", "shot"},
+    {"Skill_AttackSpellChaos", "beam"}, {"ChaosBeam", "beam"},
     {"Skill_AttackPattern", "shot"}, {"Skill_Telekinesis", "shot"},
     {"Skill_AttackProjectileRing", "ring"},
     // lands on a spot

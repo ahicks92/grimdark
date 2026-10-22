@@ -307,6 +307,8 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
 - `tools/gen_names.py` — resolves the exports we hook by regex over the undecorated listing and writes
   `src/gd_names.h`; fails loudly if a pattern does not match exactly one export.
 - `tools/fow.py [character] [difficulty] [--region s] [--grid]` -- a character's saved fog of war (map.fow, every region).
+- `tools/gen_telegraph_records.py` -- per-skill-record telegraph shapes by arc (frontal / narrow-ring fans) from database.arz
+  into `src/telegraph_records.h`; rerun after a game patch, like `gen_names.py`.
 - `tools/arz.py <record-path-regex> [field-regex]` — reads `database.arz` offline (records + their fields).
 - `tools/telegraph_audit.py <monster-record-regex>` — a monster's skills per phase (follows `poolToSpawnOnDeath`), each with
   its class and the telegraph verdict (shape / silent / UNKNOWN) from `src/telegraph.cpp`'s table. Offline.

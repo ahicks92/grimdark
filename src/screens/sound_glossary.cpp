@@ -59,7 +59,9 @@ std::vector<Section> sections() {
       {strings::kGlossaryTelegraphRing, tele[4].c_str(), 0.0f, 0.0f, 1.0f, true},
       {strings::kGlossaryTelegraphArea, tele[5].c_str(), 0.0f, 0.0f, 1.0f, true},
       {strings::kGlossaryTelegraphCharge, tele[6].c_str(), 0.0f, 0.0f, 1.0f, true},
-      {strings::kGlossaryTelegraphAura, tele[7].c_str(), 0.0f, 0.0f, 1.0f, true}}},
+      {strings::kGlossaryTelegraphAura, tele[7].c_str(), 0.0f, 0.0f, 1.0f, true},
+      {strings::kGlossaryTelegraphBeam, tele[8].c_str(), 0.0f, 0.0f, 1.0f, true},
+      {strings::kGlossaryTelegraphFrontal, tele[9].c_str(), 0.0f, 0.0f, 1.0f, true}}},
   };
 }
 
