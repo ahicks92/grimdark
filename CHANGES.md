@@ -1,6 +1,6 @@
 # Unreleased
 
-- New: enemy projectiles make a sound. Every arrow, fireball, orb or bolt an enemy fires ticks from where it is while it flies, so you can hear it travel, including the ones that will miss you. One heading straight for you ticks higher. Your own projectiles and your pets' stay silent.
+- New: enemy projectiles make a sound. Slow ones you can step around, such as fireballs, orbs and deathbolts, tick from where they are while they fly, so you can hear them travel, including the ones that will miss you; one heading straight for you ticks higher. Fast ones such as crossbow bolts, which arrive too quickly to dodge, tick once, more quietly, from where they were fired, so you know where the shooter is. Your own projectiles and your pets' stay silent.
   - This is a first version: in a big fight it can get busy, and the sound and levels will change.
 - New keys `shift down` and `shift up`: in menus and windows, read the detailed tooltip one line at a time, so you can find one detail without listening to the whole thing. The first press reads the first line; moving to another item starts over from the top.
 - Fix: the README listed `shift up` and `shift down` for jumping between groups in menus; the keys are `ctrl up` and `ctrl down`.

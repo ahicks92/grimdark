@@ -59,9 +59,15 @@ bool read_raw(void* e, Raw& r) {
   } __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
 }
 
+// How a projectile is cued, decided at spawn from the game's own speed (ProjectileBase::GetTotalSpeed matched the
+// measured flight within ~5 %, 2026-10-22). Fast = the crossbow bolts (38 u/s from ~12 u: ~0.27 s from appearing to
+// arriving, faster than a reaction plus a step, so their tick says "a shot from there", once); slow = what can still
+// be stepped around (deathbolts 20, Nomos Dred's orbs 16); still = a ground effect placed as a projectile (a sigil,
+// speed 0), which is the hazard layer's to sound, not this one's.
+enum class Pace : char { Still, Slow, Fast };
 struct Track {
-  unsigned owner = 0; bool foe = false; std::string who, cls, rec;
-  double next_cue = 0;   // when this projectile's next tick plays (foes only)
+  unsigned owner = 0; bool foe = false; Pace pace = Pace::Slow; std::string who, cls, rec;
+  double next_cue = 0;   // when this projectile's next tick plays (foes only; a fast one never ticks again)
   double t0 = 0, t_last = 0, t_min = 0;
   world::Vec3 p0, p_last, me_min;
   float min_d = 1e9f, min_dy = 0;
@@ -73,13 +79,15 @@ std::map<unsigned, Track> g_live;
 std::deque<std::string> g_lines, g_samples;
 std::mutex g_mu;
 bool g_on = false, g_with_samples = false;
-// The cue (2026-10-22 prototype): every enemy projectile ticks projectile.wav from where it is, every g_cue_interval
-// while it flies -- all of them, not only the ones aimed at you, so stepping away from one never walks you into the
-// next unheard (the user's rule). One whose current line of travel passes within g_accent_miss of you, still
-// approaching, ticks g_accent_st semitones higher.
+// The cue (2026-10-22 prototype): every slow enemy projectile ticks projectile.wav from where it is, every
+// g_cue_interval while it flies -- all of them, not only the ones aimed at you, so stepping away from one never walks
+// you into the next unheard (the user's rule). One whose current line of travel passes within g_accent_miss of you,
+// still approaching, ticks g_accent_st semitones higher. A fast one (g_fast_speed and up) ticks once, at launch, at
+// g_fast_vol of the level: by the time a second tick could play it has arrived.
 bool g_cue = true;
 float g_cue_vol = 0.6f, g_cue_interval = 0.15f, g_accent_miss = 1.5f, g_accent_st = 5.0f;
-uint64_t g_ticks = 0, g_accents = 0;
+float g_fast_speed = 25.0f, g_fast_vol = 0.6f;
+uint64_t g_ticks = 0, g_accents = 0, g_fast_ticks = 0;
 float g_radius = 30.0f;
 uint64_t g_frames = 0, g_spawns = 0, g_faulted = 0, g_spawns_foe = 0, g_spawns_you = 0, g_spawns_other = 0;
 size_t g_max_live = 0;
@@ -103,11 +111,11 @@ void gone(unsigned id, const Track& k, double t) {
 }
 // Level by distance: full within 3 u, linear down to 0.15 at 30 u (the sweep radius).
 float cue_gain(float d) { return d <= 3.0f ? 1.0f : std::max(0.15f, 1.0f - 0.85f * (d - 3.0f) / 27.0f); }
-void play_cue(const world::Vec3& p, float d, bool accent) {
+void play_cue(const world::Vec3& p, float d, bool accent, float level = 1.0f) {
   float pan = 0, gain = 1, ahead = 0;
   world::ear_frame(p, pan, gain, &ahead);
-  audio::play_sample(audio::module_dir() + "assets\\audio\\projectile.wav", g_cue_vol * cue_gain(d), pan, world::rear_shelf_db(ahead), false, 0, false,
-                     accent ? g_accent_st : 0.0f);
+  audio::play_sample(audio::module_dir() + "assets\\audio\\projectile.wav", g_cue_vol * level * cue_gain(d), pan, world::rear_shelf_db(ahead), false, 0,
+                     false, accent ? g_accent_st : 0.0f);
   ++g_ticks;
   if (accent) ++g_accents;
 }
@@ -142,6 +150,7 @@ void tick() {
       (rel == "you" ? g_spawns_you : rel == "foe" ? g_spawns_foe : g_spawns_other)++;
       ++g_spawns;
       k.t0 = t; k.p0 = p; k.next_cue = t;
+      k.pace = r.speed <= 0.5f ? Pace::Still : r.speed < g_fast_speed ? Pace::Slow : Pace::Fast;
       if (g_on) {   // the names only while recording: the label lookup is the expensive part of a spawn
         k.cls = world::object_class_name(e);
         k.who = std::format("[{} #{} \"{}\"]", rel, r.owner, r.owner == pid ? std::string("you") : world::label_of(r.owner));
@@ -162,7 +171,11 @@ void tick() {
         k.predicted = true;
       }
     }
-    if (g_cue && k.foe && t >= k.next_cue) {
+    if (g_cue && k.foe && k.pace == Pace::Fast && t >= k.next_cue) {
+      play_cue(p, d, false, g_fast_vol);   // once, where it was launched
+      ++g_fast_ticks;
+      k.next_cue = 1e300;
+    } else if (g_cue && k.foe && k.pace == Pace::Slow && t >= k.next_cue) {
       // Accent from the CURRENT line of travel (last frame's step): it passes within g_accent_miss of the player and
       // is still approaching. Before it has moved, no accent.
       bool accent = false;
@@ -197,6 +210,10 @@ void set_cue_params(float vol, float interval, float accent_miss, float accent_s
   if (accent_miss >= 0) g_accent_miss = accent_miss;
   if (accent_st > -100) g_accent_st = accent_st;
 }
+void set_fast_params(float speed, float vol) {
+  if (speed > 0) g_fast_speed = speed;
+  if (vol >= 0) g_fast_vol = std::clamp(vol, 0.0f, 2.0f);
+}
 
 void set_recording(bool on) {
   if (g_on && !on) { double t = app::now(); for (auto& [id, k] : g_live) gone(id, k, t); g_live.clear(); }
@@ -209,8 +226,8 @@ void set_radius(float r) { g_radius = std::clamp(r, 5.0f, 60.0f); }
 void set_samples(bool on) { g_with_samples = on; }
 
 std::string dump(int max_lines) {
-  std::string s = std::format("cue={} vol={:.2f} interval={:.2f}s accent<{:.1f}u +{:.0f}st ticks={} accents={}\n", g_cue, g_cue_vol, g_cue_interval,
-                              g_accent_miss, g_accent_st, g_ticks, g_accents);
+  std::string s = std::format("cue={} vol={:.2f} interval={:.2f}s accent<{:.1f}u +{:.0f}st fast>={:.0f}u/s at x{:.2f} ticks={} (fast {}) accents={}\n", g_cue,
+                              g_cue_vol, g_cue_interval, g_accent_miss, g_accent_st, g_fast_speed, g_fast_vol, g_ticks, g_fast_ticks, g_accents);
   s += std::format("recording={} radius={:.0f} samples={} frames={} spawns={} (foe {} / you {} / other {}) live={} max_live={} faulted={} sweep avg={:.0f}us max={:.0f}us\n",
                               g_on, g_radius, g_with_samples, g_frames, g_spawns, g_spawns_foe, g_spawns_you, g_spawns_other, g_live.size(), g_max_live,
                               g_faulted, g_frames ? g_sweep_us_total / g_frames : 0.0, g_sweep_us_max);
