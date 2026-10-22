@@ -1993,6 +1993,27 @@ bool project(void* entity, float& x, float& y) {
   return true;
 }
 }  // namespace
+std::vector<void*> entities_near(float radius) {
+  std::vector<void*> out;
+  Buf base; void* region = nullptr;
+  if (!g_api.Region_GetEntitiesInSphere || !player_world_vec(base, &region)) return out;
+  // One game-allocated vector reused across calls (the find_path_corridor pattern): the query APPENDS, so reset its
+  // size to 0 and keep the capacity. A fresh vector per call leaks its storage every frame.
+  static MemVec vec{};
+  MemVec* v = &vec;
+  v->end = v->begin;
+  const Vec3* rp = g_api.WorldVec3_GetRegionPosition(&base);
+  struct { Vec3 c; float r; } sphere{*rp, radius};
+  g_api.Region_GetEntitiesInSphere(region, v, &sphere, false, 0);
+  if (!(v->begin && v->end && (uintptr_t)v->end > (uintptr_t)v->begin && (uintptr_t)v->end - (uintptr_t)v->begin < (1u << 20))) return out;
+  size_t n = (size_t)((char*)v->end - (char*)v->begin) / sizeof(void*);
+  out.reserve(n);
+  for (size_t i = 0; i < n && i < 4096; ++i) {
+    void* e; memcpy(&e, (char*)v->begin + i * sizeof(void*), sizeof e);
+    if (e) out.push_back(e);
+  }
+  return out;
+}
 
 // Camera line of sight to an entity, the sighted player's own primitive (static RE of the exe's cursor pick at
 // exe+0x30c49, 2026-08-25): the ray the camera sends through the entity's screen point

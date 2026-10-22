@@ -5,6 +5,7 @@
 #include "app.h"
 #include "audio.h"
 #include "casts.h"
+#include "projectiles.h"
 #include "combat.h"
 #include "cues.h"
 #include "hazard.h"
@@ -191,6 +192,7 @@ class InGameScreen : public Screen {
     world::tick();
     combat::tick();
     casts::tick();
+    projectiles::tick();
     rooms::tick();
     quickbar_tick();
     weapon_swap_tick();

@@ -106,6 +106,9 @@ std::string fog_reveal(float x, float z, int radius);                    // dev:
 std::string label_of(unsigned id);
 // World-space position of any object by id (through object_by_id). False when the id has no positioned entity.
 bool entity_position(unsigned id, Vec3& out);
+// Every object the player's region reports within `radius` of the player (Region::GetEntitiesInSphere, which spans the
+// loaded regions). Game thread; the pointers are valid for THIS frame only -- hold ids, never these.
+std::vector<void*> entities_near(float radius);
 
 // How using a skill chooses where it lands, for the quickbar readout (docs/skills-targeting.md): the runtime
 // SkillTargetType plus the skill's class. None = not an activated skill (a passive or a modifier).
