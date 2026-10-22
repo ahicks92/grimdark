@@ -147,6 +147,17 @@ std::string target_probe_line(const void* e, const world::Vec3& target) {
   return hits ? s : s + " none";
 }
 
+// The destination (2026-10-22): the target probe found every enemy projectile's cast target point at +0x738 -- the Vec3
+// of a WorldVec3 whose Region* is +0x730 -- for arrows, fireballs, grenades and a sigil alike; the probes that "missed"
+// had their target near a region edge, stored relative to the projectile's own region, not the target's. Read whole and
+// converted to world coordinates; false when the region pointer is null or the read faults.
+bool read_dest_raw(const void* e, world::Vec3& out) {
+  __try {
+    if (IsBadReadPtr((const char*)e + 0x730, 0x18)) return false;
+    return world::world_point((const char*)e + 0x730, out);
+  } __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
+}
+
 struct Track {
   unsigned owner = 0; bool foe = false; Pace pace = Pace::Slow; std::string who, cls, rec;
   bool area = false;      // a ProjectileAreaEffect: once it stops moving it is ground harm (a sigil, a landed pool)
@@ -157,6 +168,7 @@ struct Track {
   float range = -1;       // its flight range (GetDistance); -1 = unknown: it flies on, as far as the prediction knows
   float flown = 0;        // path length since first seen
   int ticks = 0, accented = 0;
+  bool has_dest = false; world::Vec3 dest;   // where it is going (read_dest_raw at first sight)
   double t0 = 0, t_last = 0, t_min = 0;
   world::Vec3 p0, p_last, me_min;
   float min_d = 1e9f, min_dy = 0;
@@ -230,9 +242,10 @@ void gone(unsigned id, const Track& k, double t) {
   float travelled = flat(k.p0, k.p_last);
   double life = k.t_last - k.t0;
   std::string pred = k.predicted ? std::format(" pred_miss={:.1f} pred_t=+{:.2f}s", k.pred_miss, k.pred_t) : " pred=none";
-  note(g_lines, std::format("{:.3f} GONE #{} {} {} life={:.2f}s frames={} {} -> {} travelled={:.1f}u avg={:.1f}u/s min_d={:.1f} dy={:+.1f} at +{:.2f}s{} range={:.1f} flown={:.1f} accented={}/{} (unseen {:.0f}ms)",
+  note(g_lines, std::format("{:.3f} GONE #{} {} {} life={:.2f}s frames={} {} -> {} travelled={:.1f}u avg={:.1f}u/s min_d={:.1f} dy={:+.1f} at +{:.2f}s{} range={:.1f} flown={:.1f} accented={}/{} end_from_dest={:.1f} launch_to_dest={:.1f} (unseen {:.0f}ms)",
                             t, id, k.who, k.cls, life, k.frames, pos(k.p0), pos(k.p_last), travelled, life > 0 ? travelled / life : 0.0,
-                            k.min_d, k.min_dy, k.t_min - k.t0, pred, k.range, k.flown, k.accented, k.ticks, (t - k.t_last) * 1000), 5000);
+                            k.min_d, k.min_dy, k.t_min - k.t0, pred, k.range, k.flown, k.accented, k.ticks, k.has_dest ? flat(k.p_last, k.dest) : -1.0f,
+                            k.has_dest ? flat(k.p0, k.dest) : -1.0f, (t - k.t_last) * 1000), 5000);
 }
 // Level by distance: full within 3 u, linear down to 0.15 at 30 u (the sweep radius).
 float cue_gain(float d) { return d <= 3.0f ? 1.0f : std::max(0.15f, 1.0f - 0.85f * (d - 3.0f) / 27.0f); }
@@ -278,18 +291,21 @@ void tick() {
       k.t0 = t; k.p0 = p; k.next_cue = t;
       k.pace = r.speed <= 0.5f ? Pace::Still : r.speed < g_fast_speed ? Pace::Slow : Pace::Fast;
       k.range = r.range > 0.5f && r.range < 200.0f ? r.range : -1.0f;
+      k.has_dest = read_dest_raw(e, k.dest);
       if (g_on && k.foe) {
         world::Vec3 aim;
         if (casts::recent_target(r.owner, t, 0.6, aim))
-          note(g_lines, std::format("{:.3f} TARGET #{} {} {} aim=({:.1f},{:.1f},{:.1f}) launch {:.1f}u from it:{}", t, r.id, world::object_class_name(e), r.rec,
-                                    aim.x, aim.y, aim.z, flat(p, aim), target_probe_line(e, aim)), 5000);
+          note(g_lines, std::format("{:.3f} TARGET #{} {} {} aim=({:.1f},{:.1f},{:.1f}) launch {:.1f}u from it: dest {} -> {:.2f}u from aim;{}", t, r.id,
+                                    world::object_class_name(e), r.rec, aim.x, aim.y, aim.z, flat(p, aim),
+                                    k.has_dest ? pos(k.dest) : std::string("none"), k.has_dest ? flat(k.dest, aim) : -1.0f, target_probe_line(e, aim)), 5000);
       }
       k.area = g_area_ci && world::object_is_a(e, g_area_ci());
       if (g_on) {   // the names only while recording: the label lookup is the expensive part of a spawn
         k.cls = world::object_class_name(e);
         k.who = std::format("[{} #{} \"{}\"]", rel, r.owner, r.owner == pid ? std::string("you") : world::label_of(r.owner));
-        note(g_lines, std::format("{:.3f} SPAWN #{} {} {} {} at {} d={:.1f} dy={:+.1f} speed={:.1f} range={:.1f}", t, r.id, k.who, k.cls,
-                                k.rec, pos(p), d, p.y - me.y, r.speed, r.range), 5000);
+        note(g_lines, std::format("{:.3f} SPAWN #{} {} {} {} at {} d={:.1f} dy={:+.1f} speed={:.1f} range={:.1f} dest={} dest_from_launch={:.1f} dest_from_you={:.1f}",
+                                t, r.id, k.who, k.cls, k.rec, pos(p), d, p.y - me.y, r.speed, r.range, k.has_dest ? pos(k.dest) : std::string("none"),
+                                k.has_dest ? flat(p, k.dest) : -1.0f, k.has_dest ? flat(me, k.dest) : -1.0f), 5000);
       }
       it = g_live.emplace(r.id, std::move(k)).first;
     }
