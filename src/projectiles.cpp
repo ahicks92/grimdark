@@ -22,6 +22,7 @@ using namespace gd::names;
 // Exports (gd_names.h), resolved on first use. GetHitTime / GetMissTime are virtual; the base bodies only read two
 // int fields (+0x570 / +0x574, Game.dll 0x406fc0), so calling them directly is the base reading, not a dispatch.
 const void* (*g_proj_ci)() = nullptr;
+const void* (*g_area_ci)() = nullptr;
 unsigned (*g_get_id)(const void*) = nullptr;
 unsigned (*g_get_owner)(const void*) = nullptr;
 const char* (*g_obj_name)(const void*) = nullptr;
@@ -34,6 +35,7 @@ void load_api() {
   if (g_loaded) return;
   g_loaded = true;
   load(g_proj_ci, ProjectileBase_GetStaticClassInfo_DLL, ProjectileBase_GetStaticClassInfo);
+  load(g_area_ci, ProjectileAreaEffect_GetStaticClassInfo_DLL, ProjectileAreaEffect_GetStaticClassInfo);
   load(g_get_id, Object_GetObjectId_DLL, Object_GetObjectId);
   load(g_get_owner, Entity_GetOwner_DLL, Entity_GetOwner);
   load(g_obj_name, Object_GetObjectName_DLL, Object_GetObjectName);
@@ -67,6 +69,8 @@ bool read_raw(void* e, Raw& r) {
 enum class Pace : char { Still, Slow, Fast };
 struct Track {
   unsigned owner = 0; bool foe = false; Pace pace = Pace::Slow; std::string who, cls, rec;
+  bool area = false;      // a ProjectileAreaEffect: once it stops moving it is ground harm (a sigil, a landed pool)
+  int still_frames = 0;   // consecutive frames it has not moved
   double next_cue = 0;   // when this projectile's next tick plays (foes only; a fast one never ticks again)
   double t0 = 0, t_last = 0, t_min = 0;
   world::Vec3 p0, p_last, me_min;
@@ -88,6 +92,15 @@ bool g_cue = true;
 float g_cue_vol = 0.6f, g_cue_interval = 0.15f, g_accent_miss = 1.5f, g_accent_st = 5.0f;
 float g_fast_speed = 25.0f, g_fast_vol = 0.6f;
 uint64_t g_ticks = 0, g_accents = 0, g_fast_ticks = 0;
+// Enemy ground effects -> the hazard sounds (2026-10-22, the user: "the ground hazard sounds aren't playing for ground
+// AoEs like that sigil"). The hazard layer reads only the map's painted damage cells (docs/hazards.md); a skill's ground
+// effect is a ProjectileAreaEffect entity instead. Every enemy one that has stopped moving becomes a world::GroundZone
+// for as long as the entity lives (the game owns the duration). The radius is not read from the entity yet (no export;
+// ProcessFriendsInArea's +0xd88 list is the ALLY buffs' radii): g_zone_radius stands in -- the sigil's record says 3.2,
+// Kilrian's Conflagration 3.0, the pool templates' median 3.
+bool g_zones = true;
+float g_zone_radius = 3.0f;
+size_t g_zone_count = 0, g_zone_max = 0;
 float g_radius = 30.0f;
 uint64_t g_frames = 0, g_spawns = 0, g_faulted = 0, g_spawns_foe = 0, g_spawns_you = 0, g_spawns_other = 0;
 size_t g_max_live = 0;
@@ -122,11 +135,12 @@ void play_cue(const world::Vec3& p, float d, bool accent, float level = 1.0f) {
 }  // namespace
 
 void tick() {
-  if (!g_on && !g_cue) return;
+  if (!g_on && !g_cue && !g_zones) { if (g_zone_count) { world::set_ground_zones({}); g_zone_count = 0; } return; }
   load_api();
   if (!g_proj_ci || !g_get_id) return;
   world::Vec3 me;
-  if (!world::player_position(me)) return;
+  if (!world::player_position(me)) { world::set_ground_zones({}); g_zone_count = 0; return; }
+  std::vector<world::GroundZone> zones;
   unsigned pid = world::player_id();
   double t = app::now();
   auto c0 = std::chrono::steady_clock::now();
@@ -151,6 +165,7 @@ void tick() {
       ++g_spawns;
       k.t0 = t; k.p0 = p; k.next_cue = t;
       k.pace = r.speed <= 0.5f ? Pace::Still : r.speed < g_fast_speed ? Pace::Slow : Pace::Fast;
+      k.area = g_area_ci && world::object_is_a(e, g_area_ci());
       if (g_on) {   // the names only while recording: the label lookup is the expensive part of a spawn
         k.cls = world::object_class_name(e);
         k.who = std::format("[{} #{} \"{}\"]", rel, r.owner, r.owner == pid ? std::string("you") : world::label_of(r.owner));
@@ -160,6 +175,9 @@ void tick() {
       it = g_live.emplace(r.id, std::move(k)).first;
     }
     Track& k = it->second;
+    if (k.frames > 0) k.still_frames = flat(p, k.p_last) < 0.02f ? k.still_frames + 1 : 0;
+    bool landed = k.area && k.still_frames >= 2;   // a ground effect from here on: the hazard sounds own it
+    if (g_zones && k.foe && landed) zones.push_back({p, g_zone_radius});
     // The first movement fixes the line of travel: how far from it the player stands, and when it passes closest.
     if (!k.predicted && k.frames > 0) {
       float vx = p.x - k.p0.x, vz = p.z - k.p0.z, dt = (float)(t - k.t0), len = std::hypot(vx, vz);
@@ -175,7 +193,7 @@ void tick() {
       play_cue(p, d, false, g_fast_vol);   // once, where it was launched
       ++g_fast_ticks;
       k.next_cue = 1e300;
-    } else if (g_cue && k.foe && k.pace == Pace::Slow && t >= k.next_cue) {
+    } else if (g_cue && k.foe && k.pace == Pace::Slow && !landed && t >= k.next_cue) {
       // Accent from the CURRENT line of travel (last frame's step): it passes within g_accent_miss of the player and
       // is still approaching. Before it has moved, no accent.
       bool accent = false;
@@ -196,13 +214,20 @@ void tick() {
     if (g_on) gone(it->first, it->second, t);
     it = g_live.erase(it);
   }
+  g_zone_count = zones.size();
+  g_zone_max = std::max(g_zone_max, g_zone_count);
+  world::set_ground_zones(std::move(zones));
   g_max_live = std::max(g_max_live, g_live.size());
   ++g_frames;
   double us = std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - c0).count();
   g_sweep_us_total += us; g_sweep_us_max = std::max(g_sweep_us_max, us);
 }
 
-void set_cue(bool on) { g_cue = on; if (!on && !g_on) g_live.clear(); }
+void set_cue(bool on) { g_cue = on; if (!on && !g_on && !g_zones) g_live.clear(); }
+void set_zones(bool on, float radius) {
+  g_zones = on;
+  if (radius > 0) g_zone_radius = std::clamp(radius, 0.5f, 15.0f);
+}
 bool cue() { return g_cue; }
 void set_cue_params(float vol, float interval, float accent_miss, float accent_st) {
   if (vol >= 0) g_cue_vol = std::clamp(vol, 0.0f, 2.0f);
@@ -228,6 +253,7 @@ void set_samples(bool on) { g_with_samples = on; }
 std::string dump(int max_lines) {
   std::string s = std::format("cue={} vol={:.2f} interval={:.2f}s accent<{:.1f}u +{:.0f}st fast>={:.0f}u/s at x{:.2f} ticks={} (fast {}) accents={}\n", g_cue,
                               g_cue_vol, g_cue_interval, g_accent_miss, g_accent_st, g_fast_speed, g_fast_vol, g_ticks, g_fast_ticks, g_accents);
+  s += std::format("ground zones={} radius={:.1f} live={} max={}\n", g_zones, g_zone_radius, g_zone_count, g_zone_max);
   s += std::format("recording={} radius={:.0f} samples={} frames={} spawns={} (foe {} / you {} / other {}) live={} max_live={} faulted={} sweep avg={:.0f}us max={:.0f}us\n",
                               g_on, g_radius, g_with_samples, g_frames, g_spawns, g_spawns_foe, g_spawns_you, g_spawns_other, g_live.size(), g_max_live,
                               g_faulted, g_frames ? g_sweep_us_total / g_frames : 0.0, g_sweep_us_max);

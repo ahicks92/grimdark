@@ -1837,4 +1837,7 @@ inline constexpr const char* ProjectileBase_GetMissTime = "?GetMissTime@Projecti
 // public: unsigned int __cdecl GAME::Entity::GetOwner(void)const __ptr64
 inline constexpr const char* Entity_GetOwner_DLL = "Engine.dll";
 inline constexpr const char* Entity_GetOwner = "?GetOwner@Entity@GAME@@QEBAIXZ";
+// public: static class GAME::RTTI_ClassInfo const & __ptr64 __cdecl GAME::ProjectileAreaEffect::GetStaticClassInfo(void)
+inline constexpr const char* ProjectileAreaEffect_GetStaticClassInfo_DLL = "Game.dll";
+inline constexpr const char* ProjectileAreaEffect_GetStaticClassInfo = "?GetStaticClassInfo@ProjectileAreaEffect@GAME@@SAAEBVRTTI_ClassInfo@2@XZ";
 }  // namespace gd::names

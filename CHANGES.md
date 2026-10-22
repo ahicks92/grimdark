@@ -2,6 +2,7 @@
 
 - New: enemy projectiles make a sound. Slow ones you can step around, such as fireballs, orbs and deathbolts, tick from where they are while they fly, so you can hear them travel, including the ones that will miss you; one heading straight for you ticks higher. Fast ones such as crossbow bolts, which arrive too quickly to dodge, tick once, more quietly, from where they were fired, so you know where the shooter is. Your own projectiles and your pets' stay silent.
   - This is a first version: in a big fight it can get busy, and the sound and levels will change.
+- New: harmful ground that enemies create, such as a Skeletal Warlock's sigil or a pool of fire left by a fireball, now sounds like the other harmful ground: you hear which way it is, and the warning sound while you stand in it. Before, only harmful ground that is part of the map made a sound.
 - New keys `shift down` and `shift up`: in menus and windows, read the detailed tooltip one line at a time, so you can find one detail without listening to the whole thing. The first press reads the first line; moving to another item starts over from the top.
 - Fix: the README listed `shift up` and `shift down` for jumping between groups in menus; the keys are `ctrl up` and `ctrl down`.
 - New key `delete`: on an item in your bags, drops it on the ground around you, where you can pick it up again like any loot. A whole stack drops together. Items that can't be dropped (soulbound or untradeable) ask whether to destroy them instead, the same as in the game.

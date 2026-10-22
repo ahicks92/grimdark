@@ -747,7 +747,18 @@ HazardHit seh_hazard(void* region, int rx, int rz) {
   return h;
 }
 }  // namespace
+namespace { std::vector<GroundZone> g_ground_zones; }   // game thread only
+void set_ground_zones(std::vector<GroundZone> zones) { g_ground_zones = std::move(zones); }
+
 bool hazard_at(const Vec3& world_point, float* rate, int* type) {
+  for (const GroundZone& z : g_ground_zones) {
+    float dx = world_point.x - z.centre.x, dz = world_point.z - z.centre.z;
+    if (dx * dx + dz * dz <= z.radius * z.radius && std::fabs(world_point.y - z.centre.y) < 3.0f) {
+      if (rate) *rate = 0;
+      if (type) *type = kGroundZoneType;
+      return true;
+    }
+  }
   if (!g_api.Level_GetSectorLayers || !g_api.SectorLayers_GetTargetId || !g_api.SectorDataManager_GetSectorData || !g_api.Region_GetOffsetFromWorld) return false;
   void* p = player();
   void* region = p && g_api.Entity_GetRegion ? g_api.Entity_GetRegion(p) : nullptr;

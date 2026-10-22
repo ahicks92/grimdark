@@ -684,6 +684,7 @@ ENTRIES = [
     ("ProjectileBase_GetHitTime", "Game", r"GAME::ProjectileBase::GetHitTime\(void\)"),
     ("ProjectileBase_GetMissTime", "Game", r"GAME::ProjectileBase::GetMissTime\(void\)"),
     ("Entity_GetOwner", "Engine", r"GAME::Entity::GetOwner\(void\)"),
+    ("ProjectileAreaEffect_GetStaticClassInfo", "Game", r"GAME::ProjectileAreaEffect::GetStaticClassInfo\(void\)"),
 
 ]
 tables = {}

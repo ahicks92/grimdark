@@ -49,6 +49,12 @@ float free_distance_ray(float dir_x, float dir_z, float lateral, float max_dist,
 // rate = fraction of max life per second (0.02..0.30), type = the CombatAttributeType code (11 = Aether). Any
 // point, any loaded chunk; the exact lookup TickManager::Tick applies once a second, resistances not consulted.
 bool hazard_at(const Vec3& world_point, float* rate, int* type);
+// Enemy ground effects: skill-made harm on the ground (a Skeletal Warlock's sigil, a pool a projectile leaves) that is
+// NOT painted into the map's damage layer. src/projectiles.cpp refreshes the list every frame; hazard_at answers true
+// inside any of them (type kGroundZoneType, rate 0), so every hazard layer -- lanes, bed, pointer -- sounds them too.
+struct GroundZone { Vec3 centre; float radius; };
+inline constexpr int kGroundZoneType = -1;
+void set_ground_zones(std::vector<GroundZone> zones);
 bool mesh_contains(const Vec3& world_point);   // the floored point is inside the path mesh (closest-point gate, not the box test)
 std::string nav_vwindow(float span, float step);              // dev: PutOnFloor's accepted vertical window at the feet
 std::string wall_compare(int dirs, float max_dist, float step);  // dev: A/B flat vs terrain-following rays around the compass

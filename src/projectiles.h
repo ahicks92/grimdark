@@ -4,14 +4,16 @@
 // where it went, how close it came to the player and when it vanished. /projectiles reads it back.
 // The cue (on by default): every slow ENEMY projectile ticks assets/audio/projectile.wav from its position while it
 // flies, pitched up when its line of travel passes close to the player; a fast one (a crossbow bolt) ticks once at
-// launch; a stationary one (a ground effect) is silent; the player's own and allies' stay silent.
+// launch; the player's own and allies' stay silent. An enemy ground effect (a ProjectileAreaEffect that has stopped
+// moving: a sigil, a landed pool) is handed to the hazard sounds as a world::GroundZone instead of ticking.
 #include <string>
 namespace gd::projectiles {
-void tick();                          // game thread, in-world frames; a no-op unless recording or the cue is on
+void tick();                          // game thread, in-world frames; a no-op unless recording, the cue or the zones are on
 void set_cue(bool on);
 bool cue();
 void set_cue_params(float vol, float interval, float accent_miss, float accent_st);   // negative = keep (accent_st: <= -100)
 void set_fast_params(float speed, float vol);   // the fast/slow cut-off (u/s) and a fast one's level; negative = keep
+void set_zones(bool on, float radius);   // enemy ground effects as hazard zones; radius <= 0 keeps it
 void set_recording(bool on);
 bool recording();
 void set_radius(float r);             // the sweep radius around the player (default 30)
