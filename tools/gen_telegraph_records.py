@@ -1,8 +1,8 @@
 """Generate src/telegraph_records.h: per-skill-record telegraph shapes that override the class table in
 src/telegraph.cpp (telegraph::shape_of). A class says how a skill works, not always the shape a player has to avoid,
 so the projectile spreads are sorted by their own arc (the user, 2026-10-22):
-  - a "frontal" is anything covering 90 degrees or more in front of the caster (45 either side) and less than 270
-    (past that it wraps round you: a ring);
+  - a "frontal" is anything covering 90 to 180 degrees in front of the caster (at least 45 either side, at most a half
+    circle: wider no longer reads as "in front" -- the user); wider than 180 is a ring;
   - a ring narrower than 90 degrees is a fan in front: "wave".
 The arc is projectileLaunchRotation (fans, rings, bursts) or, for a ground wave, the angle of its sides from
 waveDistance / waveStartWidth / waveEndWidth -- the widest level, since the shape at the top levels is the one met.
@@ -13,7 +13,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import arz
 
-FRONTAL_MIN, RING_MIN = 90.0, 270.0
+FRONTAL_MIN, FRONTAL_MAX = 90.0, 180.0
 DEFAULT = {"Skill_AttackProjectileRing": "ring", "Skill_AttackProjectileFan": "wave", "Skill_AttackProjectileBurst": "shot",
            "Skill_AttackWave": "wave"}
 
@@ -28,7 +28,7 @@ def arc_of(cls, m):
     return widest(m, "projectileLaunchRotation")
 
 def shape_for(cls, arc):
-    if arc >= RING_MIN: return "ring"
+    if arc > FRONTAL_MAX: return "ring"
     if arc >= FRONTAL_MIN: return "frontal"
     if cls == "Skill_AttackProjectileRing": return "wave"
     return DEFAULT[cls]

@@ -155,8 +155,8 @@ three cues misleading:
   Crystal Cluster's `aethercrystalsmall_zap` (level 8 champion) targets the player id, hits once ~0.42 s after its start
   and ends at ~0.9 s; the player's log has a "hit" matching the zap that landed with the player 3.6 u from the
   cast-start point (the 6.37 s gap between the two hits fits zaps 2-3, 6.43 s, over 1-2, 6.22 s), so it is locked on,
-  not aimed at a point. "frontal" (the user, after WoW) = a spread covering 90 degrees or more in front (45 either side)
-  and under 270 (past that it is a ring); `tools/gen_telegraph_records.py` writes the per-record shapes to
+  not aimed at a point. "frontal" (the user, after WoW) = a spread covering 90 to 180 degrees in front (45 either side at
+  least; wider than a half circle is a ring -- "frontal" past 180 would confuse, the user); `tools/gen_telegraph_records.py` writes the per-record shapes to
   `src/telegraph_records.h` from each skill's widest level (projectileLaunchRotation; a wave's side angle from its
   length and widths -- no ground wave reaches 90, the widest is 45). Correction: the 180-degree bursts launch up to 7
   projectiles at their top levels, not 2 (the first survey read level 1). Melee arcs (special weapon attacks up to 200

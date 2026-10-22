@@ -84,8 +84,8 @@ bool mode_admits(const Cast& c) {
 //   beam   a zap or tendril locked on its target (Skill_AttackSpellChaos: an Aether Crystal Cluster's zap hit 0.42 s
 //          after the cast start with the player 3.6 u from the cast-start point, 2026-10-22) -- moving does not dodge
 //          it; range or line of sight before it starts does
-//   frontal projectiles spread over 90 degrees or more in front of the caster (45 either side), less than 270 --
-//          get behind or well to the side (the user, after WoW's frontals)
+//   frontal projectiles spread over 90 to 180 degrees in front of the caster (45 either side at least, a half circle
+//          at most; wider is a ring) -- get behind or well to the side (the user, after WoW's frontals)
 // Per-record shapes come first (src/telegraph_records.h, tools/gen_telegraph_records.py): a class says how a skill
 // works, not always its shape, so the projectile spreads and waves are sorted by their own arc.
 const char* shape_of(const std::string& k, float dist, const std::string& record) {

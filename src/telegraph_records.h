@@ -9,12 +9,9 @@ inline constexpr RecordShape kRecordShapes[] = {
   {"records/skills/nonplayerskills/bossskills/bonerat_groundspines.dbr", "frontal"},   // Skill_AttackProjectileFan, 90 degrees
   {"records/skills/nonplayerskills/bossskills/cultist_chaosbarrage.dbr", "frontal"},   // Skill_AttackProjectileBurst, 180 degrees
   {"records/skills/nonplayerskills/bossskills/uroboruukguardian_chaosboltnova.dbr", "frontal"},   // Skill_AttackProjectileRing, 180 degrees
-  {"records/skills/nonplayerskills/bossskills/waspboss_lightningbarrage.dbr", "frontal"},   // Skill_AttackProjectileRing, 240 degrees
   {"records/skills/nonplayerskills/heroskills/baldim_chaosbarrage.dbr", "frontal"},   // Skill_AttackProjectileBurst, 180 degrees
   {"records/skills/nonplayerskills/heroskills/baldim_chaosbolt.dbr", "frontal"},   // Skill_AttackProjectileBurst, 90 degrees
   {"records/skills/nonplayerskills/heroskills/baldim_chaoswave.dbr", "frontal"},   // Skill_AttackProjectileRing, 90 degrees
-  {"records/skills/nonplayerskills/heroskills/banezal_chaosburst.dbr", "frontal"},   // Skill_AttackProjectileRing, 210 degrees
   {"records/skills/nonplayerskills/heroskills/bloodclaw_bloodyhook.dbr", "wave"},   // Skill_AttackProjectileRing, 35 degrees
-  {"records/skills/nonplayerskills/heroskills/jaron_lightningbarrage.dbr", "frontal"},   // Skill_AttackProjectileRing, 240 degrees
 };
 }  // namespace gd::telegraph
