@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <deque>
 #include <format>
@@ -166,7 +167,9 @@ struct Track {
 std::map<unsigned, Track> g_live;
 std::deque<std::string> g_lines, g_samples;
 std::mutex g_mu;
-bool g_on = false, g_with_samples = false;
+// Recording starts on by itself in a dev launch (GRIMDARK_PORT set: inject.ps1 -Launch, launch.sh), so a session played
+// without anyone switching it on through /projectiles is not lost; a player build stays off.
+bool g_on = GetEnvironmentVariableW(L"GRIMDARK_PORT", nullptr, 0) > 0, g_with_samples = false;
 // The cue (2026-10-22 prototype): every slow enemy projectile ticks projectile.wav from where it is, every
 // g_cue_interval while it flies -- all of them, not only the ones aimed at you, so stepping away from one never walks
 // you into the next unheard (the user's rule). One that will come within g_accent_miss of you ticks g_accent_st
@@ -193,7 +196,29 @@ uint64_t g_frames = 0, g_spawns = 0, g_faulted = 0, g_spawns_foe = 0, g_spawns_y
 size_t g_max_live = 0;
 double g_sweep_us_total = 0, g_sweep_us_max = 0;
 
+// The recording also goes to %LOCALAPPDATA%\Grimdark\projectiles.log, APPENDED: grimdark.log is truncated on each
+// load and the in-memory ring dies with the game, which lost a whole evening of probe lines (2026-10-22). One header
+// line per session; flushed per line so a crash keeps what came before it.
+FILE* g_persist = nullptr;
+bool g_persist_tried = false;
+void persist(const std::string& s) {
+  if (!g_persist_tried) {
+    g_persist_tried = true;
+    std::wstring path = log::path();
+    size_t slash = path.find_last_of(L"\\/");
+    path = (slash == std::wstring::npos ? std::wstring() : path.substr(0, slash + 1)) + L"projectiles.log";
+    g_persist = _wfopen(path.c_str(), L"a");
+    if (g_persist) {
+      SYSTEMTIME st; GetLocalTime(&st);
+      fprintf(g_persist, "=== session %04d-%02d-%02d %02d:%02d:%02d (times below are app seconds) ===\n", st.wYear, st.wMonth, st.wDay,
+              st.wHour, st.wMinute, st.wSecond);
+    }
+  }
+  if (!g_persist) return;
+  fputs(s.c_str(), g_persist); fputc('\n', g_persist); fflush(g_persist);
+}
 void note(std::deque<std::string>& q, std::string s, size_t cap) {
+  if (&q == &g_lines) persist(s);
   std::lock_guard<std::mutex> l(g_mu);
   q.push_back(std::move(s));
   while (q.size() > cap) q.pop_front();
