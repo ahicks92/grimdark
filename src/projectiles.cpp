@@ -92,11 +92,38 @@ std::string probe_line(const void* e) {
   return s;
 }
 
+// The area's damage radius (static RE 2026-10-22): the projectile's targeting pass (Game.dll 0x408a00, the two
+// GameEngine::GetTargetsInRadius calls at +0x408a88 / +0x40c576) walks a vector of pointers at +0xd18 (begin) /
+// +0xd20 (end) and queries targets within [entry + 4] (float) of the position at +0x748. The probe of the object's own
+// floats never found the Elemental Seal's 3.5: the radius lives behind those pointers. The largest entry is the area.
+// -1 when the vector is empty, unreadable or implausible (outside 0.3..20 u).
+float read_area_radius_raw(const void* e) {
+  __try {
+    const char* o = (const char*)e;
+    void* const* b = *(void* const* const*)(o + 0xd18);
+    void* const* en = *(void* const* const*)(o + 0xd20);
+    if (!b || en <= b || en - b > 64) return -1;
+    float best = -1;
+    for (void* const* it = b; it < en; ++it) {
+      if (!*it) continue;
+      float r = *(const float*)((const char*)*it + 4);
+      if (r > best) best = r;
+    }
+    return best;
+  } __except (EXCEPTION_EXECUTE_HANDLER) { return -1; }
+}
+float area_radius(const void* e) {
+  if (IsBadReadPtr(e, 0xd28)) return -1;
+  float r = read_area_radius_raw(e);
+  return r >= 0.3f && r <= 20.0f ? r : -1;
+}
+
 struct Track {
   unsigned owner = 0; bool foe = false; Pace pace = Pace::Slow; std::string who, cls, rec;
   bool area = false;      // a ProjectileAreaEffect: once it stops moving it is ground harm (a sigil, a landed pool)
   int still_frames = 0;   // consecutive frames it has not moved
   bool probed = false;
+  float radius = -1;      // the area's own radius once landed (area_radius); -1 = not read / implausible
   double next_cue = 0;   // when this projectile's next tick plays (foes only; a fast one never ticks again)
   double t0 = 0, t_last = 0, t_min = 0;
   world::Vec3 p0, p_last, me_min;
@@ -203,11 +230,13 @@ void tick() {
     Track& k = it->second;
     if (k.frames > 0) k.still_frames = flat(p, k.p_last) < 0.02f ? k.still_frames + 1 : 0;
     bool landed = k.area && k.still_frames >= 2;   // a ground effect from here on: the hazard sounds own it
-    if (g_zones && k.foe && landed) zones.push_back({p, g_zone_radius});
+    if (landed && k.radius < 0) k.radius = area_radius(e);
+    if (g_zones && k.foe && landed) zones.push_back({p, k.radius > 0 ? k.radius : g_zone_radius});
     if (g_on && (k.foe || k.owner == pid) && landed && !k.probed) {   // at landing: the skill may set the radius after creating it;
                                                                     // the player's own too (Elemental Seal 3.5 vs Conflagration 3.0)
       k.probed = true;
-      note(g_lines, std::format("{:.3f} PROBE #{} {}:{}", t, r.id, k.rec, probe_line(e)), 5000);
+      note(g_lines, std::format("{:.3f} PROBE #{} {} radius={:g} raw={:g}:{}", t, r.id, k.rec, k.radius, IsBadReadPtr(e, 0xd28) ? -2.0f : read_area_radius_raw(e),
+                                probe_line(e)), 5000);
     }
     // The first movement fixes the line of travel: how far from it the player stands, and when it passes closest.
     if (!k.predicted && k.frames > 0) {
