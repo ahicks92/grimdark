@@ -67,10 +67,36 @@ bool read_raw(void* e, Raw& r) {
 // be stepped around (deathbolts 20, Nomos Dred's orbs 16); still = a ground effect placed as a projectile (a sigil,
 // speed 0), which is the hazard layer's to sound, not this one's.
 enum class Pace : char { Still, Slow, Fast };
+// The radius probe (dev, while recording): the area-effect radius has no export, and the same visual record serves
+// skills of different radii (the sigil: 2.5 Balrazar / 3.2 Skeletal Warlock / up to 5.5 the player's), so it cannot be
+// tabled by record either. On each new enemy ProjectileAreaEffect, every float in the object's first kProbeBytes that
+// looks like a radius (0.5..50, two decimals) is logged as off=value; matching the logs of two records with known radii
+// (Kilrian's Conflagration 3.0, the warlock's sigil 3.2) names the field.
+constexpr size_t kProbeBytes = 0x1000;
+struct ProbeBuf { float f[kProbeBytes / 4]; };
+bool read_probe(const void* e, ProbeBuf& out) {
+  __try { memcpy(&out, e, sizeof out); return true; } __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
+}
+std::string probe_line(const void* e) {
+  if (IsBadReadPtr(e, kProbeBytes)) return "unreadable";
+  static ProbeBuf b;
+  if (!read_probe(e, b)) return "faulted";
+  std::string s;
+  for (size_t i = 0; i < kProbeBytes / 4; ++i) {
+    float v = b.f[i];
+    if (!(v >= 0.5f && v <= 50.0f)) continue;
+    float r = std::round(v * 100.0f) / 100.0f;
+    if (std::fabs(v - r) > 1e-5f) continue;
+    s += std::format(" {:#x}={:g}", i * 4, r);
+  }
+  return s;
+}
+
 struct Track {
   unsigned owner = 0; bool foe = false; Pace pace = Pace::Slow; std::string who, cls, rec;
   bool area = false;      // a ProjectileAreaEffect: once it stops moving it is ground harm (a sigil, a landed pool)
   int still_frames = 0;   // consecutive frames it has not moved
+  bool probed = false;
   double next_cue = 0;   // when this projectile's next tick plays (foes only; a fast one never ticks again)
   double t0 = 0, t_last = 0, t_min = 0;
   world::Vec3 p0, p_last, me_min;
@@ -178,6 +204,10 @@ void tick() {
     if (k.frames > 0) k.still_frames = flat(p, k.p_last) < 0.02f ? k.still_frames + 1 : 0;
     bool landed = k.area && k.still_frames >= 2;   // a ground effect from here on: the hazard sounds own it
     if (g_zones && k.foe && landed) zones.push_back({p, g_zone_radius});
+    if (g_on && k.foe && landed && !k.probed) {   // at landing, not at spawn: the skill may set the radius after creating it
+      k.probed = true;
+      note(g_lines, std::format("{:.3f} PROBE #{} {}:{}", t, r.id, k.rec, probe_line(e)), 5000);
+    }
     // The first movement fixes the line of travel: how far from it the player stands, and when it passes closest.
     if (!k.predicted && k.frames > 0) {
       float vx = p.x - k.p0.x, vz = p.z - k.p0.z, dt = (float)(t - k.t0), len = std::hypot(vx, vz);
