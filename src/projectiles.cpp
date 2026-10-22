@@ -32,7 +32,7 @@ float (*g_speed)(void*) = nullptr;
 float (*g_hit_time)(const void*) = nullptr;
 float (*g_miss_time)(const void*) = nullptr;
 float (*g_get_distance)(const void*) = nullptr;
-float (*g_launch_angle)(const void*) = nullptr;   // the throw angle (+0x578, Game.dll 0x406fe0): > 0 = lobbed in an arc   // the flight range (+0x538, Game.dll 0x406e50): projectileDistance
+float (*g_launch_angle)(const void*) = nullptr;   // the throw angle (+0x578, Game.dll 0x406fe0), clamped: 10 = none   // the flight range (+0x538, Game.dll 0x406e50): projectileDistance
 bool g_loaded = false;
 template <class F> void load(F& f, const char* dll, const char* name) { f = (F)GetProcAddress(GetModuleHandleA(dll), name); }
 void load_api() {
@@ -301,7 +301,9 @@ void tick() {
       // an arc that lands at the destination (his fireballs 35, the ice grenades 25: both ended at their cast's aim
       // point); zero is a straight shot that flies on through the aim point to its range (the deathbolt). A destination
       // equal to the launch point is no aim at all (a fragment of a burst: Rolderathis's ice spikes), so straight.
-      k.lobbed = r.angle > 0.5f && k.has_dest && flat(p, k.dest) > 0.5f;
+      // GetLaunchAngle CLAMPS: a projectile with no launch angle reads 10 (the floor; the Frost Revenant's straight ice
+      // spikes were taken for lobbed and missed their warning, 2026-10-22). Every lobbed record has 18 or more.
+      k.lobbed = r.angle > 12.0f && k.has_dest && flat(p, k.dest) > 0.5f;
       if (g_on && k.foe) {
         world::Vec3 aim;
         if (casts::recent_target(r.owner, t, 0.6, aim))
