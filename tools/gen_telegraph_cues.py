@@ -2,7 +2,7 @@
 Desktop", the same voice the positional speech uses in-game), silence-trimmed, time-compressed with ffmpeg's atempo
 (pitch preserved) to 200 ms (the 100 ms set was dropped 2026-09-01: too clipped to read), loudness-matched to the sonar's
 enemy cue, 48 kHz mono 16-bit.
-Usage: uv run tools/gen_telegraph_cues.py [--ms 200] [--words swing,stomp,wave,shot,ring,area,charge]"""
+Usage: uv run tools/gen_telegraph_cues.py [--ms 200] [--words swing,stomp,wave,shot,ring,area,charge,aura]"""
 import os, re, subprocess, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -35,7 +35,7 @@ def peak_db(path):
     return float(m.group(1)) if m else 0.0
 
 def main():
-    ms_list = [200]; words = ["swing", "stomp", "wave", "shot", "ring", "area", "charge"]
+    ms_list = [200]; words = ["swing", "stomp", "wave", "shot", "ring", "area", "charge", "aura"]
     a = sys.argv[1:]
     if "--ms" in a: ms_list = [int(x) for x in a[a.index("--ms") + 1].split(",")]
     if "--words" in a: words = a[a.index("--words") + 1].split(",")

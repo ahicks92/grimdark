@@ -9,10 +9,10 @@
 #include "settings.h"
 
 namespace gd::telegraph {
-const char* const kShapeNames[kShapes] = {"swing", "stomp", "wave", "shot", "ring", "area", "charge"};
+const char* const kShapeNames[kShapes] = {"swing", "stomp", "wave", "shot", "ring", "area", "charge", "aura"};
 namespace {
 Mode g_mode = Mode::All;
-bool g_shape_on[kShapes] = {true, true, true, true, true, true, true};
+bool g_shape_on[kShapes] = {true, true, true, true, true, true, true, true};
 float g_vol = 1.0f;
 int g_variant = 200;                     // the 200 ms words; the only shipped set (a 100 ms set was tried and dropped, 2026-09-01)
 float g_radius = 25.0f;                  // the sonar's radius: casts farther than this are not ours to hear
@@ -72,14 +72,32 @@ bool mode_admits(const Cast& c) {
 //   charge a charge or a blink-strike: it closes the distance itself -- brace / break line, running does not help
 //   stomp  a radius around the caster at the hit frame -- step away from the caster
 //   wave   a directional wave / cone / line -- get off the line
-//   shot   a projectile, a spell at your position (the lightning bolts: no flight, but the same counterplay),
-//          a beam, a pool launch -- keep moving / sidestep
+//   shot   a projectile, a beam, a chain -- keep moving / sidestep
 //   ring   projectiles in all directions -- run outward
-//   area   something that keeps landing on a spot: rains, drops, orbiters, geysers, timed auras -- leave the area
-const char* shape_of(const std::string& k, float dist) {
+//   area   something landing on a spot: the spot you stood on at cast start (pools, the lightning strikes: the target
+//          point is fixed when the cast starts, verified on Kilrian's Conflagration 2026-10-22), rains, drops, geysers
+//          -- leave the spot
+//   aura   harm centred on the caster that moves with it for seconds (timed auras such as Kilrian's Ring of Fire,
+//          orbiting projectiles, the stormcaller's zapping aura) -- keep away from the caster (the user, 2026-10-22:
+//          "area" read as a spot on the ground)
+// Per-record exceptions come first: a class says how a skill works, not always its shape. Of every Ring/Burst/Fan
+// record (2026-10-22 survey by projectileLaunchRotation) two "rings" are narrow aimed fans; the 180-degree bursts
+// launch only 2 projectiles, one to each side, so they stay shots.
+const char* shape_of(const std::string& k, float dist, const std::string& record) {
+  static const std::map<std::string, const char*> by_record = {
+    {"records/skills/nonplayerskills/heroskills/bloodclaw_bloodyhook.dbr", "shot"},   // Skill_AttackProjectileRing, 6 over 35 degrees
+    {"records/skills/nonplayerskills/heroskills/baldim_chaoswave.dbr", "shot"},       // Skill_AttackProjectileRing, 8 over 90 degrees
+  };
+  if (!record.empty()) {
+    std::string r = record;
+    std::transform(r.begin(), r.end(), r.begin(), [](unsigned char ch) { return (char)std::tolower(ch); });
+    std::replace(r.begin(), r.end(), '\\', '/');
+    if (auto it = by_record.find(r); it != by_record.end()) return it->second;
+  }
   static const std::map<std::string, const char*> table = {
     // weapon attacks
     {"Skill_AttackWeapon", "swing"}, {"Skill_WPAttack_BasicAttack", "swing"}, {"Skill_WeaponPool_BasicAttack", "swing"},
+    {"Skill_WeaponPool_Default", ""},   // the pool wrapper StartAction runs in the same frame as the basic attack it picks (which cues)
     {"Skill_WeaponPool_ChargedFinale", "swing"}, {"Skill_WeaponPool_ChargedLinear", "swing"}, {"Skill_AttackWeaponRadius", "swing"},
     {"Skill_AttackWeaponKick", "swing"}, {"Skill_AttackInherent", "swing"},
     {"Skill_AttackWeaponCharge", "charge"}, {"Skill_AttackWeaponBlink", "charge"},
@@ -89,17 +107,20 @@ const char* shape_of(const std::string& k, float dist) {
     {"Skill_AttackWave", "wave"}, {"Skill_AttackSpellCone", "wave"}, {"Skill_AttackProjectileLineFan", "wave"},
     // aimed at you
     {"Skill_AttackProjectile", "shot"}, {"Skill_AttackProjectileBurst", "shot"}, {"Skill_AttackProjectileFan", "shot"},
-    {"Skill_AttackProjectileDebuf", "shot"}, {"Skill_AttackProjectileAreaEffect", "shot"}, {"Skill_AttackSpell", "shot"},
+    {"Skill_AttackProjectileDebuf", "shot"}, {"Skill_AttackSpell", "shot"},
     {"Skill_AttackSpellChaos", "shot"}, {"Skill_AttackChain", "shot"}, {"SkillSecondary_ChainLightning", "shot"}, {"ChaosBeam", "shot"},
-    {"Skill_AttackRadiusLightning", "shot"}, {"Skill_AttackRadiusLightning2", "shot"}, {"Skill_AttackPattern", "shot"}, {"Skill_Telekinesis", "shot"},
+    {"Skill_AttackPattern", "shot"}, {"Skill_Telekinesis", "shot"},
     {"Skill_AttackProjectileRing", "ring"},
-    // keeps landing on a spot
-    {"Skill_BuffAttackRadiusDrop", "area"}, {"Skill_AttackProjectileDrop", "area"}, {"Skill_AttackProjectileOrbiting", "area"},
-    {"Skill_AttackProjectileSpawnPet", "area"}, {"Skill_CharonGeysers", "area"}, {"Skill_BuffAttackRadiusDuration", "area"},
+    // lands on a spot
+    {"Skill_AttackProjectileAreaEffect", "area"}, {"Skill_AttackRadiusLightning", "area"}, {"Skill_AttackRadiusLightning2", "area"},
+    {"Skill_BuffAttackRadiusDrop", "area"}, {"Skill_AttackProjectileDrop", "area"},
+    {"Skill_AttackProjectileSpawnPet", "area"}, {"Skill_CharonGeysers", "area"},
+    // centred on the caster, moving with it
+    {"Skill_BuffAttackRadiusDuration", "aura"}, {"Skill_AttackProjectileOrbiting", "aura"}, {"Skill_BuffAttackRadiusLightning", "aura"},
     // no wind-up moment or no threat geometry: auras, passives, buffs, curses, summons, moves, markers
     {"Skill_Passive", ""}, {"SkillBuff_Passive", ""}, {"SkillBuff_PassiveShield", ""}, {"Skill_PassiveOnLifeBuffSelf", ""},
     {"Skill_PassiveOnHitBuffSelf", ""}, {"Skill_OnHitAttackRadius", ""}, {"Skill_BuffRadiusToggled", ""}, {"Skill_BuffAttackRadiusToggled", ""},
-    {"Skill_BuffAttackRadiusLightning", ""}, {"Skill_BuffSelfDuration", ""}, {"Skill_BuffSelfToggled", ""}, {"Skill_BuffSelfShield", ""},
+    {"Skill_BuffSelfDuration", ""}, {"Skill_BuffSelfToggled", ""}, {"Skill_BuffSelfShield", ""},
     {"Skill_BuffSelfImmobilize", ""}, {"Skill_BuffSelfColossus", ""}, {"Skill_BuffOther", ""}, {"Skill_BuffRadius", ""}, {"Skill_GiveBonus", ""},
     {"SkillBuff_Debuf", ""}, {"SkillBuff_DebufTrap", ""}, {"SkillBuff_DebufFreeze", ""}, {"SkillBuff_Contageous", ""}, {"SkillBuff_DispelMagic", ""},
     {"Skill_DispelMagic", ""}, {"Skill_AttackBuff", ""}, {"Skill_AttackBuffRadius", ""}, {"SkillSecondary_ChainBonus", ""},
@@ -124,7 +145,7 @@ void on_cast(const Cast& c) {
   // Might = Skill_AttackPathCharge), a pet's or an allied NPC's must not land in the unknown-class list. The game's
   // own faction test covers every player (ours or another one's), every pet and every ally.
   if (!world::is_foe(c.caster_id)) { ++g_skipped_friend; note(std::format("{:.3f} skip friend {} {} #{} {:.1f}u", c.t, c.skill_class, c.caster_class, c.caster_id, c.dist)); return; }
-  const char* shape = shape_of(c.skill_class, c.dist);
+  const char* shape = shape_of(c.skill_class, c.dist, c.record);
   if (!shape) { ++g_skipped_shape; return; }
   int si = shape_index(shape);
   if (si >= 0 && !g_shape_on[si]) { ++g_skipped_shape; return; }
