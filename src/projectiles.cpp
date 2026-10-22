@@ -204,7 +204,8 @@ void tick() {
     if (k.frames > 0) k.still_frames = flat(p, k.p_last) < 0.02f ? k.still_frames + 1 : 0;
     bool landed = k.area && k.still_frames >= 2;   // a ground effect from here on: the hazard sounds own it
     if (g_zones && k.foe && landed) zones.push_back({p, g_zone_radius});
-    if (g_on && k.foe && landed && !k.probed) {   // at landing, not at spawn: the skill may set the radius after creating it
+    if (g_on && (k.foe || k.owner == pid) && landed && !k.probed) {   // at landing: the skill may set the radius after creating it;
+                                                                    // the player's own too (Elemental Seal 3.5 vs Conflagration 3.0)
       k.probed = true;
       note(g_lines, std::format("{:.3f} PROBE #{} {}:{}", t, r.id, k.rec, probe_line(e)), 5000);
     }
