@@ -11,6 +11,7 @@
 #include <set>
 #include "app.h"
 #include "audio.h"
+#include "casts.h"
 #include "gd_names.h"
 #include "log.h"
 #include "world.h"
@@ -121,6 +122,30 @@ float area_radius(const void* e) {
   return r >= 0.3f && r <= 20.0f ? r : -1;
 }
 
+// The target probe (dev, while recording, 2026-10-22): the Grand Priest's fireballs (ProjectileExploding) end at the
+// point their cast was aimed at, the deathbolt (ProjectileFireballLike) flies through it. To predict from where a
+// projectile is GOING instead of per-class rules (the user), find whether the projectile stores that point: on each new
+// enemy projectile whose owner released an aimed skill in the last 0.6 s, search its first kProbeBytes for the cast's
+// target point in region-relative coordinates (x and z within 0.3 u, y free -- the point may be floored differently)
+// and log every offset that matches.
+std::string target_probe_line(const void* e, const world::Vec3& target) {
+  alignas(16) unsigned char wv[64] = {};
+  if (!world::world_vec3_at(target, wv)) return " no-region";
+  float rel[3]; memcpy(rel, wv + 8, sizeof rel);   // WorldVec3 = Region* (+0) + region-relative Vec3 (+8)
+  if (IsBadReadPtr(e, kProbeBytes)) return " unreadable";
+  static ProbeBuf b;
+  if (!read_probe(e, b)) return " faulted";
+  std::string s = std::format(" rel=({:.1f},{:.1f},{:.1f})", rel[0], rel[1], rel[2]);
+  int hits = 0;
+  for (size_t i = 0; i + 2 < kProbeBytes / 4; ++i) {
+    if (std::fabs(b.f[i] - rel[0]) < 0.3f && std::fabs(b.f[i + 2] - rel[2]) < 0.3f) {
+      s += std::format(" {:#x}=({:.1f},{:.1f},{:.1f})", i * 4, b.f[i], b.f[i + 1], b.f[i + 2]);
+      if (++hits >= 8) break;
+    }
+  }
+  return hits ? s : s + " none";
+}
+
 struct Track {
   unsigned owner = 0; bool foe = false; Pace pace = Pace::Slow; std::string who, cls, rec;
   bool area = false;      // a ProjectileAreaEffect: once it stops moving it is ground harm (a sigil, a landed pool)
@@ -228,6 +253,12 @@ void tick() {
       k.t0 = t; k.p0 = p; k.next_cue = t;
       k.pace = r.speed <= 0.5f ? Pace::Still : r.speed < g_fast_speed ? Pace::Slow : Pace::Fast;
       k.range = r.range > 0.5f && r.range < 200.0f ? r.range : -1.0f;
+      if (g_on && k.foe) {
+        world::Vec3 aim;
+        if (casts::recent_target(r.owner, t, 0.6, aim))
+          note(g_lines, std::format("{:.3f} TARGET #{} {} {} aim=({:.1f},{:.1f},{:.1f}) launch {:.1f}u from it:{}", t, r.id, world::object_class_name(e), r.rec,
+                                    aim.x, aim.y, aim.z, flat(p, aim), target_probe_line(e, aim)), 5000);
+      }
       k.area = g_area_ci && world::object_is_a(e, g_area_ci());
       if (g_on) {   // the names only while recording: the label lookup is the expensive part of a spawn
         k.cls = world::object_class_name(e);
