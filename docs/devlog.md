@@ -1240,3 +1240,29 @@ Requested by testers. Read statically: the game's release of a held item over th
 character + `RemoveInventoryItemConfigCmd`). The mod mirrors it from a bag row: `PlayerInventoryCtrl::RemoveItem(id,
 true)` then the drop or (after our own no/yes picker) the destroy. Not yet verified live: check the item lands and
 does not come back in the bag or duplicate across a save and reload.
+
+## 2026-10-22: enemy projectiles and ground effects (src/projectiles.cpp, branch projectile-recon)
+- Recon (`/projectiles?on=1`): projectiles are `ProjectileBase` entities (9 classes) found by `world::entities_near`
+  (Region::GetEntitiesInSphere, one reused game vector: a fresh vector per call leaks its storage, which
+  `find_entity` still does every locked frame). `Entity::GetOwner()` names the shooter (player / foe / other) for
+  every one, fragments spawned at the target included. `ProjectileBase::GetTotalSpeed` matches the measured flight
+  within ~5 %; `GetHitTime`/`GetMissTime` read 100/100 or 0/0 -- not times. The first movement's line of travel
+  predicts the closest approach within ~1 u. Sweep ~30-160 us a frame; the spawn-time `label_of` was the likely
+  15 ms spike (labels only while recording now).
+- Measured: skeleton crossbow bolts 38 u/s from ~12 u = ~0.27 s from appearing to arriving (unavoidable by
+  reaction, for a sighted player too); deathbolt 20 u/s ~0.8 s; Nomos Dred's lightning nova 18 orbs at 16 u/s every
+  7.5-9.5 s, the "ring" telegraph ~0.35 s before the orbs.
+- The cue: slow (< 25 u/s) enemy projectiles tick `assets/audio/projectile.wav` from their position every 150 ms,
+  +5 st when the current line passes within 1.5 u and approaches; fast ones tick once at launch at 0.6; every enemy
+  one is audible, not only the aimed ones (the user's rule: stepping from one must not walk into an unheard one).
+- Enemy ground effects (sigils, landed pools) are `ProjectileAreaEffect` entities, invisible to the hazard layer
+  (painted sector cells only). Every enemy one still for 2 frames is a `world::GroundZone` that `hazard_at` answers
+  first, so lanes / bed / pointer sound it. **Radius** (static RE, verified live): the targeting pass (Game.dll
+  0x408a00; `GetTargetsInRadius` at +0x408a88 / +0x40c576) walks a pointer vector at +0xd18/+0xd20 and uses
+  `[entry + 4]` around +0x748; Elemental Seal read 3.5 = its record x3. The object's inline floats never hold it
+  (0x538 / 0xde8 read 3.0 on Kilrian's Conflagration by coincidence: 20 / 5 on the Seal). One visual record serves
+  skills of different radii (the sigil: 2.5 / 3.2 / up to 5.5), so a record table cannot replace the live read.
+- Not covered: caster-centred auras that move with the enemy (Kilrian's Ring of Fire, `BuffAttackRadiusDuration`,
+  which also auto-casts Fireblast every 0.2-0.4 s with no animation -- `/casts` NOW lines; Nomos Dred's Lightning
+  Field); waves/cones stay the telegraph's (the Skeletal Monstrosity's Double Strike: two 8 u x 3->5 u waves at
+  +0.60 / +1.14 s, step sideways).
