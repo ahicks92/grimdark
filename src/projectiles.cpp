@@ -10,6 +10,7 @@
 #include <mutex>
 #include <set>
 #include "app.h"
+#include "audio.h"
 #include "gd_names.h"
 #include "log.h"
 #include "world.h"
@@ -59,7 +60,8 @@ bool read_raw(void* e, Raw& r) {
 }
 
 struct Track {
-  unsigned owner = 0; std::string who, cls, rec;
+  unsigned owner = 0; bool foe = false; std::string who, cls, rec;
+  double next_cue = 0;   // when this projectile's next tick plays (foes only)
   double t0 = 0, t_last = 0, t_min = 0;
   world::Vec3 p0, p_last, me_min;
   float min_d = 1e9f, min_dy = 0;
@@ -71,6 +73,13 @@ std::map<unsigned, Track> g_live;
 std::deque<std::string> g_lines, g_samples;
 std::mutex g_mu;
 bool g_on = false, g_with_samples = false;
+// The cue (2026-10-22 prototype): every enemy projectile ticks projectile.wav from where it is, every g_cue_interval
+// while it flies -- all of them, not only the ones aimed at you, so stepping away from one never walks you into the
+// next unheard (the user's rule). One whose current line of travel passes within g_accent_miss of you, still
+// approaching, ticks g_accent_st semitones higher.
+bool g_cue = true;
+float g_cue_vol = 0.6f, g_cue_interval = 0.15f, g_accent_miss = 1.5f, g_accent_st = 5.0f;
+uint64_t g_ticks = 0, g_accents = 0;
 float g_radius = 30.0f;
 uint64_t g_frames = 0, g_spawns = 0, g_faulted = 0, g_spawns_foe = 0, g_spawns_you = 0, g_spawns_other = 0;
 size_t g_max_live = 0;
@@ -92,10 +101,20 @@ void gone(unsigned id, const Track& k, double t) {
                             t, id, k.who, k.cls, life, k.frames, pos(k.p0), pos(k.p_last), travelled, life > 0 ? travelled / life : 0.0,
                             k.min_d, k.min_dy, k.t_min - k.t0, pred, (t - k.t_last) * 1000), 5000);
 }
+// Level by distance: full within 3 u, linear down to 0.15 at 30 u (the sweep radius).
+float cue_gain(float d) { return d <= 3.0f ? 1.0f : std::max(0.15f, 1.0f - 0.85f * (d - 3.0f) / 27.0f); }
+void play_cue(const world::Vec3& p, float d, bool accent) {
+  float pan = 0, gain = 1, ahead = 0;
+  world::ear_frame(p, pan, gain, &ahead);
+  audio::play_sample(audio::module_dir() + "assets\\audio\\projectile.wav", g_cue_vol * cue_gain(d), pan, world::rear_shelf_db(ahead), false, 0, false,
+                     accent ? g_accent_st : 0.0f);
+  ++g_ticks;
+  if (accent) ++g_accents;
+}
 }  // namespace
 
 void tick() {
-  if (!g_on) return;
+  if (!g_on && !g_cue) return;
   load_api();
   if (!g_proj_ci || !g_get_id) return;
   world::Vec3 me;
@@ -117,14 +136,18 @@ void tick() {
     auto it = g_live.find(r.id);
     if (it == g_live.end()) {
       Track k;
-      k.owner = r.owner; k.cls = world::object_class_name(e); k.rec = r.rec;
-      std::string rel = r.owner == pid ? "you" : world::is_foe(r.owner) ? "foe" : "other";
+      k.owner = r.owner; k.rec = r.rec;
+      k.foe = r.owner != pid && world::is_foe(r.owner);
+      std::string rel = r.owner == pid ? "you" : k.foe ? "foe" : "other";
       (rel == "you" ? g_spawns_you : rel == "foe" ? g_spawns_foe : g_spawns_other)++;
       ++g_spawns;
-      k.who = std::format("[{} #{} \"{}\"]", rel, r.owner, r.owner == pid ? std::string("you") : world::label_of(r.owner));
-      k.t0 = t; k.p0 = p;
-      note(g_lines, std::format("{:.3f} SPAWN #{} {} {} {} at {} d={:.1f} dy={:+.1f} speed={:.1f} hit={:.0f} miss={:.0f}", t, r.id, k.who, k.cls,
+      k.t0 = t; k.p0 = p; k.next_cue = t;
+      if (g_on) {   // the names only while recording: the label lookup is the expensive part of a spawn
+        k.cls = world::object_class_name(e);
+        k.who = std::format("[{} #{} \"{}\"]", rel, r.owner, r.owner == pid ? std::string("you") : world::label_of(r.owner));
+        note(g_lines, std::format("{:.3f} SPAWN #{} {} {} {} at {} d={:.1f} dy={:+.1f} speed={:.1f} hit={:.0f} miss={:.0f}", t, r.id, k.who, k.cls,
                                 k.rec, pos(p), d, p.y - me.y, r.speed, r.hit, r.miss), 5000);
+      }
       it = g_live.emplace(r.id, std::move(k)).first;
     }
     Track& k = it->second;
@@ -139,13 +162,25 @@ void tick() {
         k.predicted = true;
       }
     }
+    if (g_cue && k.foe && t >= k.next_cue) {
+      // Accent from the CURRENT line of travel (last frame's step): it passes within g_accent_miss of the player and
+      // is still approaching. Before it has moved, no accent.
+      bool accent = false;
+      float vx = p.x - k.p_last.x, vz = p.z - k.p_last.z, len = std::hypot(vx, vz);
+      if (k.frames > 0 && len > 0.01f) {
+        float ux = vx / len, uz = vz / len, rx = me.x - p.x, rz = me.z - p.z;
+        accent = rx * ux + rz * uz > 0 && std::fabs(rx * uz - rz * ux) < g_accent_miss;
+      }
+      play_cue(p, d, accent);
+      k.next_cue = t + g_cue_interval;
+    }
     if (d < k.min_d) { k.min_d = d; k.min_dy = p.y - me.y; k.t_min = t; k.me_min = me; }
     k.p_last = p; k.t_last = t; ++k.frames;
     if (g_with_samples) note(g_samples, std::format("{:.3f} #{} {} d={:.1f}", t, r.id, pos(p), d), 20000);
   }
   for (auto it = g_live.begin(); it != g_live.end();) {
     if (seen.count(it->first)) { ++it; continue; }
-    gone(it->first, it->second, t);
+    if (g_on) gone(it->first, it->second, t);
     it = g_live.erase(it);
   }
   g_max_live = std::max(g_max_live, g_live.size());
@@ -154,8 +189,18 @@ void tick() {
   g_sweep_us_total += us; g_sweep_us_max = std::max(g_sweep_us_max, us);
 }
 
+void set_cue(bool on) { g_cue = on; if (!on && !g_on) g_live.clear(); }
+bool cue() { return g_cue; }
+void set_cue_params(float vol, float interval, float accent_miss, float accent_st) {
+  if (vol >= 0) g_cue_vol = std::clamp(vol, 0.0f, 2.0f);
+  if (interval > 0) g_cue_interval = std::clamp(interval, 0.05f, 2.0f);
+  if (accent_miss >= 0) g_accent_miss = accent_miss;
+  if (accent_st > -100) g_accent_st = accent_st;
+}
+
 void set_recording(bool on) {
   if (g_on && !on) { double t = app::now(); for (auto& [id, k] : g_live) gone(id, k, t); g_live.clear(); }
+  if (!g_on && on) g_live.clear();   // tracks the cue opened carry no names: start the recording fresh
   g_on = on;
   log::writef("projectiles: recording {}", on ? "on" : "off");
 }
@@ -164,7 +209,9 @@ void set_radius(float r) { g_radius = std::clamp(r, 5.0f, 60.0f); }
 void set_samples(bool on) { g_with_samples = on; }
 
 std::string dump(int max_lines) {
-  std::string s = std::format("recording={} radius={:.0f} samples={} frames={} spawns={} (foe {} / you {} / other {}) live={} max_live={} faulted={} sweep avg={:.0f}us max={:.0f}us\n",
+  std::string s = std::format("cue={} vol={:.2f} interval={:.2f}s accent<{:.1f}u +{:.0f}st ticks={} accents={}\n", g_cue, g_cue_vol, g_cue_interval,
+                              g_accent_miss, g_accent_st, g_ticks, g_accents);
+  s += std::format("recording={} radius={:.0f} samples={} frames={} spawns={} (foe {} / you {} / other {}) live={} max_live={} faulted={} sweep avg={:.0f}us max={:.0f}us\n",
                               g_on, g_radius, g_with_samples, g_frames, g_spawns, g_spawns_foe, g_spawns_you, g_spawns_other, g_live.size(), g_max_live,
                               g_faulted, g_frames ? g_sweep_us_total / g_frames : 0.0, g_sweep_us_max);
   for (auto& [id, k] : g_live) s += std::format("  live #{} {} {} {} frames={} at {}\n", id, k.who, k.cls, k.rec, k.frames, pos(k.p_last));
