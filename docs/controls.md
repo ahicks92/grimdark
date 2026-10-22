@@ -140,7 +140,11 @@ Each game window is a screen of the mod while the game shows it (Ctrl+C/I invent
 codex, Ctrl+J factions; NPC windows when an NPC opens them). Layout rule: a tab list across the top (Left/Right
 moves AND opens the tab it lands on (2026-08-26; Enter is a no-op re-select); **Ctrl+Tab / Ctrl+Shift+Tab switch tabs from anywhere**), one vertical column below it
 (Up/Down; Tab moves between the tab row and the column). Escape closes the window. Backslash on an item row = the
-game's comparison: the equipped item in each slot the focused item fits, with its tooltip (2026-08-27). Everything is read from the
+game's comparison: the equipped item in each slot the focused item fits, with its tooltip (2026-08-27). **Shift+Down / Shift+Up** on
+any control with a tooltip (every menu, not only windows) read its DETAILED tooltip (Ctrl+Space's, else Space's) one line at a
+time: the navigator runs the control's own tooltip action under `speech::collect_lines` (this thread's speech collected, a line
+per `speak_lines` entry / newline) and keeps a line cursor per control -- first press = line 1, clamps at both ends, a landing
+elsewhere restarts it (`GraphNavigator::tooltip_line`). Everything is read from the
 game's own objects, never from the screen.
 | Window | Tabs | Rows and keys |
 |---|---|---|

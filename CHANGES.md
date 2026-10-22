@@ -1,5 +1,7 @@
 # Unreleased
 
+- New keys `shift down` and `shift up`: in menus and windows, read the detailed tooltip one line at a time, so you can find one detail without listening to the whole thing. The first press reads the first line; moving to another item starts over from the top.
+- Fix: the README listed `shift up` and `shift down` for jumping between groups in menus; the keys are `ctrl up` and `ctrl down`.
 - New key `delete`: on an item in your bags, drops it on the ground around you, where you can pick it up again like any loot. A whole stack drops together. Items that can't be dropped (soulbound or untradeable) ask whether to destroy them instead, the same as in the game.
 - Fix: capital W, A, S and D can be typed in text boxes, such as the character name. Before, `shift w`, `shift a`, `shift s` and `shift d` typed nothing there.
 

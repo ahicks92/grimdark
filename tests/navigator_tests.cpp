@@ -230,3 +230,56 @@ TEST_CASE("Enter that removes the focused row lands on the next row and reads it
   REQUIRE(!spoken.empty());
   CHECK(spoken.back() == "c");
 }
+
+// Shift+Up/Down: the detailed tooltip one line at a time, collected from the control's own tooltip action (the host
+// collects what the action would speak; the game's host splits a spoken text on newlines, speech.cpp).
+namespace {
+struct TipHarness;
+TipHarness* g_tip = nullptr;
+struct TipScreen : Screen {
+  std::string_view key() const override { return "tips"; }
+  bool is_active() override { return true; }
+  std::string screen_name() const override { return "tips"; }
+  void build(GraphBuilder& b) override;
+};
+struct TipHarness {
+  std::vector<std::string> spoken;
+  std::vector<std::string>* collecting = nullptr;
+  int frame = 0;
+  TipScreen screen;
+  GraphNavigator nav{NavigatorHost{
+      [this](std::string_view t, bool) { say(t); }, {}, [] { return true; }, [this] { return frame; },
+      [this](const std::function<void()>& fn) { std::vector<std::string> out; collecting = &out; fn(); collecting = nullptr; return out; }}};
+  TipHarness() { g_tip = this; nav.attach(&screen); nav.ensure_focus(); }
+  ~TipHarness() { g_tip = nullptr; }
+  void say(std::string_view t) { (collecting ? *collecting : spoken).emplace_back(t); }
+  std::string act(std::string_view key) { spoken.clear(); nav.on_action(key); return spoken.empty() ? std::string() : spoken.back(); }
+};
+void TipScreen::build(GraphBuilder& b) {
+  b.begin_stop("items");
+  auto a = vt("sword");
+  a->on_tooltip = [] { g_tip->say("short form"); };
+  a->on_tooltip_detail = [] { for (const char* l : {"Sword", "Damage 10", "Requires level 5"}) g_tip->say(l); };
+  b.add_item(id("a"), a);
+  auto c = vt("plain");
+  c->on_tooltip = [] { g_tip->say("only line"); };
+  b.add_item(id("b"), c);
+  b.add_item(id("c"), vt("bare"));
+}
+}  // namespace
+
+TEST_CASE("tooltip lines: Shift+Down/Up step the detailed tooltip, clamp at the ends, restart on a new landing") {
+  TipHarness h;
+  CHECK(h.act(ui_actions::TooltipLinePrev) == "Sword");             // either key starts at the first line
+  CHECK(h.act(ui_actions::TooltipLineNext) == "Damage 10");
+  CHECK(h.act(ui_actions::TooltipLineNext) == "Requires level 5");
+  CHECK(h.act(ui_actions::TooltipLineNext) == "Requires level 5");  // the end repeats
+  CHECK(h.act(ui_actions::TooltipLinePrev) == "Damage 10");
+  h.act(ui_actions::Down);
+  CHECK(h.act(ui_actions::TooltipLineNext) == "only line");         // no detailed form: the short one
+  CHECK(h.act(ui_actions::TooltipLineNext) == "only line");
+  h.act(ui_actions::Up);
+  CHECK(h.act(ui_actions::TooltipLineNext) == "Sword");             // back on the first item: restarted
+  h.act(ui_actions::End);
+  CHECK(h.act(ui_actions::TooltipLineNext) == "no tooltip");        // no tooltip at all
+}

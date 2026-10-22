@@ -63,9 +63,7 @@ inline std::string item_label(unsigned id) {
 // Speak a multi-line game text (a tooltip) as one interrupting utterance; "no tooltip" when empty.
 inline void speak_lines(const std::vector<std::string>& lines) {
   if (lines.empty()) { speech::speak(gd::strings::kNoTooltip, true); return; }
-  gd::core::MessageBuilder m;
-  for (const std::string& l : lines) m.list_item().fragment(l);
-  speech::speak(m.build(), true);
+  speech::speak_lines(lines, true);   // one utterance; Shift+Up/Down collect the lines one by one
 }
 // Space / Ctrl+Space on an item: the game's tooltip, short and with its Ctrl-held details. The short form ends
 // with our hint only when the detailed form really says more (starter gear: identical, no hint).

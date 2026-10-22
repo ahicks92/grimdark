@@ -133,7 +133,8 @@ a few things are worth knowing:
   - Space while not holding WASD dodges the way your character faces (toward the thing you are attacking, or the way you
     last walked).
   - In general you don't need evade for a long time if you play on normal.
-- Lots and lots and lots of things have tooltips; get those with `Space`.
+- Lots and lots and lots of things have tooltips; get those with `Space`. To find one detail in a long tooltip, step
+  through it a line at a time with `Shift+Down` and `Shift+Up`.
 - You can type to search for things in menus; there's no dedicated key, just start typing.
 - Many windows have more than one section so always try tab as well as arrows.
 - `Ctrl+P` pauses the game (single player). While paused you can't act in the world or use menus and windows, but you
@@ -182,7 +183,7 @@ move them, bad things happen.  What bad things? It depends; don't go find out.
 |---|---|
 | Up / Down | Previous / next item |
 | Home / End | First / last item |
-| Shift+Up / Shift+Down | Previous / next group |
+| Ctrl+Up / Ctrl+Down | Previous / next group |
 | Left / Right | Adjust a slider or drop-down; move along a tab row; expand or collapse a tree group |
 | Tab / Shift+Tab | Next / previous panel (for example a window's tab row and its column) |
 | Ctrl+Tab / Ctrl+Shift+Tab | Switch tabs from anywhere in a window. On the tab row itself, Left / Right open the tab you land on |
@@ -191,6 +192,7 @@ move them, bad things happen.  What bad things? It depends; don't go find out.
 | \ (backslash) | On an item in a bag, a vendor or the stash: what you have equipped in the slot it would go to -- the slot, the item and its tooltip ("nothing equipped" for an empty slot). The game's side-by-side comparison, spoken. Works on gear whose level or attribute requirements you do not meet yet (the slot is taken from the item's kind) |
 | Delete | On an item in a bag: drop it on the ground around you (a whole stack drops together). Pick it back up as loot. An item that can't be dropped (soulbound or untradeable) asks whether to destroy it instead |
 | Space | The game's tooltip for the item; Ctrl+Space the detailed one |
+| Shift+Down / Shift+Up | The detailed tooltip one line at a time: next / previous line. The first press reads the first line; moving to another item starts over |
 | Escape | Back / close |
 | Letters | Type-ahead to a matching item, where the screen allows it |
 

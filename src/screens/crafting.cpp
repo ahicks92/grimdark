@@ -47,7 +47,7 @@ class CraftingScreen : public WindowScreen {
     int game_tab = exe_ui::crafting_tab();
     if (game_tab >= 0 && (game_tab != tab_ || tab_key_.empty())) { tab_ = game_tab; tab_key_ = labels[(size_t)game_tab]; }
     add_tabs(b, labels);
-    // Regions = the game's group headers, so Shift+Up / Shift+Down jump from group to group (landing on the header);
+    // Regions = the game's group headers, so Ctrl+Up / Ctrl+Down jump from group to group (landing on the header);
     // the crafter's name and specialty line are a region of their own at the top.
     b.set_region("crafting.top");
     std::string npc = exe_ui::crafting_npc_name();

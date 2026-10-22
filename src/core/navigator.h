@@ -24,6 +24,9 @@ struct NavigatorHost {
   std::function<void()> hover_sound;        // the default landing sound (a node's own hover_sound overrides)
   std::function<bool()> focus_mode_active;  // false = the mod does not own the keyboard; stay silent
   std::function<int()> frame_count;         // for the idle-rebuild throttle
+  // Runs a control's tooltip action with its speech collected instead of spoken, one entry per line (Shift+Up /
+  // Shift+Down step through them). Unset = those keys run the action as Space would.
+  std::function<std::vector<std::string>(const std::function<void()>&)> collect_lines;
 };
 
 // What the typeahead needs from the keyboard this frame (the C# polled Unity directly).
@@ -43,6 +46,7 @@ inline constexpr std::string_view Next = "ui.next", Prev = "ui.prev", Home = "ui
 inline constexpr std::string_view RegionPrev = "ui.regionPrev", RegionNext = "ui.regionNext";
 inline constexpr std::string_view Activate = "ui.activate", Secondary = "ui.secondary", Back = "ui.back";
 inline constexpr std::string_view Tooltip = "ui.tooltip", TooltipDetail = "ui.tooltipDetail", Compare = "ui.compare";
+inline constexpr std::string_view TooltipLineNext = "ui.tooltipLineNext", TooltipLinePrev = "ui.tooltipLinePrev";
 }  // namespace ui_actions
 
 class GraphNavigator {
@@ -94,6 +98,7 @@ class GraphNavigator {
   bool vtable_adjust(int sign);
   void feedback_after_change();  // speak state_text, rerender, rebaseline the live watch
   void speak_focused_state();
+  bool tooltip_line(const GraphNode* node, int step);              // Shift+Up/Down: the detailed tooltip, one line at a time
   void play_hover(const GraphNode* node);
   void fire_focus(const GraphNode* node);                          // the node's on_focus on a user landing (a change of node)
   void speak(std::string_view text, bool interrupt);
@@ -118,6 +123,8 @@ class GraphNavigator {
   std::unique_ptr<KeyGraph> graph_;
   std::optional<ControlId> last_spoken_key_;
   std::vector<ControlId> last_spoken_path_;   // its context path, for when the node itself has vanished
+  std::optional<ControlId> tip_line_id_;      // the control whose tooltip line cursor is live (reset on a landing elsewhere)
+  int tip_line_ = -1;                         // the line last read; -1 = none yet
   // The last spoken node, resolved by id in the CURRENT render. Never keep a GraphNode* across frames: the
   // graph is rebuilt immediate-mode and a stored pointer dangles (crashed the game in the announcer's path
   // walk, 2026-08-21). Null when that node is not in this render.

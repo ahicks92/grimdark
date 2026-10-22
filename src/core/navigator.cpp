@@ -70,6 +70,7 @@ void GraphNavigator::blur() {
 }
 
 void GraphNavigator::mark_spoken(const GraphNode* node) {
+  if (!node || node->id != tip_line_id_) tip_line_id_.reset();   // a landing elsewhere restarts the tooltip lines
   last_spoken_key_ = node ? std::optional<ControlId>(node->id) : std::nullopt;
   last_spoken_path_ = GraphAnnouncer::path_ids(node);
 }
@@ -200,6 +201,7 @@ bool GraphNavigator::on_action(std::string_view key) {
     speak(strings::kNoTooltip, false);
     return true;
   }
+  if (key == TooltipLineNext || key == TooltipLinePrev) return node && tooltip_line(node, key == TooltipLineNext ? 1 : -1);
   if (key == Compare) {
     if (!node) return false;
     if (node->vtable && node->vtable->on_compare) { graph_->compare(); return true; }
@@ -207,6 +209,22 @@ bool GraphNavigator::on_action(std::string_view key) {
     return true;
   }
   return false;
+}
+
+// The detailed tooltip (the long form, else the short one) re-read on every press, so a live value stays current;
+// the cursor clamps at both ends and repeats the edge line, like the arrows at the end of a list. The first press of
+// either key reads the first line.
+bool GraphNavigator::tooltip_line(const GraphNode* node, int step) {
+  const NodeVtable* v = node->vtable.get();
+  std::function<void()> action = v && v->on_tooltip_detail ? v->on_tooltip_detail : v ? v->on_tooltip : nullptr;
+  if (!action) { speak(strings::kNoTooltip, false); return true; }
+  if (!host_.collect_lines) { action(); return true; }
+  std::vector<std::string> lines = host_.collect_lines(action);
+  if (lines.empty()) { speak(strings::kNoTooltip, true); return true; }
+  if (tip_line_id_ != node->id) { tip_line_id_ = node->id; tip_line_ = -1; }
+  tip_line_ = tip_line_ < 0 ? 0 : std::clamp(tip_line_ + step, 0, (int)lines.size() - 1);
+  speak(lines[(size_t)tip_line_], true);
+  return true;
 }
 
 bool GraphNavigator::arrow(GraphDir dir) {

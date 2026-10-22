@@ -105,6 +105,8 @@ static void register_actions() {
     {ui_actions::Activate, "Activate", keys::Enter, false, false, false}, {ui_actions::Secondary, "Secondary action", keys::Backspace, false, false, false},
     {ui_actions::Back, "Back", keys::Escape, false, false, false}, {ui_actions::Tooltip, "Tooltip", keys::Space, false, false, false},
     {ui_actions::TooltipDetail, "Detailed tooltip", keys::Space, false, true, false},
+    {ui_actions::TooltipLinePrev, "Previous tooltip line", keys::Up, true, false, true},
+    {ui_actions::TooltipLineNext, "Next tooltip line", keys::Down, true, false, true},
     {ui_actions::Compare, "Compare with equipped", keys::Backslash, false, false, false},
   };
   for (const Ui& u : ui) {
@@ -292,7 +294,8 @@ void init() {
       [](std::string_view t, bool interrupt) { speech::speak(t, interrupt); },
       {},  // hover sound: none yet
       [] { return g_screens.owns_keyboard(); },  // live: the navigator attaches from inside the screen tick
-      [] { return (int)hooks::frame(); }});
+      [] { return (int)hooks::frame(); },
+      [](const std::function<void()>& fn) { return speech::collect_lines(fn); }});
   Screen::set_host([](std::string_view s) { speech::speak(s, false); }, [](Screen* s) { if (g_nav) g_nav->screen_closed(s); });
   g_screens.set_navigator([](Screen* s) { if (g_nav) g_nav->attach(s); }, [] { if (g_nav) g_nav->ensure_focus(); });
   register_actions();
