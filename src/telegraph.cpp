@@ -106,8 +106,9 @@ const char* shape_of(const std::string& k, float dist, const std::string& record
     {"Skill_AttackRadius", "stomp"}, {"SkillSecondary_AttackRadius", "stomp"}, {"SkillActivated_Suicide", "stomp"},
     // directional
     {"Skill_AttackWave", "wave"}, {"Skill_AttackSpellCone", "wave"}, {"Skill_AttackProjectileLineFan", "wave"},
+    {"Skill_AttackProjectileFan", "wave"},   // 3-5 projectiles over 18-65 degrees in front: a cone, step sideways (the user, 2026-10-22)
     // aimed at you
-    {"Skill_AttackProjectile", "shot"}, {"Skill_AttackProjectileBurst", "shot"}, {"Skill_AttackProjectileFan", "shot"},
+    {"Skill_AttackProjectile", "shot"}, {"Skill_AttackProjectileBurst", "shot"},
     {"Skill_AttackProjectileDebuf", "shot"}, {"Skill_AttackSpell", "shot"},
     {"Skill_AttackSpellChaos", "shot"}, {"Skill_AttackChain", "shot"}, {"SkillSecondary_ChainLightning", "shot"}, {"ChaosBeam", "shot"},
     {"Skill_AttackPattern", "shot"}, {"Skill_Telekinesis", "shot"},

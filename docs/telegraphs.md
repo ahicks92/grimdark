@@ -142,7 +142,8 @@ three cues misleading:
   spot on the ground. The always-on toggled auras stay silent at cast (they are switched on once): a zone following
   the monster is the open thread.
 - **Per-record shapes before the class**: of every Ring/Burst/Fan record, two "rings" are narrow aimed fans
-  (bloodclaw_bloodyhook 6 over 35 degrees, baldim_chaoswave 8 over 90) and play "wave" (a frontal cone: step sideways); the 180-degree bursts launch
+  (bloodclaw_bloodyhook 6 over 35 degrees, baldim_chaoswave 8 over 90) and play "wave" (a frontal cone: step sideways), as
+  does the whole `Skill_AttackProjectileFan` class (12 skills, 3-5 projectiles over 18-65 degrees); the 180-degree bursts launch
   2 projectiles, one to each side, and stay "shot". `Skill_WeaponPool_Default` (the pool wrapper started with the basic
   attack it picks) is listed as silent instead of counting as unknown.
 - Still "shot" but known imperfect: beams (`Skill_AttackSpellChaos`/`ChaosBeam`: per-frame `Update` +
