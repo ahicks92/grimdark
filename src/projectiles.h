@@ -12,6 +12,7 @@ void tick();                          // game thread, in-world frames; a no-op u
 void set_cue(bool on);
 bool cue();
 void set_cue_params(float vol, float interval, float accent_miss, float accent_st);   // negative = keep (accent_st: <= -100)
+void set_stagger(float seconds);   // the tick offset between same-frame spawns; negative = keep
 void set_fast_params(float speed, float vol);   // the fast/slow cut-off (u/s) and a fast one's level; negative = keep
 void set_zones(bool on, float radius);   // enemy ground effects as hazard zones; radius <= 0 keeps it
 void set_recording(bool on);

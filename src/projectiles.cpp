@@ -198,6 +198,10 @@ bool g_on = GetEnvironmentVariableW(L"GRIMDARK_PORT", nullptr, 0) > 0, g_with_sa
 bool g_cue = true;
 float g_cue_vol = 0.6f, g_cue_interval = 0.15f, g_accent_miss = 2.5f, g_accent_st = 5.0f;
 float g_fast_speed = 25.0f, g_fast_vol = 0.6f;
+// Projectiles that appear in the same frame (a nova: Rolderathis's 14 ice spikes) start their ticks g_stagger apart,
+// wrapped within one g_cue_interval: in lockstep, 14 identical ticks from nearly one place fused into what sounded like
+// a single projectile (the user, 2026-10-22). Timing only -- a per-projectile pitch flanged in a pack (CLAUDE.md).
+float g_stagger = 0.02f;
 uint64_t g_ticks = 0, g_accents = 0, g_fast_ticks = 0;
 // Enemy ground effects -> the hazard sounds (2026-10-22, the user: "the ground hazard sounds aren't playing for ground
 // AoEs like that sigil"). The hazard layer reads only the map's painted damage cells (docs/hazards.md); a skill's ground
@@ -276,6 +280,7 @@ void tick() {
   auto c0 = std::chrono::steady_clock::now();
   const void* ci = g_proj_ci();
   std::set<unsigned> seen;
+  int spawned_now = 0;   // new projectiles this frame, for the tick stagger
   for (void* e : world::entities_near(g_radius)) {
     if (!world::object_is_a(e, ci)) continue;
     Raw r;
@@ -293,7 +298,8 @@ void tick() {
       std::string rel = r.owner == pid ? "you" : k.foe ? "foe" : "other";
       (rel == "you" ? g_spawns_you : rel == "foe" ? g_spawns_foe : g_spawns_other)++;
       ++g_spawns;
-      k.t0 = t; k.p0 = p; k.next_cue = t;
+      k.t0 = t; k.p0 = p;
+      k.next_cue = t + std::fmod(spawned_now++ * g_stagger, g_cue_interval);
       k.pace = r.speed <= 0.5f ? Pace::Still : r.speed < g_fast_speed ? Pace::Slow : Pace::Fast;
       k.range = r.range > 0.5f && r.range < 200.0f ? r.range : -1.0f;
       k.has_dest = read_dest_raw(e, k.dest);
@@ -405,6 +411,7 @@ void set_cue_params(float vol, float interval, float accent_miss, float accent_s
   if (accent_miss >= 0) g_accent_miss = accent_miss;
   if (accent_st > -100) g_accent_st = accent_st;
 }
+void set_stagger(float s) { if (s >= 0) g_stagger = std::clamp(s, 0.0f, 1.0f); }
 void set_fast_params(float speed, float vol) {
   if (speed > 0) g_fast_speed = speed;
   if (vol >= 0) g_fast_vol = std::clamp(vol, 0.0f, 2.0f);
@@ -421,8 +428,8 @@ void set_radius(float r) { g_radius = std::clamp(r, 5.0f, 60.0f); }
 void set_samples(bool on) { g_with_samples = on; }
 
 std::string dump(int max_lines) {
-  std::string s = std::format("cue={} vol={:.2f} interval={:.2f}s accent<{:.1f}u +{:.0f}st fast>={:.0f}u/s at x{:.2f} ticks={} (fast {}) accents={}\n", g_cue,
-                              g_cue_vol, g_cue_interval, g_accent_miss, g_accent_st, g_fast_speed, g_fast_vol, g_ticks, g_fast_ticks, g_accents);
+  std::string s = std::format("cue={} vol={:.2f} interval={:.2f}s accent<{:.1f}u +{:.0f}st fast>={:.0f}u/s at x{:.2f} stagger={:.0f}ms ticks={} (fast {}) accents={}\n", g_cue,
+                              g_cue_vol, g_cue_interval, g_accent_miss, g_accent_st, g_fast_speed, g_fast_vol, g_stagger * 1000, g_ticks, g_fast_ticks, g_accents);
   s += std::format("ground zones={} radius={:.1f} live={} max={}\n", g_zones, g_zone_radius, g_zone_count, g_zone_max);
   s += std::format("recording={} radius={:.0f} samples={} frames={} spawns={} (foe {} / you {} / other {}) live={} max_live={} faulted={} sweep avg={:.0f}us max={:.0f}us\n",
                               g_on, g_radius, g_with_samples, g_frames, g_spawns, g_spawns_foe, g_spawns_you, g_spawns_other, g_live.size(), g_max_live,
