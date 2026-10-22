@@ -1840,6 +1840,9 @@ inline constexpr const char* Entity_GetOwner = "?GetOwner@Entity@GAME@@QEBAIXZ";
 // public: virtual float const __cdecl GAME::ProjectileBase::GetDistance(void)const __ptr64
 inline constexpr const char* ProjectileBase_GetDistance_DLL = "Game.dll";
 inline constexpr const char* ProjectileBase_GetDistance = "?GetDistance@ProjectileBase@GAME@@UEBA?BMXZ";
+// public: virtual float const __cdecl GAME::ProjectileBase::GetLaunchAngle(void)const __ptr64
+inline constexpr const char* ProjectileBase_GetLaunchAngle_DLL = "Game.dll";
+inline constexpr const char* ProjectileBase_GetLaunchAngle = "?GetLaunchAngle@ProjectileBase@GAME@@UEBA?BMXZ";
 // public: static class GAME::RTTI_ClassInfo const & __ptr64 __cdecl GAME::ProjectileAreaEffect::GetStaticClassInfo(void)
 inline constexpr const char* ProjectileAreaEffect_GetStaticClassInfo_DLL = "Game.dll";
 inline constexpr const char* ProjectileAreaEffect_GetStaticClassInfo = "?GetStaticClassInfo@ProjectileAreaEffect@GAME@@SAAEBVRTTI_ClassInfo@2@XZ";

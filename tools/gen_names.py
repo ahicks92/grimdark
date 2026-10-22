@@ -685,6 +685,7 @@ ENTRIES = [
     ("ProjectileBase_GetMissTime", "Game", r"GAME::ProjectileBase::GetMissTime\(void\)"),
     ("Entity_GetOwner", "Engine", r"GAME::Entity::GetOwner\(void\)"),
     ("ProjectileBase_GetDistance", "Game", r"GAME::ProjectileBase::GetDistance\(void\)"),
+    ("ProjectileBase_GetLaunchAngle", "Game", r"GAME::ProjectileBase::GetLaunchAngle\(void\)"),
     ("ProjectileAreaEffect_GetStaticClassInfo", "Game", r"GAME::ProjectileAreaEffect::GetStaticClassInfo\(void\)"),
 
 ]

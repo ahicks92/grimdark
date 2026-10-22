@@ -31,7 +31,8 @@ const char* (*g_obj_name)(const void*) = nullptr;
 float (*g_speed)(void*) = nullptr;
 float (*g_hit_time)(const void*) = nullptr;
 float (*g_miss_time)(const void*) = nullptr;
-float (*g_get_distance)(const void*) = nullptr;   // the flight range (+0x538, Game.dll 0x406e50): projectileDistance
+float (*g_get_distance)(const void*) = nullptr;
+float (*g_launch_angle)(const void*) = nullptr;   // the throw angle (+0x578, Game.dll 0x406fe0): > 0 = lobbed in an arc   // the flight range (+0x538, Game.dll 0x406e50): projectileDistance
 bool g_loaded = false;
 template <class F> void load(F& f, const char* dll, const char* name) { f = (F)GetProcAddress(GetModuleHandleA(dll), name); }
 void load_api() {
@@ -46,12 +47,13 @@ void load_api() {
   load(g_hit_time, ProjectileBase_GetHitTime_DLL, ProjectileBase_GetHitTime);
   load(g_miss_time, ProjectileBase_GetMissTime_DLL, ProjectileBase_GetMissTime);
   load(g_get_distance, ProjectileBase_GetDistance_DLL, ProjectileBase_GetDistance);
+  load(g_launch_angle, ProjectileBase_GetLaunchAngle_DLL, ProjectileBase_GetLaunchAngle);
   log::writef("projectiles: exports class={} id={} owner={} name={} speed={} hit={} miss={}", (void*)g_proj_ci, (void*)g_get_id,
               (void*)g_get_owner, (void*)g_obj_name, (void*)g_speed, (void*)g_hit_time, (void*)g_miss_time);
 }
 
 // One projectile's readout under an SEH guard (the sphere query returns every Object in range; plain data only).
-struct Raw { unsigned id = 0, owner = 0; float speed = -1, hit = -1, miss = -1, range = -1; char rec[160] = {}; };
+struct Raw { unsigned id = 0, owner = 0; float speed = -1, hit = -1, miss = -1, range = -1, angle = 0; char rec[160] = {}; };
 bool read_raw(void* e, Raw& r) {
   __try {
     r.id = g_get_id(e);
@@ -60,6 +62,7 @@ bool read_raw(void* e, Raw& r) {
     if (g_hit_time) r.hit = g_hit_time(e);
     if (g_miss_time) r.miss = g_miss_time(e);
     if (g_get_distance) r.range = g_get_distance(e);
+    if (g_launch_angle) r.angle = g_launch_angle(e);
     const char* n = g_obj_name ? g_obj_name(e) : nullptr;
     if (n && !IsBadStringPtrA(n, 512)) strncpy_s(r.rec, n, sizeof r.rec - 1);
     return true;
@@ -169,6 +172,7 @@ struct Track {
   float flown = 0;        // path length since first seen
   int ticks = 0, accented = 0;
   bool has_dest = false; world::Vec3 dest;   // where it is going (read_dest_raw at first sight)
+  bool lobbed = false;    // thrown in an arc (launch angle > 0) at a real destination: it lands THERE
   double t0 = 0, t_last = 0, t_min = 0;
   world::Vec3 p0, p_last, me_min;
   float min_d = 1e9f, min_dy = 0;
@@ -185,8 +189,9 @@ bool g_on = GetEnvironmentVariableW(L"GRIMDARK_PORT", nullptr, 0) > 0, g_with_sa
 // The cue (2026-10-22 prototype): every slow enemy projectile ticks projectile.wav from where it is, every
 // g_cue_interval while it flies -- all of them, not only the ones aimed at you, so stepping away from one never walks
 // you into the next unheard (the user's rule). One that will come within g_accent_miss of you ticks g_accent_st
-// semitones higher: its current line of travel, still approaching, cut short at its range -- past it the projectile
-// explodes where it is (explodeOnMiss), so the end point counts, not the line beyond it. 2.5 u = a fireball's 1.5-1.8
+// semitones higher: a lobbed one (Track::lobbed) when you stand within it of where it lands; a straight one by its
+// current line of travel, still approaching, cut short at its range -- past it the projectile explodes where it is
+// (explodeOnMiss), so the end point counts, not the line beyond it. 2.5 u = a fireball's 1.5-1.8
 // explosion + the body + margin: the 1.5 u centre-to-centre first cut missed the Flame Revenant's fireballs that hit
 // (the user, 2026-10-22; 16 of 123 came within 1.5-3 u). A fast one (g_fast_speed and up) ticks once, at launch, at
 // g_fast_vol of the level: by the time a second tick could play it has arrived.
@@ -292,6 +297,11 @@ void tick() {
       k.pace = r.speed <= 0.5f ? Pace::Still : r.speed < g_fast_speed ? Pace::Slow : Pace::Fast;
       k.range = r.range > 0.5f && r.range < 200.0f ? r.range : -1.0f;
       k.has_dest = read_dest_raw(e, k.dest);
+      // How it will fly, from its own state (2026-10-22, after the Grand Priest): a launch angle above zero is a throw in
+      // an arc that lands at the destination (his fireballs 35, the ice grenades 25: both ended at their cast's aim
+      // point); zero is a straight shot that flies on through the aim point to its range (the deathbolt). A destination
+      // equal to the launch point is no aim at all (a fragment of a burst: Rolderathis's ice spikes), so straight.
+      k.lobbed = r.angle > 0.5f && k.has_dest && flat(p, k.dest) > 0.5f;
       if (g_on && k.foe) {
         world::Vec3 aim;
         if (casts::recent_target(r.owner, t, 0.6, aim))
@@ -303,8 +313,8 @@ void tick() {
       if (g_on) {   // the names only while recording: the label lookup is the expensive part of a spawn
         k.cls = world::object_class_name(e);
         k.who = std::format("[{} #{} \"{}\"]", rel, r.owner, r.owner == pid ? std::string("you") : world::label_of(r.owner));
-        note(g_lines, std::format("{:.3f} SPAWN #{} {} {} {} at {} d={:.1f} dy={:+.1f} speed={:.1f} range={:.1f} dest={} dest_from_launch={:.1f} dest_from_you={:.1f}",
-                                t, r.id, k.who, k.cls, k.rec, pos(p), d, p.y - me.y, r.speed, r.range, k.has_dest ? pos(k.dest) : std::string("none"),
+        note(g_lines, std::format("{:.3f} SPAWN #{} {} {} {} at {} d={:.1f} dy={:+.1f} speed={:.1f} range={:.1f} angle={:.0f}{} dest={} dest_from_launch={:.1f} dest_from_you={:.1f}",
+                                t, r.id, k.who, k.cls, k.rec, pos(p), d, p.y - me.y, r.speed, r.range, r.angle, k.lobbed ? " LOBBED" : "", k.has_dest ? pos(k.dest) : std::string("none"),
                                 k.has_dest ? flat(p, k.dest) : -1.0f, k.has_dest ? flat(me, k.dest) : -1.0f), 5000);
       }
       it = g_live.emplace(r.id, std::move(k)).first;
@@ -344,7 +354,9 @@ void tick() {
       // or the end of the flight when the range runs out first. Before it has moved, no accent.
       bool accent = false;
       float vx = p.x - k.p_last.x, vz = p.z - k.p_last.z, len = std::hypot(vx, vz);
-      if (k.frames > 0 && len > 0.01f) {
+      if (k.lobbed) {
+        accent = flat(me, k.dest) < g_accent_miss;   // it lands at its destination, whatever its path looks like now
+      } else if (k.frames > 0 && len > 0.01f) {
         float ux = vx / len, uz = vz / len, rx = me.x - p.x, rz = me.z - p.z;
         float along = rx * ux + rz * uz;
         if (along > 0) {

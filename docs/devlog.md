@@ -1266,3 +1266,23 @@ does not come back in the bag or duplicate across a save and reload.
   which also auto-casts Fireblast every 0.2-0.4 s with no animation -- `/casts` NOW lines; Nomos Dred's Lightning
   Field); waves/cones stay the telegraph's (the Skeletal Monstrosity's Double Strike: two 8 u x 3->5 u waves at
   +0.60 / +1.14 s, step sideways).
+
+## 2026-10-22 (evening): projectiles say where they are going and how they fly
+- `+0x730` of every `ProjectileBase` is a WorldVec3 (Region* + Vec3 at +0x738) = the point its cast was aimed at. A
+  search for the cast's aim found it there for arrows, fireballs, grenades and a sigil; the probes that "missed" had
+  their aim near a 128 u region edge and the search used the aim's region, not the projectile's (read whole and
+  converted with `world::world_point`, the grenade matched within 0.8 u). A fragment (Rolderathis's ice spikes, burst
+  out of his ice grenade) stores its own launch point: no aim.
+- How a projectile flies is its class's movement code tuned by its record, and the deciding number is live:
+  `launchAngle` (+0x578, `GetLaunchAngle`). Above zero = thrown in an arc that lands at the destination (Zarthuzellan's
+  `ProjectileExploding` fireballs 35, ended at the aim point; ice grenades 25); zero = straight, on through the aim
+  point to its range (+0x538; the deathbolt, `FireballLike`). The record survey by class: ArrowLike / FireballLike /
+  TerrainFollowing are speed + range (+ explodeOnMiss); Grenade / Exploding carry launchAngle, bounce physics and
+  `useTrajectory`; Homing / Boomerang (`projectileFollow`), Orbiting, Spark, Chain, Inverse, Fragmenting are a handful
+  of records each, left on the straight rule until one is met.
+- The projectile cue: a lobbed one ticks high when the player stands within 2.5 u of where it lands; straight ones keep
+  the line + range rule. `tools/gen_telegraph_records.py` marks every aimed projectile skill whose projectile record has
+  a launch angle as "area" at cast start (132 records: Zarthuzellan's fireball, Rolderathis's freeze blast, molotovs,
+  acid spits, ice bombs); rings keep "ring".
+- The recording persists to `%LOCALAPPDATA%\Grimdark\projectiles.log` (appended, a header per session) and starts on
+  in dev launches: an evening of probe lines lived only in the game's memory and was lost when the game closed.

@@ -161,3 +161,6 @@ three cues misleading:
   length and widths -- no ground wave reaches 90, the widest is 45). Correction: the 180-degree bursts launch up to 7
   projectiles at their top levels, not 2 (the first survey read level 1). Melee arcs (special weapon attacks up to 200
   degrees, charges up to 240) stay swing / charge for now.
+- **Lobbed projectiles are "area"** (the evening): an aimed projectile skill whose projectile record has a
+  `launchAngle` above zero throws it in an arc onto the cast-start point (the live projectile carries it: +0x578, and
+  its destination at +0x730), so the generator marks it "area" ahead of the arc rules; see docs/devlog.md.
