@@ -392,7 +392,10 @@ void tick() {
       }
       ++k.ticks;
       if (accent) ++k.accented;
-      play_cue(p, d, accent);
+      // A lobbed one in flight sounds from WHERE IT WILL LAND (the user, 2026-10-22): the arc's position says nothing
+      // about which way to step out of the blast. Not moving (a blocked throw) = it may burst where it is: sound there.
+      if (k.lobbed && k.frames > 0 && len > 0.01f) play_cue(k.dest, flat(me, k.dest), accent);
+      else play_cue(p, d, accent);
       k.next_cue = t + g_cue_interval;
     }
     if (d < k.min_d) { k.min_d = d; k.min_dy = p.y - me.y; k.t_min = t; k.me_min = me; }
