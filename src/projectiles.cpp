@@ -374,7 +374,10 @@ void tick() {
       bool accent = false;
       float vx = p.x - k.p_last.x, vz = p.z - k.p_last.z, len = std::hypot(vx, vz);
       if (k.lobbed) {
-        accent = flat(me, k.dest) < zone;   // it lands at its destination, whatever its path looks like now
+        // It lands at its destination, whatever its path looks like now -- but only while it is in flight: a throw blocked
+        // at the hand sits still at the launch point and bursts there (6 of Rolderathis's 8 grenades, 0.0 u travelled,
+        // 2026-10-22), which warned a player standing at its destination for nothing.
+        accent = k.frames > 0 && len > 0.01f && flat(me, k.dest) < zone;
       } else if (k.frames > 0 && len > 0.01f) {
         float ux = vx / len, uz = vz / len, rx = me.x - p.x, rz = me.z - p.z;
         float along = rx * ux + rz * uz;
