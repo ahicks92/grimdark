@@ -173,6 +173,8 @@ struct Track {
   int ticks = 0, accented = 0;
   bool has_dest = false; world::Vec3 dest;   // where it is going (read_dest_raw at first sight)
   bool lobbed = false;    // thrown in an arc (launch angle > 0) at a real destination: it lands THERE
+  float blast = -1;       // its blast radius (area_radius: the +0xd18 targeting entries), -1 until read
+  world::Vec3 me_last;    // the player's position the last frame it was seen (where the player stood when it ended)
   double t0 = 0, t_last = 0, t_min = 0;
   world::Vec3 p0, p_last, me_min;
   float min_d = 1e9f, min_dy = 0;
@@ -189,7 +191,8 @@ bool g_on = GetEnvironmentVariableW(L"GRIMDARK_PORT", nullptr, 0) > 0, g_with_sa
 // The cue (2026-10-22 prototype): every slow enemy projectile ticks projectile.wav from where it is, every
 // g_cue_interval while it flies -- all of them, not only the ones aimed at you, so stepping away from one never walks
 // you into the next unheard (the user's rule). One that will come within g_accent_miss of you ticks g_accent_st
-// semitones higher: a lobbed one (Track::lobbed) when you stand within it of where it lands; a straight one by its
+// semitones higher (within its blast radius + g_body when readable): a lobbed one (Track::lobbed) when you stand
+// within that of where it lands; a straight one by its
 // current line of travel, still approaching, cut short at its range -- past it the projectile explodes where it is
 // (explodeOnMiss), so the end point counts, not the line beyond it. 2.5 u = a fireball's 1.5-1.8
 // explosion + the body + margin: the 1.5 u centre-to-centre first cut missed the Flame Revenant's fireballs that hit
@@ -202,6 +205,10 @@ float g_fast_speed = 25.0f, g_fast_vol = 0.6f;
 // wrapped within one g_cue_interval: in lockstep, 14 identical ticks from nearly one place fused into what sounded like
 // a single projectile (the user, 2026-10-22). Timing only -- a per-projectile pitch flanged in a pack (CLAUDE.md).
 float g_stagger = 0.02f;
+// The near-miss zone: a projectile hurts the player when its blast reaches the body, so the zone is its own blast
+// radius plus g_body; g_accent_miss when the radius is not readable. Rolderathis's freeze blast is 2.5 u: the fixed
+// 2.5 u zone (centre to centre) missed the 2.5..3 band where it still hit (the user, 2026-10-22).
+float g_body = 0.75f;
 uint64_t g_ticks = 0, g_accents = 0, g_fast_ticks = 0;
 // Enemy ground effects -> the hazard sounds (2026-10-22, the user: "the ground hazard sounds aren't playing for ground
 // AoEs like that sigil"). The hazard layer reads only the map's painted damage cells (docs/hazards.md); a skill's ground
@@ -251,10 +258,11 @@ void gone(unsigned id, const Track& k, double t) {
   float travelled = flat(k.p0, k.p_last);
   double life = k.t_last - k.t0;
   std::string pred = k.predicted ? std::format(" pred_miss={:.1f} pred_t=+{:.2f}s", k.pred_miss, k.pred_t) : " pred=none";
-  note(g_lines, std::format("{:.3f} GONE #{} {} {} life={:.2f}s frames={} {} -> {} travelled={:.1f}u avg={:.1f}u/s min_d={:.1f} dy={:+.1f} at +{:.2f}s{} range={:.1f} flown={:.1f} accented={}/{} end_from_dest={:.1f} launch_to_dest={:.1f} (unseen {:.0f}ms)",
+  note(g_lines, std::format("{:.3f} GONE #{} {} {} life={:.2f}s frames={} {} -> {} travelled={:.1f}u avg={:.1f}u/s min_d={:.1f} dy={:+.1f} at +{:.2f}s{} range={:.1f} flown={:.1f} accented={}/{} end_from_dest={:.1f} launch_to_dest={:.1f} blast={:.1f} you_from_end={:.1f} you_from_dest={:.1f} (unseen {:.0f}ms)",
                             t, id, k.who, k.cls, life, k.frames, pos(k.p0), pos(k.p_last), travelled, life > 0 ? travelled / life : 0.0,
                             k.min_d, k.min_dy, k.t_min - k.t0, pred, k.range, k.flown, k.accented, k.ticks, k.has_dest ? flat(k.p_last, k.dest) : -1.0f,
-                            k.has_dest ? flat(k.p0, k.dest) : -1.0f, (t - k.t_last) * 1000), 5000);
+                            k.has_dest ? flat(k.p0, k.dest) : -1.0f, k.blast, flat(k.me_last, k.p_last), k.has_dest ? flat(k.me_last, k.dest) : -1.0f,
+                            (t - k.t_last) * 1000), 5000);
 }
 // Level by distance: full within 3 u, linear down to 0.15 at 30 u (the sweep radius).
 float cue_gain(float d) { return d <= 3.0f ? 1.0f : std::max(0.15f, 1.0f - 0.85f * (d - 3.0f) / 27.0f); }
@@ -334,6 +342,9 @@ void tick() {
       k.flown += step;
     }
     bool landed = k.area && k.still_frames >= 2;   // a ground effect from here on: the hazard sounds own it
+    if (k.blast < 0 && k.frames < 10) k.blast = area_radius(e);
+    k.me_last = me;
+    const float zone = k.blast > 0 ? k.blast + g_body : g_accent_miss;
     if (landed && k.radius < 0) k.radius = area_radius(e);
     if (g_zones && k.foe && landed) zones.push_back({p, k.radius > 0 ? k.radius : g_zone_radius});
     if (g_on && (k.foe || k.owner == pid) && landed && !k.probed) {   // at landing: the skill may set the radius after creating it;
@@ -363,7 +374,7 @@ void tick() {
       bool accent = false;
       float vx = p.x - k.p_last.x, vz = p.z - k.p_last.z, len = std::hypot(vx, vz);
       if (k.lobbed) {
-        accent = flat(me, k.dest) < g_accent_miss;   // it lands at its destination, whatever its path looks like now
+        accent = flat(me, k.dest) < zone;   // it lands at its destination, whatever its path looks like now
       } else if (k.frames > 0 && len > 0.01f) {
         float ux = vx / len, uz = vz / len, rx = me.x - p.x, rz = me.z - p.z;
         float along = rx * ux + rz * uz;
@@ -373,7 +384,7 @@ void tick() {
             float left = std::max(0.0f, k.range - k.flown);
             if (along > left) miss = std::hypot(rx - ux * left, rz - uz * left);   // it explodes short of the closest point
           }
-          accent = miss < g_accent_miss;
+          accent = miss < zone;
         }
       }
       ++k.ticks;
