@@ -1,6 +1,7 @@
 #include "projectiles.h"
 #include <windows.h>
 #include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -16,6 +17,7 @@
 #include "cues.h"
 #include "gd_names.h"
 #include "log.h"
+#include "wave_effects.h"
 #include "world.h"
 
 namespace gd::projectiles {
@@ -183,6 +185,8 @@ struct Track {
   float flown = 0;        // path length since first seen
   int ticks = 0, accented = 0;
   bool has_dest = false; world::Vec3 dest;   // where it is going (read_dest_raw at first sight)
+  bool wave = false;      // a ground wave's travelling effect (an EffectEntity, not a projectile): none of the
+                          // ProjectileBase reads apply (destination, blast radius, area); the owner is the caster
   bool lobbed = false;    // thrown in an arc (launch angle > 0) at a real destination: it lands THERE
   float blast = -1;       // its blast radius (area_radius: the +0xd18 targeting entries), -1 until read
   world::Vec3 me_last;    // the player's position the last frame it was seen (where the player stood when it ended)
@@ -240,6 +244,15 @@ std::set<unsigned> g_watch_old;
 struct Seen { std::string cls, rec; unsigned owner = 0; world::Vec3 p0, p_last; double t0 = 0, t_last = 0; float flown = 0, min_d = 1e9f; int frames = 0; };
 std::map<unsigned, Seen> g_watch_new;
 std::string g_watch_what;   // the cast that opened the window, for the log
+// Ground waves (2026-10-23): a Skill_AttackWave sends an EffectEntity along the ground (Voldrak's Groundbreaker: about
+// 1.1 s after the cast starts, 7-14 u in 1.4 s, ~6-10 u/s) and no projectile. The entity has no owner, and its record can
+// belong to a player's skill too, so it counts only when it appears within kWaveWindow s of a foe's cast of a skill that
+// names it (src/wave_effects.h, generated): then it is tracked and ticked like a slow projectile owned by that caster.
+struct WaveWait { std::string effect; unsigned caster = 0; double until = 0; };
+std::vector<WaveWait> g_wave_wait;
+constexpr double kWaveWindow = 3.0;
+uint64_t g_waves = 0;
+std::string lower(std::string s) { for (char& c : s) c = (char)std::tolower((unsigned char)c); return s; }
 uint64_t g_frames = 0, g_spawns = 0, g_faulted = 0, g_spawns_foe = 0, g_spawns_you = 0, g_spawns_other = 0;
 size_t g_max_live = 0;
 double g_sweep_us_total = 0, g_sweep_us_max = 0;
@@ -355,10 +368,29 @@ void tick() {
   int spawned_now = 0;   // new projectiles this frame, for the tick stagger
   const std::vector<void*> ents = world::entities_near(g_radius);
   if (g_on) watch_frame(ents, ci, me, t);
+  std::erase_if(g_wave_wait, [&](const WaveWait& w) { return t > w.until; });
+  bool waves_live = std::any_of(g_live.begin(), g_live.end(), [](const auto& kv) { return kv.second.wave; });
   for (void* e : ents) {
-    if (!world::object_is_a(e, ci)) continue;
     Raw r;
-    if (!read_raw(e, r)) { ++g_faulted; continue; }
+    bool wave = false;
+    if (world::object_is_a(e, ci)) {
+      if (!read_raw(e, r)) { ++g_faulted; continue; }
+    } else {
+      if (g_wave_wait.empty() && !waves_live) continue;
+      if (!read_basic(e, r) || !r.id) continue;
+      auto lt = g_live.find(r.id);
+      if (lt != g_live.end()) {
+        if (!lt->second.wave) continue;
+        r.owner = lt->second.owner;
+      } else {
+        std::string rec = lower(r.rec);
+        auto w = std::find_if(g_wave_wait.rbegin(), g_wave_wait.rend(), [&](const WaveWait& x) { return x.effect == rec; });
+        if (w == g_wave_wait.rend()) continue;
+        r.owner = w->caster;
+        ++g_waves;
+      }
+      wave = true;
+    }
     if (!r.id) continue;
     world::Vec3 p;
     if (!world::entity_position(r.id, p)) continue;
@@ -374,9 +406,10 @@ void tick() {
       ++g_spawns;
       k.t0 = t; k.p0 = p;
       k.next_cue = t + std::fmod(spawned_now++ * g_stagger, g_cue_interval);
-      k.pace = r.speed <= 0.5f ? Pace::Still : r.speed < g_fast_speed ? Pace::Slow : Pace::Fast;
+      k.wave = wave;
+      k.pace = wave ? Pace::Slow : r.speed <= 0.5f ? Pace::Still : r.speed < g_fast_speed ? Pace::Slow : Pace::Fast;
       k.range = r.range > 0.5f && r.range < 200.0f ? r.range : -1.0f;
-      k.has_dest = read_dest_raw(e, k.dest);
+      k.has_dest = !wave && read_dest_raw(e, k.dest);
       // How it will fly, from its own state (2026-10-22, after the Grand Priest): a launch angle above zero is a throw in
       // an arc that lands at the destination (his fireballs 35, the ice grenades 25: both ended at their cast's aim
       // point); zero is a straight shot that flies on through the aim point to its range (the deathbolt). A destination
@@ -384,16 +417,16 @@ void tick() {
       // GetLaunchAngle CLAMPS: a projectile with no launch angle reads 10 (the floor; the Frost Revenant's straight ice
       // spikes were taken for lobbed and missed their warning, 2026-10-22). Every lobbed record has 18 or more.
       k.lobbed = r.angle > 12.0f && k.has_dest && flat(p, k.dest) > 0.5f;
-      if (g_on && k.foe) {
+      if (g_on && k.foe && !wave) {
         world::Vec3 aim;
         if (casts::recent_target(r.owner, t, 0.6, aim))
           note(g_lines, std::format("{:.3f} TARGET #{} {} {} aim=({:.1f},{:.1f},{:.1f}) launch {:.1f}u from it: dest {} -> {:.2f}u from aim;{}", t, r.id,
                                     world::object_class_name(e), r.rec, aim.x, aim.y, aim.z, flat(p, aim),
                                     k.has_dest ? pos(k.dest) : std::string("none"), k.has_dest ? flat(k.dest, aim) : -1.0f, target_probe_line(e, aim)), 5000);
       }
-      k.area = g_area_ci && world::object_is_a(e, g_area_ci());
+      k.area = !wave && g_area_ci && world::object_is_a(e, g_area_ci());
       if (g_on) {   // the names only while recording: the label lookup is the expensive part of a spawn
-        k.cls = world::object_class_name(e);
+        k.cls = wave ? "wave:" + world::object_class_name(e) : world::object_class_name(e);
         k.who = std::format("[{} #{} \"{}\"]", rel, r.owner, r.owner == pid ? std::string("you") : world::label_of(r.owner));
         note(g_lines, std::format("{:.3f} SPAWN #{} {} {} {} at {} d={:.1f} dy={:+.1f} speed={:.1f} range={:.1f} angle={:.0f}{} dest={} dest_from_launch={:.1f} dest_from_you={:.1f}",
                                 t, r.id, k.who, k.cls, k.rec, pos(p), d, p.y - me.y, r.speed, r.range, r.angle, k.lobbed ? " LOBBED" : "", k.has_dest ? pos(k.dest) : std::string("none"),
@@ -408,7 +441,7 @@ void tick() {
       k.flown += step;
     }
     bool landed = k.area && k.still_frames >= 2;   // a ground effect from here on: the hazard sounds own it
-    if (k.blast < 0 && k.frames < 10) k.blast = area_radius(e);
+    if (!k.wave && k.blast < 0 && k.frames < 10) k.blast = area_radius(e);
     k.me_last = me;
     const float zone = k.blast > 0 ? k.blast + g_body : g_accent_miss;
     if (landed && k.radius < 0) k.radius = area_radius(e);
@@ -514,6 +547,7 @@ std::string dump(int max_lines) {
   std::string s = std::format("cue={} vol={:.2f} interval={:.2f}s accent<{:.1f}u +{:.0f}st fast>={:.0f}u/s at x{:.2f} stagger={:.0f}ms ticks={} (fast {}) accents={}\n", g_cue,
                               g_cue_vol, g_cue_interval, g_accent_miss, g_accent_st, g_fast_speed, g_fast_vol, g_stagger * 1000, g_ticks, g_fast_ticks, g_accents);
   s += std::format("ground zones={} radius={:.1f} live={} max={}\n", g_zones, g_zone_radius, g_zone_count, g_zone_max);
+  s += std::format("ground waves: {} ticked, {} awaited\n", g_waves, g_wave_wait.size());
   s += std::format("cast watch: {} for {:.1f}s{}\n", g_watch_all ? "every foe cast" : "Skill_AttackWave", g_watch_s, g_watch_until >= 0 ? " (open)" : "");
   s += std::format("recording={} radius={:.0f} samples={} frames={} spawns={} (foe {} / you {} / other {}) live={} max_live={} faulted={} sweep avg={:.0f}us max={:.0f}us\n",
                               g_on, g_radius, g_with_samples, g_frames, g_spawns, g_spawns_foe, g_spawns_you, g_spawns_other, g_live.size(), g_max_live,
@@ -530,8 +564,18 @@ std::string dump(int max_lines) {
   return s;
 }
 void watch_cast(unsigned caster_id, const std::string& skill_class, const std::string& record) {
-  if (!g_on || (!g_watch_all && skill_class != "Skill_AttackWave")) return;
   double t = app::now();
+  if (g_cue && skill_class == "Skill_AttackWave") {
+    static const std::multimap<std::string, std::string> by_skill = [] {
+      std::multimap<std::string, std::string> m;
+      for (const WaveEffect& w : kWaveEffects) m.emplace(w.skill, w.effect);
+      return m;
+    }();
+    auto [a, b] = by_skill.equal_range(lower(record));
+    for (auto it = a; it != b; ++it) g_wave_wait.push_back({it->second, caster_id, t + kWaveWindow});
+    if (g_wave_wait.size() > 64) g_wave_wait.erase(g_wave_wait.begin(), g_wave_wait.end() - 64);
+  }
+  if (!g_on || (!g_watch_all && skill_class != "Skill_AttackWave")) return;
   bool fresh = g_watch_until < 0;
   g_watch_until = t + g_watch_s;   // a second cast inside the window extends it (keeps the same baseline)
   if (fresh) { g_watch_baseline = true; g_watch_old.clear(); g_watch_new.clear(); }

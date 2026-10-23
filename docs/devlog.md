@@ -1286,3 +1286,19 @@ does not come back in the bag or duplicate across a save and reload.
   acid spits, ice bombs); rings keep "ring".
 - The recording persists to `%LOCALAPPDATA%\Grimdark\projectiles.log` (appended, a header per session) and starts on
   in dev launches: an evening of probe lines lived only in the game's memory and was lost when the game closed.
+
+## 2026-10-23: ground waves tick like projectiles
+- The user met Voldrak, the Destroyer (Smuggler's Pass): his Groundbreaker (`Skill_AttackWave`) said "wave" at cast start
+  and was silent after. It makes no ProjectileBase. A cast-window probe (`/projectiles` recorder: every non-projectile
+  entity new in the 4 s after a foe wave cast, WNEW / WGONE) caught all four casts: an `EffectEntity` with the skill's
+  `lineEffectName` record (groundripper_fx01), owner 0, appearing ~1.1 s after the cast start and travelling 7-14 u in
+  ~1.4 s (6-10 u/s); the one that came within 0 u hit (impact fx at the player). The rest of the window was streaming
+  scenery (Decoration, Decal, FireLight).
+- A survey of every non-player skill's fx fields: projectile classes (~550 records) are already ProjectileBase; radius
+  blasts / radius lightning / chains (~260) put their effect where and when the damage lands (no lead time: the
+  telegraph is their warning); `Skill_AttackWave` (151) is the one family whose effect travels -- 93 name it
+  (lineEffectName 77, fxPakName 16; 25 distinct effects). Beams are a handful, left alone.
+- `tools/gen_wave_effects.py` -> `src/wave_effects.h` (skill -> effect). A foe's wave cast (telegraph::on_cast, before the
+  telegraph's own mode/shape gates) arms its effect for 3 s; a new entity with that record in the sweep is tracked as a
+  slow projectile owned by the caster (straight-line accent, 2.5 u zone; no ProjectileBase reads). Ownerless, so the
+  cast is the attribution: groundripper_fx01 is also a player relic's beam groundEffect.

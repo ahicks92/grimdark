@@ -149,12 +149,14 @@ const char* shape_of(const std::string& k, float dist, const std::string& record
 }
 
 void on_cast(const Cast& c) {
+  // Every foe cast, whatever the telegraph settings: a ground wave's travelling effect is the projectile cue's (and the
+  // dev recorder's cast window).
+  if (world::is_foe(c.caster_id)) projectiles::watch_cast(c.caster_id, c.skill_class, c.record);
   if (g_mode == Mode::Off) return;
   // Non-foes first, before the class lookup: the table is the ENEMY vocabulary, so a player's class skills (Vire's
   // Might = Skill_AttackPathCharge), a pet's or an allied NPC's must not land in the unknown-class list. The game's
   // own faction test covers every player (ours or another one's), every pet and every ally.
   if (!world::is_foe(c.caster_id)) { ++g_skipped_friend; note(std::format("{:.3f} skip friend {} {} #{} {:.1f}u", c.t, c.skill_class, c.caster_class, c.caster_id, c.dist)); return; }
-  projectiles::watch_cast(c.caster_id, c.skill_class, c.record);   // dev recon while recording; a no-op otherwise
   const char* shape = shape_of(c.skill_class, c.dist, c.record);
   if (!shape) { ++g_skipped_shape; return; }
   int si = shape_index(shape);
