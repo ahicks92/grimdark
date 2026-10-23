@@ -6,6 +6,7 @@
 #include <mutex>
 #include "audio.h"
 #include "log.h"
+#include "projectiles.h"
 #include "telegraph_records.h"
 #include "settings.h"
 
@@ -153,6 +154,7 @@ void on_cast(const Cast& c) {
   // Might = Skill_AttackPathCharge), a pet's or an allied NPC's must not land in the unknown-class list. The game's
   // own faction test covers every player (ours or another one's), every pet and every ally.
   if (!world::is_foe(c.caster_id)) { ++g_skipped_friend; note(std::format("{:.3f} skip friend {} {} #{} {:.1f}u", c.t, c.skill_class, c.caster_class, c.caster_id, c.dist)); return; }
+  projectiles::watch_cast(c.caster_id, c.skill_class, c.record);   // dev recon while recording; a no-op otherwise
   const char* shape = shape_of(c.skill_class, c.dist, c.record);
   if (!shape) { ++g_skipped_shape; return; }
   int si = shape_index(shape);

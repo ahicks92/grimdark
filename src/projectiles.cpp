@@ -70,6 +70,16 @@ bool read_raw(void* e, Raw& r) {
   } __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
 }
 
+// Any entity's id, owner and record under an SEH guard (the cast-window probe: not necessarily a projectile).
+bool read_basic(void* e, Raw& r) {
+  __try {
+    r.id = g_get_id(e);
+    r.owner = g_get_owner ? g_get_owner(e) : 0;
+    const char* n = g_obj_name ? g_obj_name(e) : nullptr;
+    if (n && !IsBadStringPtrA(n, 512)) strncpy_s(r.rec, n, sizeof r.rec - 1);
+    return true;
+  } __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
+}
 // How a projectile is cued, decided at spawn from the game's own speed (ProjectileBase::GetTotalSpeed matched the
 // measured flight within ~5 %, 2026-10-22). Fast = the crossbow bolts (38 u/s from ~12 u: ~0.27 s from appearing to
 // arriving, faster than a reaction plus a step, so their tick says "a shot from there", once); slow = what can still
@@ -221,6 +231,15 @@ bool g_zones = true;
 float g_zone_radius = 3.0f;
 size_t g_zone_count = 0, g_zone_max = 0;
 float g_radius = 30.0f;
+// The cast-window probe (watch_cast): after an enemy cast of a watched class, for g_watch_s seconds every non-projectile
+// entity that was not in the sweep at the window's first frame is tracked and logged. g_watch_all = every foe cast.
+bool g_watch_all = false;
+double g_watch_s = 4.0, g_watch_until = -1;
+bool g_watch_baseline = false;   // the next frame records the ids already present
+std::set<unsigned> g_watch_old;
+struct Seen { std::string cls, rec; unsigned owner = 0; world::Vec3 p0, p_last; double t0 = 0, t_last = 0; float flown = 0, min_d = 1e9f; int frames = 0; };
+std::map<unsigned, Seen> g_watch_new;
+std::string g_watch_what;   // the cast that opened the window, for the log
 uint64_t g_frames = 0, g_spawns = 0, g_faulted = 0, g_spawns_foe = 0, g_spawns_you = 0, g_spawns_other = 0;
 size_t g_max_live = 0;
 double g_sweep_us_total = 0, g_sweep_us_max = 0;
@@ -255,6 +274,48 @@ void note(std::deque<std::string>& q, std::string s, size_t cap) {
 float flat(const world::Vec3& a, const world::Vec3& b) { return std::hypot(a.x - b.x, a.z - b.z); }
 std::string pos(const world::Vec3& p) { return std::format("({:.1f},{:.1f},{:.1f})", p.x, p.y, p.z); }
 
+void watch_gone(unsigned id, const Seen& s, double t, const char* why) {
+  note(g_lines, std::format("{:.3f} WGONE #{} {} {} owner=#{} life={:.2f}s frames={} {} -> {} travelled={:.1f}u flown={:.1f}u min_d={:.1f} ({})", t, id, s.cls, s.rec,
+                            s.owner, s.t_last - s.t0, s.frames, pos(s.p0), pos(s.p_last), flat(s.p0, s.p_last), s.flown, s.min_d, why), 5000);
+}
+// One frame of the cast-window probe over the sweep's entities.
+void watch_frame(const std::vector<void*>& ents, const void* proj_ci, const world::Vec3& me, double t) {
+  if (g_watch_until < 0) return;
+  if (t > g_watch_until) {
+    for (auto& [id, s] : g_watch_new) watch_gone(id, s, t, "window closed");
+    g_watch_new.clear(); g_watch_old.clear(); g_watch_until = -1;
+    note(g_lines, std::format("{:.3f} WATCH end", t), 5000);
+    return;
+  }
+  std::set<unsigned> seen;
+  for (void* e : ents) {
+    if (world::object_is_a(e, proj_ci)) continue;   // projectiles have their own track
+    Raw r;
+    if (!read_basic(e, r) || !r.id) continue;
+    if (g_watch_baseline) { g_watch_old.insert(r.id); continue; }
+    if (g_watch_old.count(r.id)) continue;
+    world::Vec3 p;
+    if (!world::entity_position(r.id, p)) continue;
+    seen.insert(r.id);
+    auto it = g_watch_new.find(r.id);
+    if (it == g_watch_new.end()) {
+      Seen s; s.cls = world::object_class_name(e); s.rec = r.rec; s.owner = r.owner; s.p0 = s.p_last = p; s.t0 = t;
+      note(g_lines, std::format("{:.3f} WNEW #{} {} {} owner=#{}{} at {} d={:.1f} dy={:+.1f}", t, r.id, s.cls, s.rec, r.owner,
+                                r.owner ? std::format(" \"{}\"", world::label_of(r.owner)) : std::string(), pos(p), flat(p, me), p.y - me.y), 5000);
+      it = g_watch_new.emplace(r.id, std::move(s)).first;
+    }
+    Seen& s = it->second;
+    s.flown += flat(p, s.p_last);
+    s.min_d = std::min(s.min_d, flat(p, me));
+    s.p_last = p; s.t_last = t; ++s.frames;
+  }
+  g_watch_baseline = false;
+  for (auto it = g_watch_new.begin(); it != g_watch_new.end();) {
+    if (seen.count(it->first)) { ++it; continue; }
+    watch_gone(it->first, it->second, t, "gone");
+    it = g_watch_new.erase(it);
+  }
+}
 void gone(unsigned id, const Track& k, double t) {
   float travelled = flat(k.p0, k.p_last);
   double life = k.t_last - k.t0;
@@ -292,7 +353,9 @@ void tick() {
   const void* ci = g_proj_ci();
   std::set<unsigned> seen;
   int spawned_now = 0;   // new projectiles this frame, for the tick stagger
-  for (void* e : world::entities_near(g_radius)) {
+  const std::vector<void*> ents = world::entities_near(g_radius);
+  if (g_on) watch_frame(ents, ci, me, t);
+  for (void* e : ents) {
     if (!world::object_is_a(e, ci)) continue;
     Raw r;
     if (!read_raw(e, r)) { ++g_faulted; continue; }
@@ -451,6 +514,7 @@ std::string dump(int max_lines) {
   std::string s = std::format("cue={} vol={:.2f} interval={:.2f}s accent<{:.1f}u +{:.0f}st fast>={:.0f}u/s at x{:.2f} stagger={:.0f}ms ticks={} (fast {}) accents={}\n", g_cue,
                               g_cue_vol, g_cue_interval, g_accent_miss, g_accent_st, g_fast_speed, g_fast_vol, g_stagger * 1000, g_ticks, g_fast_ticks, g_accents);
   s += std::format("ground zones={} radius={:.1f} live={} max={}\n", g_zones, g_zone_radius, g_zone_count, g_zone_max);
+  s += std::format("cast watch: {} for {:.1f}s{}\n", g_watch_all ? "every foe cast" : "Skill_AttackWave", g_watch_s, g_watch_until >= 0 ? " (open)" : "");
   s += std::format("recording={} radius={:.0f} samples={} frames={} spawns={} (foe {} / you {} / other {}) live={} max_live={} faulted={} sweep avg={:.0f}us max={:.0f}us\n",
                               g_on, g_radius, g_with_samples, g_frames, g_spawns, g_spawns_foe, g_spawns_you, g_spawns_other, g_live.size(), g_max_live,
                               g_faulted, g_frames ? g_sweep_us_total / g_frames : 0.0, g_sweep_us_max);
@@ -464,6 +528,18 @@ std::string dump(int max_lines) {
     for (size_t i = g_samples.size() - m; i < g_samples.size(); ++i) s += g_samples[i] + "\n";
   }
   return s;
+}
+void watch_cast(unsigned caster_id, const std::string& skill_class, const std::string& record) {
+  if (!g_on || (!g_watch_all && skill_class != "Skill_AttackWave")) return;
+  double t = app::now();
+  bool fresh = g_watch_until < 0;
+  g_watch_until = t + g_watch_s;   // a second cast inside the window extends it (keeps the same baseline)
+  if (fresh) { g_watch_baseline = true; g_watch_old.clear(); g_watch_new.clear(); }
+  note(g_lines, std::format("{:.3f} WATCH {} {} by #{} \"{}\" for {:.1f}s", t, skill_class, record, caster_id, world::label_of(caster_id), g_watch_s), 5000);
+}
+void set_watch(int all, float seconds) {
+  if (all >= 0) g_watch_all = all != 0;
+  if (seconds > 0) g_watch_s = std::clamp(seconds, 0.5f, 20.0f);
 }
 void clear() {
   std::lock_guard<std::mutex> l(g_mu);

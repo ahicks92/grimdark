@@ -21,4 +21,9 @@ void set_radius(float r);             // the sweep radius around the player (def
 void set_samples(bool on);            // also keep a per-frame position line for every live projectile
 std::string dump(int max_lines);      // live tracks + the recent lines (oldest first) + counters
 void clear();
+// The cast-window probe (dev recon, 2026-10-23): an enemy ground wave (Skill_AttackWave: Voldrak's Groundbreaker) makes
+// no ProjectileBase, so while recording, every OTHER entity that appears near the player in the seconds after such a
+// cast is logged (WNEW / WGONE: class, record, owner, path). telegraph::on_cast calls this for every foe cast.
+void watch_cast(unsigned caster_id, const std::string& skill_class, const std::string& record);
+void set_watch(int all, float seconds);   // all: 1 = every foe cast, 0 = waves only, -1 keep; seconds <= 0 keeps
 }  // namespace gd::projectiles
