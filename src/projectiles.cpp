@@ -341,12 +341,13 @@ void gone(unsigned id, const Track& k, double t) {
 }
 // Level by distance: full within 3 u, linear down to 0.15 at 30 u (the sweep radius).
 float cue_gain(float d) { return d <= 3.0f ? 1.0f : std::max(0.15f, 1.0f - 0.85f * (d - 3.0f) / 27.0f); }
-void play_cue(const world::Vec3& p, float d, bool accent, float level = 1.0f) {
+// landing: the lobbed projectile's own sound at its landing spot (projectile_landing.wav, the user's, 2026-10-23).
+void play_cue(const world::Vec3& p, float d, bool accent, float level = 1.0f, bool landing = false) {
   if (!cues::enabled(cues::Projectiles)) return;   // the player's switch (Ctrl+T); g_cue is the dev one
   level *= cues::gain(cues::ProjectileChannel);
   float pan = 0, gain = 1, ahead = 0;
   world::ear_frame(p, pan, gain, &ahead);
-  audio::play_sample(audio::module_dir() + "assets\\audio\\projectile.wav", g_cue_vol * level * cue_gain(d), pan, world::rear_shelf_db(ahead), false, 0,
+  audio::play_sample(audio::module_dir() + (landing ? "assets\\audio\\projectile_landing.wav" : "assets\\audio\\projectile.wav"), g_cue_vol * level * cue_gain(d), pan, world::rear_shelf_db(ahead), false, 0,
                      false, accent ? g_accent_st : 0.0f);
   ++g_ticks;
   if (accent) ++g_accents;
@@ -493,7 +494,7 @@ void tick() {
       if (accent) ++k.accented;
       // A lobbed one in flight sounds from WHERE IT WILL LAND (the user, 2026-10-22): the arc's position says nothing
       // about which way to step out of the blast. Not moving (a blocked throw) = it may burst where it is: sound there.
-      if (k.lobbed && k.frames > 0 && len > 0.01f) play_cue(k.dest, flat(me, k.dest), accent);
+      if (k.lobbed && k.frames > 0 && len > 0.01f) play_cue(k.dest, flat(me, k.dest), accent, 1.0f, true);
       else play_cue(p, d, accent);
       k.next_cue = t + g_cue_interval;
     }
