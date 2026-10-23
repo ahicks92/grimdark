@@ -18,7 +18,7 @@ bool g_open = false;
 
 // One glossary entry: a label, the file under assets/audio, and how the game positions it (pan, rear shelf) --
 // the wall tones sit in their ear-fixed slots, everything else is centred.
-struct Entry { std::string_view label; const char* file; float pan = 0.0f; float shelf_db = 0.0f; float vol = 1.0f; bool above_master = false; };
+struct Entry { std::string_view label; const char* file; float pan = 0.0f; float shelf_db = 0.0f; float vol = 1.0f; bool above_master = false; float semitones = 0.0f; };
 struct Section { const char* id; std::string_view title; std::vector<Entry> entries; };
 
 std::vector<Section> sections() {
@@ -51,6 +51,9 @@ std::vector<Section> sections() {
       {strings::kGlossaryHazardLeft, "hazards\\sizzle\\west.wav", -1.0f},
       {strings::kGlossaryHazardInside, "hazards\\inside_low\\left.wav"},
       {strings::kGlossaryHazardExit, "hazards\\exit_pulse_preview.wav"}}},
+    {"projectiles", strings::kGlossaryProjectiles, {   // src/projectiles.cpp: the live cue's level (0.6, above the master)
+      {strings::kGlossaryProjectileTick, "projectile.wav", 0.0f, 0.0f, 0.6f, true},
+      {strings::kGlossaryProjectileHigh, "projectile.wav", 0.0f, 0.0f, 0.6f, true, 5.0f}}},
     {"telegraphs", strings::kGlossaryTelegraphs, {
       {strings::kGlossaryTelegraphSwing, tele[0].c_str(), 0.0f, 0.0f, 1.0f, true},
       {strings::kGlossaryTelegraphStomp, tele[1].c_str(), 0.0f, 0.0f, 1.0f, true},
@@ -67,7 +70,7 @@ std::vector<Section> sections() {
 
 constexpr int kGroup = 77;   // one group with replace: arrowing cuts the previous row's sound
 void play(const Entry& e) {
-  audio::play_sample(audio::module_dir() + "assets\\audio\\" + e.file, e.vol, e.pan, e.shelf_db, !e.above_master, kGroup, true);
+  audio::play_sample(audio::module_dir() + "assets\\audio\\" + e.file, e.vol, e.pan, e.shelf_db, !e.above_master, kGroup, true, e.semitones);
 }
 
 class SoundGlossaryScreen : public Screen {

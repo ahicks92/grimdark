@@ -13,6 +13,7 @@
 #include "app.h"
 #include "audio.h"
 #include "casts.h"
+#include "cues.h"
 #include "gd_names.h"
 #include "log.h"
 #include "world.h"
@@ -267,6 +268,8 @@ void gone(unsigned id, const Track& k, double t) {
 // Level by distance: full within 3 u, linear down to 0.15 at 30 u (the sweep radius).
 float cue_gain(float d) { return d <= 3.0f ? 1.0f : std::max(0.15f, 1.0f - 0.85f * (d - 3.0f) / 27.0f); }
 void play_cue(const world::Vec3& p, float d, bool accent, float level = 1.0f) {
+  if (!cues::enabled(cues::Projectiles)) return;   // the player's switch (Ctrl+T); g_cue is the dev one
+  level *= cues::gain(cues::ProjectileChannel);
   float pan = 0, gain = 1, ahead = 0;
   world::ear_frame(p, pan, gain, &ahead);
   audio::play_sample(audio::module_dir() + "assets\\audio\\projectile.wav", g_cue_vol * level * cue_gain(d), pan, world::rear_shelf_db(ahead), false, 0,
