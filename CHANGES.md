@@ -1,4 +1,4 @@
-# Unreleased
+# 0.6.0 (2026-10-26)
 
 - Telegraph cues are more accurate:
   - New cue "aura": an enemy is wrapping itself in something harmful that moves with it for a few seconds, such as Kilrian's ring of fire. Keep away from the enemy. It has its own on/off row in `t`.
