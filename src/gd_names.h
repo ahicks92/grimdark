@@ -1822,4 +1822,28 @@ inline constexpr const char* Character_RequestMove = "?RequestMove@Character@GAM
 // public: virtual bool __cdecl GAME::ControllerPlayer::ReleasePet(unsigned int,bool) __ptr64
 inline constexpr const char* ControllerPlayer_ReleasePet_DLL = "Game.dll";
 inline constexpr const char* ControllerPlayer_ReleasePet = "?ReleasePet@ControllerPlayer@GAME@@UEAA_NI_N@Z";
+// public: static class GAME::RTTI_ClassInfo const & __ptr64 __cdecl GAME::ProjectileBase::GetStaticClassInfo(void)
+inline constexpr const char* ProjectileBase_GetStaticClassInfo_DLL = "Game.dll";
+inline constexpr const char* ProjectileBase_GetStaticClassInfo = "?GetStaticClassInfo@ProjectileBase@GAME@@SAAEBVRTTI_ClassInfo@2@XZ";
+// public: float __cdecl GAME::ProjectileBase::GetTotalSpeed(void) __ptr64
+inline constexpr const char* ProjectileBase_GetTotalSpeed_DLL = "Game.dll";
+inline constexpr const char* ProjectileBase_GetTotalSpeed = "?GetTotalSpeed@ProjectileBase@GAME@@QEAAMXZ";
+// public: virtual float const __cdecl GAME::ProjectileBase::GetHitTime(void)const __ptr64
+inline constexpr const char* ProjectileBase_GetHitTime_DLL = "Game.dll";
+inline constexpr const char* ProjectileBase_GetHitTime = "?GetHitTime@ProjectileBase@GAME@@UEBA?BMXZ";
+// public: virtual float const __cdecl GAME::ProjectileBase::GetMissTime(void)const __ptr64
+inline constexpr const char* ProjectileBase_GetMissTime_DLL = "Game.dll";
+inline constexpr const char* ProjectileBase_GetMissTime = "?GetMissTime@ProjectileBase@GAME@@UEBA?BMXZ";
+// public: unsigned int __cdecl GAME::Entity::GetOwner(void)const __ptr64
+inline constexpr const char* Entity_GetOwner_DLL = "Engine.dll";
+inline constexpr const char* Entity_GetOwner = "?GetOwner@Entity@GAME@@QEBAIXZ";
+// public: virtual float const __cdecl GAME::ProjectileBase::GetDistance(void)const __ptr64
+inline constexpr const char* ProjectileBase_GetDistance_DLL = "Game.dll";
+inline constexpr const char* ProjectileBase_GetDistance = "?GetDistance@ProjectileBase@GAME@@UEBA?BMXZ";
+// public: virtual float const __cdecl GAME::ProjectileBase::GetLaunchAngle(void)const __ptr64
+inline constexpr const char* ProjectileBase_GetLaunchAngle_DLL = "Game.dll";
+inline constexpr const char* ProjectileBase_GetLaunchAngle = "?GetLaunchAngle@ProjectileBase@GAME@@UEBA?BMXZ";
+// public: static class GAME::RTTI_ClassInfo const & __ptr64 __cdecl GAME::ProjectileAreaEffect::GetStaticClassInfo(void)
+inline constexpr const char* ProjectileAreaEffect_GetStaticClassInfo_DLL = "Game.dll";
+inline constexpr const char* ProjectileAreaEffect_GetStaticClassInfo = "?GetStaticClassInfo@ProjectileAreaEffect@GAME@@SAAEBVRTTI_ClassInfo@2@XZ";
 }  // namespace gd::names

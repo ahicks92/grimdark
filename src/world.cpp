@@ -747,7 +747,18 @@ HazardHit seh_hazard(void* region, int rx, int rz) {
   return h;
 }
 }  // namespace
+namespace { std::vector<GroundZone> g_ground_zones; }   // game thread only
+void set_ground_zones(std::vector<GroundZone> zones) { g_ground_zones = std::move(zones); }
+
 bool hazard_at(const Vec3& world_point, float* rate, int* type) {
+  for (const GroundZone& z : g_ground_zones) {
+    float dx = world_point.x - z.centre.x, dz = world_point.z - z.centre.z;
+    if (dx * dx + dz * dz <= z.radius * z.radius && std::fabs(world_point.y - z.centre.y) < 3.0f) {
+      if (rate) *rate = 0;
+      if (type) *type = kGroundZoneType;
+      return true;
+    }
+  }
   if (!g_api.Level_GetSectorLayers || !g_api.SectorLayers_GetTargetId || !g_api.SectorDataManager_GetSectorData || !g_api.Region_GetOffsetFromWorld) return false;
   void* p = player();
   void* region = p && g_api.Entity_GetRegion ? g_api.Entity_GetRegion(p) : nullptr;
@@ -1993,6 +2004,27 @@ bool project(void* entity, float& x, float& y) {
   return true;
 }
 }  // namespace
+std::vector<void*> entities_near(float radius) {
+  std::vector<void*> out;
+  Buf base; void* region = nullptr;
+  if (!g_api.Region_GetEntitiesInSphere || !player_world_vec(base, &region)) return out;
+  // One game-allocated vector reused across calls (the find_path_corridor pattern): the query APPENDS, so reset its
+  // size to 0 and keep the capacity. A fresh vector per call leaks its storage every frame.
+  static MemVec vec{};
+  MemVec* v = &vec;
+  v->end = v->begin;
+  const Vec3* rp = g_api.WorldVec3_GetRegionPosition(&base);
+  struct { Vec3 c; float r; } sphere{*rp, radius};
+  g_api.Region_GetEntitiesInSphere(region, v, &sphere, false, 0);
+  if (!(v->begin && v->end && (uintptr_t)v->end > (uintptr_t)v->begin && (uintptr_t)v->end - (uintptr_t)v->begin < (1u << 20))) return out;
+  size_t n = (size_t)((char*)v->end - (char*)v->begin) / sizeof(void*);
+  out.reserve(n);
+  for (size_t i = 0; i < n && i < 4096; ++i) {
+    void* e; memcpy(&e, (char*)v->begin + i * sizeof(void*), sizeof e);
+    if (e) out.push_back(e);
+  }
+  return out;
+}
 
 // Camera line of sight to an entity, the sighted player's own primitive (static RE of the exe's cursor pick at
 // exe+0x30c49, 2026-08-25): the ray the camera sends through the entity's screen point

@@ -49,6 +49,12 @@ float free_distance_ray(float dir_x, float dir_z, float lateral, float max_dist,
 // rate = fraction of max life per second (0.02..0.30), type = the CombatAttributeType code (11 = Aether). Any
 // point, any loaded chunk; the exact lookup TickManager::Tick applies once a second, resistances not consulted.
 bool hazard_at(const Vec3& world_point, float* rate, int* type);
+// Enemy ground effects: skill-made harm on the ground (a Skeletal Warlock's sigil, a pool a projectile leaves) that is
+// NOT painted into the map's damage layer. src/projectiles.cpp refreshes the list every frame; hazard_at answers true
+// inside any of them (type kGroundZoneType, rate 0), so every hazard layer -- lanes, bed, pointer -- sounds them too.
+struct GroundZone { Vec3 centre; float radius; };
+inline constexpr int kGroundZoneType = -1;
+void set_ground_zones(std::vector<GroundZone> zones);
 bool mesh_contains(const Vec3& world_point);   // the floored point is inside the path mesh (closest-point gate, not the box test)
 std::string nav_vwindow(float span, float step);              // dev: PutOnFloor's accepted vertical window at the feet
 std::string wall_compare(int dirs, float max_dist, float step);  // dev: A/B flat vs terrain-following rays around the compass
@@ -106,6 +112,9 @@ std::string fog_reveal(float x, float z, int radius);                    // dev:
 std::string label_of(unsigned id);
 // World-space position of any object by id (through object_by_id). False when the id has no positioned entity.
 bool entity_position(unsigned id, Vec3& out);
+// Every object the player's region reports within `radius` of the player (Region::GetEntitiesInSphere, which spans the
+// loaded regions). Game thread; the pointers are valid for THIS frame only -- hold ids, never these.
+std::vector<void*> entities_near(float radius);
 
 // How using a skill chooses where it lands, for the quickbar readout (docs/skills-targeting.md): the runtime
 // SkillTargetType plus the skill's class. None = not an activated skill (a passive or a modifier).

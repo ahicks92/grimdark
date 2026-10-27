@@ -27,6 +27,7 @@ const CueRow kCueRows[] = {
   {"breakables", cues::Breakables, strings::kCueBreakables},
   {"shrines", cues::Shrines, strings::kCueShrines},
   {"interactables", cues::Interactables, strings::kCueInteractables},
+  {"projectiles", cues::Projectiles, strings::kCueProjectiles},
 };
 struct VolumeRow { const char* id; cues::Channel channel; std::string_view label; };
 const VolumeRow kVolumeRows[] = {
@@ -36,6 +37,7 @@ const VolumeRow kVolumeRows[] = {
   {"other", cues::Other, strings::kVolumeOther},
   {"voice.mark", cues::VoiceMark, strings::kVolumeMark},
   {"voice.zira", cues::VoiceZira, strings::kVolumeZira},
+  {"projectiles", cues::ProjectileChannel, strings::kVolumeProjectiles},
 };
 
 constexpr int kPreviewGroup = 78;   // one group with replace: the next step cuts the previous preview
@@ -53,6 +55,7 @@ void preview(cues::Channel ch) {
     case cues::Other: audio::play_sample(base + "interactables\\unknown.wav", db_to_gain(4.3f) * user, 0.0f, 0.0f, true, kPreviewGroup, true); break;   // the loot ping at the sonar's trim
     case cues::VoiceMark: { voice::Say s; s.voice = voice::Which::Mark; s.text = std::string(strings::kVoicePreviewMark); s.policy = voice::Policy::Replace; s.group = voice::kGroupEnemy; voice::say(std::move(s)); break; }
     case cues::VoiceZira: { voice::Say s; s.voice = voice::Which::Zira; MessageBuilder m; strings::push_health_percent(m, 70); s.text = m.build(); s.policy = voice::Policy::Replace; s.group = voice::kGroupSelf; voice::say(std::move(s)); break; }
+    case cues::ProjectileChannel: audio::play_sample(base + "projectile.wav", 0.6f * user, 0.0f, 0.0f, false, kPreviewGroup, true); break;   // the live cue's level, above the master
     default: break;
   }
 }

@@ -82,3 +82,8 @@ three layers together and scales them by one "harmful ground" volume; both persi
 top of the dev knobs. Not done: pets are not
 warned, and the search treats paint as passable at a cost without rounding to ticks (a 6 u and a 9 u exit both cost one
 second at a run).
+
+**Enemy ground effects** (2026-10-22): a skill's ground harm (a Skeletal Warlock's sigil, a landed pool) is a
+`ProjectileAreaEffect` entity, not paint. `src/projectiles.cpp` turns every enemy one that has stopped moving into a
+`world::GroundZone` (its own radius: the +0xd18 pointer vector, `[entry + 4]`; docs/devlog.md 2026-10-22) and
+`world::hazard_at` answers true inside any zone (type -1) before the sector lookup, so all three layers sound it.

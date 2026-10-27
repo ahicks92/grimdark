@@ -1,5 +1,21 @@
 # Unreleased
 
+- Telegraph cues are more accurate:
+  - New cue "aura": an enemy is wrapping itself in something harmful that moves with it for a few seconds, such as Kilrian's ring of fire. Keep away from the enemy. It has its own on/off row in `t`.
+  - Fire pools, sigils and lightning strikes now say "area" instead of "shot": they land on the spot you were standing on when the enemy started casting, so move off that spot.
+  - Lobbed attacks now say "area" too: things thrown in an arc onto the spot you were standing on, such as the Grand Priest's fireballs, ice bombs, molotovs and acid spit.
+  - Fans of projectiles fired in front of the enemy, such as Condemn, now say "wave" instead of "shot": step sideways out of them.
+  - New cue "frontal": a wide spread of projectiles covering a quarter circle to a half circle in front of the enemy, such as ground spines, chaos barrages and the half-circle novas. Get behind it or well to the side. Anything wider says "ring". It has its own on/off row in `t`.
+  - New cue "beam": a zap that locks on to you, such as an Aether Crystal's. Moving won't dodge it once it starts; getting out of range or out of sight before it does will. It has its own on/off row in `t`.
+  - The sound glossary in the F1 menu now has the area, charge and aura cues.
+- New: enemy projectiles make a sound. Slow ones you can step around, such as fireballs, orbs and deathbolts, tick from where they are while they fly, so you can hear them travel, including the ones that will miss you; one that is going to hit you ticks higher. Something lobbed in an arc, such as a grenade, plays its own landing sound from the spot where it is going to land instead of ticking from the air, and ticks higher when you are inside its blast, so you know which way to step out of it. Fast ones such as crossbow bolts, which arrive too quickly to dodge, tick once, more quietly, from where they were fired, so you know where the shooter is. Your own projectiles and your pets' stay silent.
+  - `ctrl t` has an on/off row and a volume for projectile ticks, and the F1 sound glossary has the tick, the landing sound and their higher versions.
+  - Ground waves tick the same way: a crack, fire wave or shockwave an enemy sends along the ground, such as Voldrak's Groundbreaker, ticks from where it is as it travels, and higher when it is heading at you.
+  - Projectiles fired all at once, such as a ring of ice spikes, tick a moment apart so you can hear how many there are, instead of sounding like one.
+  - This is a first version: in a big fight it can get busy, and the sound and levels will change.
+- New: harmful ground that enemies create, such as a Skeletal Warlock's sigil or a pool of fire left by a fireball, now sounds like the other harmful ground: you hear which way it is, and the warning sound while you stand in it. Before, only harmful ground that is part of the map made a sound.
+- New keys `shift down` and `shift up`: in menus and windows, read the detailed tooltip one line at a time, so you can find one detail without listening to the whole thing. The first press reads the first line; moving to another item starts over from the top.
+- Fix: the README listed `shift up` and `shift down` for jumping between groups in menus; the keys are `ctrl up` and `ctrl down`.
 - New key `delete`: on an item in your bags, drops it on the ground around you, where you can pick it up again like any loot. A whole stack drops together. Items that can't be dropped (soulbound or untradeable) ask whether to destroy them instead, the same as in the game.
 - Fix: capital W, A, S and D can be typed in text boxes, such as the character name. Before, `shift w`, `shift a`, `shift s` and `shift d` typed nothing there.
 

@@ -678,6 +678,15 @@ ENTRIES = [
     ("Character_RequestAttack", "Game", r"^public: void __cdecl GAME::Character::RequestAttack\(unsigned int,unsigned int\)"),
     ("Character_RequestMove", "Game", r"^public: void __cdecl GAME::Character::RequestMove\(unsigned int,class GAME::WorldVec3 const"),
     ("ControllerPlayer_ReleasePet", "Game", r"GAME::ControllerPlayer::ReleasePet\("),
+    # projectiles in flight (dev recon, src/projectiles.cpp)
+    ("ProjectileBase_GetStaticClassInfo", "Game", r"GAME::ProjectileBase::GetStaticClassInfo\(void\)"),
+    ("ProjectileBase_GetTotalSpeed", "Game", r"GAME::ProjectileBase::GetTotalSpeed\(void\)"),
+    ("ProjectileBase_GetHitTime", "Game", r"GAME::ProjectileBase::GetHitTime\(void\)"),
+    ("ProjectileBase_GetMissTime", "Game", r"GAME::ProjectileBase::GetMissTime\(void\)"),
+    ("Entity_GetOwner", "Engine", r"GAME::Entity::GetOwner\(void\)"),
+    ("ProjectileBase_GetDistance", "Game", r"GAME::ProjectileBase::GetDistance\(void\)"),
+    ("ProjectileBase_GetLaunchAngle", "Game", r"GAME::ProjectileBase::GetLaunchAngle\(void\)"),
+    ("ProjectileAreaEffect_GetStaticClassInfo", "Game", r"GAME::ProjectileAreaEffect::GetStaticClassInfo\(void\)"),
 
 ]
 tables = {}

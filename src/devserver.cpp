@@ -11,6 +11,7 @@
 #include "audio.h"
 #include "audio_mute.h"
 #include "casts.h"
+#include "projectiles.h"
 #include "telegraph.h"
 #include "combat.h"
 #include "hazard.h"
@@ -122,6 +123,21 @@ static std::string handle(const std::string& path, const std::map<std::string, s
     if (q.count("test")) telegraph::test(q.at("test"));
     if (q.count("foe")) { unsigned id = (unsigned)parse_int(q.at("foe"), 0); return std::format("is_foe({}) = {} (player id {})\n", id, world::is_foe(id), world::player_id()); }
     return telegraph::status();
+  }
+  if (path == "/projectiles") {  // ?on=1|off=1 &radius= &samples=0|1 &clear=1 &lines=N &cue=0|1 &vol= &interval= &accent= &st= &fast= &fastvol= &stagger=<ms> &watchall=0|1 &watchs=<s> &zones=0|1 &zoneradius= -- projectiles in flight near the player (src/projectiles.cpp)
+    if (q.count("radius")) projectiles::set_radius((float)atof(q.at("radius").c_str()));
+    if (q.count("samples")) projectiles::set_samples(q.at("samples") == "1");
+    if (q.count("clear")) projectiles::clear();
+    if (q.count("on")) projectiles::set_recording(true);
+    if (q.count("off")) projectiles::set_recording(false);
+    if (q.count("cue")) projectiles::set_cue(q.at("cue") == "1");
+    auto qf = [&](const char* k, float dflt) { return q.count(k) ? (float)atof(q.at(k).c_str()) : dflt; };
+    projectiles::set_cue_params(qf("vol", -1), qf("interval", -1), qf("accent", -1), qf("st", -1000));
+    projectiles::set_fast_params(qf("fast", -1), qf("fastvol", -1));
+    projectiles::set_stagger(qf("stagger", -1000) / 1000.0f);   // milliseconds
+    projectiles::set_watch(q.count("watchall") ? (q.at("watchall") == "1" ? 1 : 0) : -1, qf("watchs", -1));
+    if (q.count("zones") || q.count("zoneradius")) projectiles::set_zones(q.count("zones") ? q.at("zones") == "1" : true, qf("zoneradius", -1));
+    return projectiles::dump(q.count("lines") ? parse_int(q.at("lines"), 200) : 200);
   }
   if (path == "/casts") {  // ?lines=N (default 200) | ?clear=1 | ?cb=1 -- skill activations, hits, animation callbacks (src/casts.cpp)
     if (q.count("clear")) casts::clear();

@@ -42,6 +42,8 @@ int (*g_anim_left)(const void*) = nullptr;
 const char* (*g_obj_name)(const void*) = nullptr;
 struct Open { double t; const char* which; int hits; };
 std::map<std::pair<unsigned, const void*>, Open> g_open;   // (caster id, skill) -> the cast in progress
+struct Aim { double t; world::Vec3 pt; };
+std::map<unsigned, Aim> g_last_aim;   // caster id -> its latest released skill's target point (game thread)
 
 bool bad_ptr(const void* p, size_t n) { return !p || IsBadReadPtr(p, n) != 0; }
 bool read_id(const void* obj, unsigned& out) {
@@ -288,6 +290,7 @@ void tick() {
         break;
       }
       case Kind::Now:
+        if (r.has_pt) { g_last_aim[r.caster_id] = Aim{r.t, r.pt}; if (g_last_aim.size() > 512) g_last_aim.clear(); }
         line = std::format("{:.3f} NOW[{}] anim={} {}{} -> #{}{}", r.t, r.which, r.name, who, sk, r.target, pt);
         break;
       case Kind::Callback:
@@ -306,5 +309,12 @@ std::string dump(int max_lines, bool callbacks) {
   for (size_t i = from; i < q.size(); ++i) out += q[i] + "\n";
   return out;
 }
+bool recent_target(unsigned caster_id, double now, double max_age, world::Vec3& out) {
+  auto it = g_last_aim.find(caster_id);
+  if (it == g_last_aim.end() || now - it->second.t > max_age || now < it->second.t) return false;
+  out = it->second.pt;
+  return true;
+}
+
 void clear() { std::lock_guard<std::mutex> l(g_mu); g_lines.clear(); g_cb_lines.clear(); }
 }  // namespace gd::casts

@@ -126,3 +126,41 @@ hit arrives with callback name `End`), so the Ancient Shambler's 8 u burst lands
 blow; the 83-frame death animation is only the picture. Nothing a telegraph can do; the only useful player-facing
 thing would be a per-record "explodes on death" note (545 monsters carry a dying skill, many of them chest / loot
 spawns) -- left alone for now.
+
+## Reactions revised (2026-10-22): "area" = a spot, "aura" = on the caster, per-record shapes
+The user reviewed the whole table (every class with its counts and geometry, from a `tools/arz.py` survey) and found
+three cues misleading:
+- **Pools and lightning strikes are "area", not "shot"**: `Skill_AttackProjectileAreaEffect` and
+  `Skill_AttackRadiusLightning`/`2` land on the point picked at CAST START (verified live on Kilrian's Conflagration:
+  the target point is unchanged at release even with the player 4.3 u away; the pool appears there ~0.65 s after the
+  cast starts, at speed 0, no flight). The counter is "leave the spot you stood on", which is what "area" says. The
+  skill data has no warning marker on the ground for either (only impact effects): a sighted player sees only the
+  caster's casting animation, shared by all its spells (Kilrian: one `sHandedSpellAttackAnim` for every spell).
+- **New "aura"** (`assets/audio/telegraphs/aura-200.wav`, same generator): harm centred on the caster that moves with
+  it -- `Skill_BuffAttackRadiusDuration` (timed auras, Kilrian's Ring of Fire, which also auto-casts Fireblast with no
+  animation), `Skill_AttackProjectileOrbiting`, `Skill_BuffAttackRadiusLightning` (was silent). "area" had read as a
+  spot on the ground. The always-on toggled auras stay silent at cast (they are switched on once): a zone following
+  the monster is the open thread.
+- **Per-record shapes before the class**: of every Ring/Burst/Fan record, two "rings" are narrow aimed fans
+  (bloodclaw_bloodyhook 6 over 35 degrees, baldim_chaoswave 8 over 90) and play "wave" (a frontal cone: step sideways), as
+  does the whole `Skill_AttackProjectileFan` class (12 skills, 3-5 projectiles over 18-65 degrees); the 180-degree bursts launch
+  2 projectiles, one to each side, and stay "shot". `Skill_WeaponPool_Default` (the pool wrapper started with the basic
+  attack it picks) is listed as silent instead of counting as unknown.
+- Still "shot" but known imperfect: beams (`Skill_AttackSpellChaos`/`ChaosBeam`: per-frame `Update` +
+  `GetValidTarget(target id, range)` + `StopSkill` suggest a channel locked on its target -- break range or line of
+  sight, unverified live) and chains (`Skill_AttackChain`: no projectile, `GrowChain`/`CreateLightning` bolt by bolt,
+  up to 3 jumps within 8 u, requires line of sight; whether the first bolt goes to the target id or the cast-start
+  point is unverified).
+- **"beam" and "frontal"** (later the same day): `Skill_AttackSpellChaos`/`ChaosBeam` play "beam" -- live, an Aether
+  Crystal Cluster's `aethercrystalsmall_zap` (level 8 champion) targets the player id, hits once ~0.42 s after its start
+  and ends at ~0.9 s; the player's log has a "hit" matching the zap that landed with the player 3.6 u from the
+  cast-start point (the 6.37 s gap between the two hits fits zaps 2-3, 6.43 s, over 1-2, 6.22 s), so it is locked on,
+  not aimed at a point. "frontal" (the user, after WoW) = a spread covering 90 to 180 degrees in front (45 either side at
+  least; wider than a half circle is a ring -- "frontal" past 180 would confuse, the user); `tools/gen_telegraph_records.py` writes the per-record shapes to
+  `src/telegraph_records.h` from each skill's widest level (projectileLaunchRotation; a wave's side angle from its
+  length and widths -- no ground wave reaches 90, the widest is 45). Correction: the 180-degree bursts launch up to 7
+  projectiles at their top levels, not 2 (the first survey read level 1). Melee arcs (special weapon attacks up to 200
+  degrees, charges up to 240) stay swing / charge for now.
+- **Lobbed projectiles are "area"** (the evening): an aimed projectile skill whose projectile record has a
+  `launchAngle` above zero throws it in an arc onto the cast-start point (the live projectile carries it: +0x578, and
+  its destination at +0x730), so the generator marks it "area" ahead of the arc rules; see docs/devlog.md.
