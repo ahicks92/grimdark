@@ -193,7 +193,11 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   `exe+0x` evidence instruction is re-checked at its new address and every vtable slot by slot. Clean -> `--apply`
   on the same files (rewrites constants + evidence in one pass, re-checks the byte signatures). The world layer:
   `exe_reloc.py <old dll> <new dll> exports|xdiff <regex>|vtcmp <regex>` -- a class whose ctor is unchanged kept
-  its layout; check the hardcoded vtable slots with vtcmp. Then replace the row in `src/game_versions.h` (one build
+  its layout; check the hardcoded vtable slots with vtcmp. Ctors to xdiff (the classes whose raw fields we read; the
+  2026-10-08 list plus later additions): Character, Player, ControllerPlayer, Item, ItemEquipment, Skill, SkillManager,
+  CombatManager, Npc, Destructible, Engine, Entity, Region, World, WorldCamera, GameCamera, HotSlotOptionSkill, GameEngine,
+  Pet, ProjectileBase (+0x730 destination WorldVec3) and ProjectileAreaEffect (+0xd18/+0xd20 blast-radius vector,
+  entry +4; both in `src/projectiles.cpp`, 2026-10-26). A class added to the raw reads goes on this list. Then replace the row in `src/game_versions.h` (one build
   at a time: the old build lives in git + the archive), test live, and archive (`tools/archive_build.py`). Never skip archiving a build the mod works on.
 
 ## Traps and lessons (details in docs/devlog.md and the doc named)
