@@ -139,9 +139,7 @@ static void register_actions() {
   for (int k = 1; k <= 10; ++k) m.register_action(std::format("assign.slot{}", k), std::format("Assign to quickbar slot {}", k % 10), InputCategory::Windows, [k] { screens::assign_focused(k); }).bind(k == 10 ? 0x0b : 0x01 + k, true, false, false);
   m.register_action("assign.primary", "Assign to left mouse", InputCategory::Windows, [] { screens::assign_focused(0); }).bind(0x24, true, false, false);
   // Ctrl+Enter on a stack in the vendor's Sell tab: sell part of it (a count prompt).
-  // Ctrl+Enter in a window: the vendor's Sell tab sells part of a stack; the inventory's bag tab makes that bag the
-  // receiving one. Each is silent when its screen is not the current one.
-  m.register_action("window.ctrlEnter", "Sell part of a stack / receiving bag", InputCategory::Windows, [] { screens::sell_partial_focused(); screens::set_receiving_bag_focused(); }).bind(keys::Enter, true, false, false);
+  m.register_action("window.ctrlEnter", "Sell part of a stack", InputCategory::Windows, [] { screens::sell_partial_focused(); }).bind(keys::Enter, true, false, false);
   // Delete on a bag item in the inventory: drop it on the ground (a soulbound / untradeable one asks to destroy it).
   m.register_action("window.drop", "Drop item", InputCategory::Windows, [] { screens::drop_focused(); }).bind(0x81);
   m.register_action("assign.secondary", "Assign to right mouse", InputCategory::Windows, [] { screens::assign_focused(-1); }).bind(0x17, true, false, false);

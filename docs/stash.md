@@ -31,7 +31,13 @@ it "reagents" everywhere. The mod shows the two views as one tab, "materials and
   `QuickDropInTransfer`); false = `tagTransferStashError`. Live: equipment passes, a soulbound necklace and a component are refused.
   The slot is hardcoded in `transfer_allowed`; check it with vtcmp on a patch.
 - `SortSecondarySack` sorts the game's selected bag and does nothing when bag 1 is selected: `sort_bag` selects the bag for the call and
-  restores the selection. The pickup "secondary bag" this selection was once thought to control appears to be dead in play.
+  restores the selection.
+- **The selected bag must never be bag 1.** `PlayerInventoryCtrl::AddItem` (every pickup, and the stash's take): stacks merge, then bag
+  1, then if the selection is bag 1 it fails, otherwise the selected bag and then all the others. `IsSpaceAvailable` searches every bag,
+  so it can say yes to what `AddItem` refuses. Measured: bag 1 full, selection on bag 1, five empty bags: refused; selection on bag 2, 3
+  or 4: placed there, and a full selected bag overflowed to bag 2. It is saved in the character file. The exe's tab buttons only pass
+  1..5; the mod's old tab browsing and Ctrl+Enter could write 0. `gameapi::keep_bag_overflow` heals it from the world's tick. Add to
+  the bag before removing from a stash, as the exe does, so a refusal loses nothing.
 - Sorting takes a rising number that picks the arrangement, so pressing again reorders. `InventorySack::Sort` returns false when an
   arrangement does not fit; the exe's stash button tries five.
 

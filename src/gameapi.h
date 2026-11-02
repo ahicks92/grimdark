@@ -76,6 +76,7 @@ struct Bag { int index; std::string name; unsigned width, height; std::vector<Ba
 std::vector<Bag> bags();
 int selected_bag();
 bool select_bag(int index);
+void keep_bag_overflow();                        // per tick: never leave bag 1 selected, or a full bag 1 refuses pickups with the others empty
 struct EquipSlot { int loc; std::string label; unsigned item_id; void* item; std::string name; bool component = false; bool augment = false; bool inactive = false; };   // loc = EquipmentCtrlLocation 1..14; inactive = equipped but detached (requirements no longer met)
 bool has_component(const void* item);            // ItemEquipment::HasRelic, after an is-a ItemEquipment check (false for anything else)
 bool has_augment(const void* item);              // ItemEquipment::HasEnchantment, same guard (an augment = the game's "enchantment")

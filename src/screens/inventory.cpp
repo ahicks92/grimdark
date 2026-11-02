@@ -42,25 +42,8 @@ class InventoryScreen : public WindowScreen, public AssignSource {
   }
   std::string focused_label() override { return focused_skill_id() ? std::string(strings::kBasicAttack) : std::string(); }
 
-  void on_tab_changed(int) override { invalidate(); }   // browsing the tabs must NOT move the game's selected bag (below)
-  // Ctrl+Enter on a bag tab: make it the game's SELECTED bag -- the one pickups fall into once bag 1 has no room
-  // (PlayerInventoryCtrl::AddItem, read 2026-08-26: stacks merge in any bag, then bag 1, then the selected bag,
-  // nothing else). A sighted player does this by leaving the window on that bag's tab; we make it explicit.
-  void set_receiving_bag() {
-    // The tab under FOCUS if the cursor is on the tab row (arrowing along it does not select), else the selected tab.
-    int t = tab(), nbags = (int)bags_.value.size();
-    GraphNavigator* nav = app::navigator();
-    std::optional<ControlId> fid = nav ? nav->focused_id() : std::nullopt;
-    if (fid && fid->structural_key().is_string()) {
-      const std::string& k = fid->structural_key().text();
-      if (k.rfind("inventory.tab", 0) == 0) t = std::atoi(k.c_str() + 13);
-    }
-    if (t < 1 || t > nbags) { speech::speak(strings::kNotABag, true); return; }
-    bool ok = gameapi::select_bag(t - 1);
-    MessageBuilder m; m.fragment(std::format("{} {}", strings::kBag, t)).list_item().fragment(ok ? strings::kSecondaryBag : strings::kCannot);
-    speech::speak(m.build(), true);
-    invalidate();
-  }
+  // Browsing must NOT move the game's selected bag: selecting bag 1 turns off pickups' overflow (gameapi::keep_bag_overflow).
+  void on_tab_changed(int) override { invalidate(); }
   void on_focus() override { invalidate(); WindowScreen::on_focus(); }
   // Delete on a bag item: drop it on the ground around the player, as the game's release of a held item over the
   // world does. A soulbound or untradeable item is never dropped there; the game asks to destroy it, so do we.
@@ -95,12 +78,7 @@ class InventoryScreen : public WindowScreen, public AssignSource {
     std::vector<std::string> labels{std::string(strings::kEquipment)};
     for (const gameapi::Bag& bag : bags) labels.push_back(bag.name.empty() ? std::format("{} {}", strings::kBag, bag.index + 1) : bag.name);   // labels stay stable: the tab is re-found by label
     labels.push_back(std::string(strings::kStats));
-    // The tab strip says which bag is the secondary one (the game's selected bag: pickups overflow there once bag 1
-    // is full; bag 1 itself is always tried first). Ctrl+Enter on a bag tab moves it (set_receiving_bag).
-    std::vector<std::string> values(labels.size());
-    int secondary = gameapi::selected_bag();
-    if (bags.size() > 1 && secondary > 0 && secondary < (int)bags.size()) values[(size_t)secondary + 1] = std::string(strings::kSecondaryBag);
-    add_tabs(b, labels, values);
+    add_tabs(b, labels);
     int t = tab();
     if (t == 0) build_equipment(b);
     else if (t >= 1 && t <= (int)bags.size()) build_bag(b, bags[(size_t)t - 1]);
@@ -250,10 +228,6 @@ class InventoryScreen : public WindowScreen, public AssignSource {
   Snapshot<std::vector<gameapi::Stat>> sheet_;
 };
 
-void set_receiving_bag_focused() {
-  InventoryScreen* s = dynamic_cast<InventoryScreen*>(app::screens().current());
-  if (s) s->set_receiving_bag();   // a Windows-category chord (Ctrl+Enter): silent in the other windows
-}
 void drop_focused() {
   InventoryScreen* s = dynamic_cast<InventoryScreen*>(app::screens().current());
   if (s) s->drop_focused();   // a Windows-category key: silent in the other windows

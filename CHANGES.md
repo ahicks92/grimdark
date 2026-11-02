@@ -7,6 +7,9 @@
 - New in the stash: auto sort, as a new actions stop you reach with `tab`.
 - New in the inventory: an actions stop you reach with `tab`. It can swap your weapon set without closing the window, auto sort the open bag, and move all your materials and components to the stash from anywhere.
 - Fix: taking an item out of the stash could say "no room in your bags" when your bags had plenty of room. It happened with any item that wasn't in the tab the game had selected.
+- Fix: pickups could say your inventory was full while other bags were empty. The game refuses them once your first bag is full if that bag is its selected one, and older versions of the mod and `ctrl enter` could leave it selected. Characters in that state are repaired automatically when you play them.
+- Fix: taking something out of the stash in that same state could destroy the item. It now stays in the stash.
+- Removed: `ctrl enter` on a bag tab, and the "secondary" label on bag tabs. It only changed which of your other bags fills first, and on your first bag it caused the pickup bug above. `ctrl enter` still sells part of a stack at a vendor.
 - Fix: the shared stash no longer accepts items the game forbids there, such as soulbound gear. You now hear "that item can't go there" instead of the item moving, or of hearing that the stash is full.
 
 # 0.6.0 (2026-10-26)

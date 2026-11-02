@@ -497,6 +497,18 @@ std::vector<Bag> bags() {
   return out;
 }
 int selected_bag() { void* ic = inv_ctrl(); int s = -1; if (ic && g.GetSelectedSackNumber) guarded("GetSelectedSackNumber", [&] { s = (int)g.GetSelectedSackNumber(ic); }); return s; }
+// The selected bag is not a preference. PlayerInventoryCtrl::AddItem (every pickup; Game.dll+0x3ef893): stacks merge, then bag 1,
+// then if the selected bag is bag 1 it FAILS, otherwise the selected bag and then every other one. Measured 2026-11-01: bag 1 full,
+// selected = bag 1, five empty bags: refused; any other selection: placed. The exe's tab buttons only ever pass 1..5, so the game
+// never gets there by itself, but the selection is saved, and the mod's old tab browsing and Ctrl+Enter could write 0. Heal it.
+// SetSelectedSackNumber clamps to the last bag, so with one bag this stays 0, where it does no harm.
+void keep_bag_overflow() {
+  static unsigned ticks = 0;
+  if (++ticks % 30 != 0) return;
+  void* ic = inv_ctrl(); load_items();
+  if (!ic || !g.GetSelectedSackNumber || !g.SetSelectedSackNumber) return;
+  guarded("keep bag overflow", [&] { if (g.GetSelectedSackNumber(ic) == 0) g.SetSelectedSackNumber(ic, 1); });
+}
 bool select_bag(int index) { void* ic = inv_ctrl(); return ic && g.SetSelectedSackNumber && index >= 0 && guarded("SetSelectedSackNumber", [&] { g.SetSelectedSackNumber(ic, (unsigned)index); }); }
 
 std::vector<EquipSlot> equipment() {
@@ -1068,9 +1080,11 @@ bool stash_to_bag(int sack_index, unsigned item_id, bool* no_room) {
   guarded("stash to bag", [&] {
     void* item = object_by_id(item_id);
     if (g.Inv_IsSpaceAvailable && item && !g.Inv_IsSpaceAvailable(ic, item)) { if (no_room) *no_room = true; return; }
-    if (!g.Sack_RemoveItem(sacks[i], item_id)) return;
-    if (!g.Inv_AddItem(ic, item_id, true, false)) { log::writef("gameapi: stash item {} left the sack but the bag refused it", item_id); return; }
+    // The bag first, then the sack, as the exe does: AddItem can refuse what IsSpaceAvailable allowed (keep_bag_overflow),
+    // and an item already out of the sack would be lost.
+    if (!g.Inv_AddItem(ic, item_id, true, false)) { if (no_room) *no_room = true; return; }
     if (g.SendAddItemToInventory) g.SendAddItemToInventory(c, item_id);
+    if (!g.Sack_RemoveItem(sacks[i], item_id)) log::writef("gameapi: stash item {} went to the bag but sack {} did not hold it", item_id, sack_index);
     ok = true;
   });
   invalidate_objects();
@@ -1221,7 +1235,7 @@ bool reagents_to_bag(unsigned store_item_id, bool* no_room) {
     if (!fresh) return;
     unsigned new_id = object_id(fresh);
     g.SendAddItemToInventory(c, new_id);
-    if (!g.Inv_AddItem(ic, new_id, true, false)) { log::writef("gameapi: the bag refused store item {}", new_id); return; }
+    if (!g.Inv_AddItem(ic, new_id, true, false)) { if (no_room) *no_room = true; log::writef("gameapi: the bag refused store item {}", new_id); return; }
     int taken = g.TakeItemFromReagents(e, store_item_id, (int)take);
     if ((unsigned)taken != take) log::writef("gameapi: store took {} of {}", taken, take);
     if (g.SaveReagents) g.SaveReagents(e);

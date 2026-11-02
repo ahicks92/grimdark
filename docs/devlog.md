@@ -1314,3 +1314,11 @@ true)` then the drop or (after our own no/yes picker) the destroy. Verified live
   to and from the shared stash, a soulbound necklace refused, bag sort, swap announcing under the window, Move Reagents (9 stacks).
   The tester found the store already held a Mark of the Myrmidon from real play, which the mod could never have shown.
 - Dev: `gd.py key tab --shift` did not move backwards in this run; drive stops with plain Tab, tabs with `/key?name=tab&ctrl=1`.
+
+## 2026-11-01: what the selected bag really does
+- The question was whether Ctrl+Enter's "secondary bag" did anything. Read `AddItem` to its end (the 2026-08-26 reading stopped at "then the
+  selected bag only") and measured on the test character with six bags, bag 1 full, by spawning items: selection on bag 1 refused with five
+  bags empty; on 2, 3, 4 placed in that bag; a full selected bag overflowed to bag 2. Rule and repair: `docs/stash.md`.
+- So the feature was both: the August fix was real, but what fixed it was commit c4ed871 removing the tab browsing that wrote 0, not the new key;
+  among bags 2..6 the key only changed fill order, which is why changing it seemed to do nothing, and on bag 1 it caused the bug it was added for.
+  Removed the key and the label; `keep_bag_overflow` heals saves that still hold 0, a likely second source of the false "inventory full" reports.

@@ -1,4 +1,5 @@
 #include "screens/in_game.h"
+#include "gameapi.h"
 #include <windows.h>
 #include <cmath>
 #include <format>
@@ -196,6 +197,7 @@ class InGameScreen : public Screen {
     rooms::tick();
     quickbar_tick();
     weapon_swap_tick();
+    gameapi::keep_bag_overflow();
     pets_tick();
     world::reping_tick();   // re-sound the review ping when the target's route (straight/path/unreachable) changes
     world::unexplored_tick();   // P's "explored"
