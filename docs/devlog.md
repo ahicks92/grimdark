@@ -1301,3 +1301,16 @@ true)` then the drop or (after our own no/yes picker) the destroy. Verified live
   telegraph's own mode/shape gates) arms its effect for 3 s; a new entity with that record in the sweep is tracked as a
   slow projectile owned by the caster (straight-line accent, 2.5 u zone; no ProjectileBase reads). Ownerless, so the
   cast is the attribution: groundripper_fx01 is also a player relic's beam groundEffect.
+
+## 2026-11-01: inventory UI audit, the Materials and Relics store, the false "no room"
+- Prompted by the Move Reagents button. Compared the window master records (`character_mastertable.dbr`, `caravan_window.dbr`) and
+  their exe loaders with our screens. `docs/ingame-ui-survey.md` had already listed sort, deposit and the stash's relic / material /
+  search controls in August; they never became screens and never reached CLAUDE.md's "not modelled", so they dropped out of sight.
+- Built: the store as a stash tab, Enter sends eligible items there, Backspace destination menu, actions stops (swap, sort, Move
+  Reagents), the shared stash's allowed-item gate. Mechanism and traps: `docs/stash.md`.
+- The player bug report of a false "no room in your bags": `RemoveItemFromPrivateStash` / `RemoveItemFromTransfer` only search the
+  selected tab, and we list all tabs. Fixed by removing from the item's own sack.
+- Verified live on the test character: store in and out, Enter routing, the menu, taking from tab 2 with tab 1 selected, equipment
+  to and from the shared stash, a soulbound necklace refused, bag sort, swap announcing under the window, Move Reagents (9 stacks).
+  The tester found the store already held a Mark of the Myrmidon from real play, which the mod could never have shown.
+- Dev: `gd.py key tab --shift` did not move backwards in this run; drive stops with plain Tab, tabs with `/key?name=tab&ctrl=1`.

@@ -7,6 +7,7 @@
 #include "app.h"
 #include "core/navigator.h"
 #include "gameapi.h"
+#include "screens/hotbar_manager.h"
 #include "screens/list_picker.h"
 #include "screens/skills.h"
 #include "screens/window_base.h"
@@ -104,9 +105,31 @@ class InventoryScreen : public WindowScreen, public AssignSource {
     if (t == 0) build_equipment(b);
     else if (t >= 1 && t <= (int)bags.size()) build_bag(b, bags[(size_t)t - 1]);
     else build_sheet(b);
+    build_actions(b, t >= 1 && t <= (int)bags.size() ? t - 1 : -1);
   }
+  // The world's tick is not running under a window: the swap's deferred announcement needs its tick here.
+  void on_update() override { WindowScreen::on_update(); weapon_swap_tick(); }
 
  private:
+  // The window's buttons, as a Tab stop. `bag` = the open bag's index, -1 on the other tabs (nothing to sort there).
+  void build_actions(GraphBuilder& b, int bag) {
+    b.begin_stop("actions");
+    b.push_context(strings::kActions, strings::kList);
+    b.add_item(ControlId::structural("inventory.action.swap"), row_item(std::string(strings::kSwapWeapons), {}, [this] { swap_weapons(); invalidate(); }));
+    if (bag >= 0)
+      b.add_item(ControlId::structural("inventory.action.sort"), row_item(std::string(strings::kAutoSortBag), {}, [this, bag] {
+        speech::speak(gameapi::sort_bag(bag) ? strings::kSorted : strings::kCannot, true);
+        invalidate();
+      }));
+    b.add_item(ControlId::structural("inventory.action.reagents"), row_item(std::string(strings::kMoveReagents), {}, [this] {
+      int n = gameapi::deposit_reagents();
+      if (n == 0) { speech::speak(strings::kNothingToMove, true); return; }
+      MessageBuilder m; m.fragment(std::to_string(n)).fragment(strings::kStacksMoved);
+      speech::speak(m.build(), true);
+      invalidate();
+    }));
+    b.pop_context();
+  }
   void invalidate() { bags_.invalidate(); equipment_.invalidate(); sheet_.invalidate(); }
   // Activating a component in a bag opens the attach picker: every item (across bags + equipped) it fits,
   // from the game's own Player::GetCompatibleItems. Picking one attaches + consumes the component (no

@@ -77,10 +77,18 @@ struct Api {
   const MemVec* (*GetShrineUIDs)(const void*) = nullptr;             // Player: the restored ones
   const MemVec* (*GetPlayerTransfer)(void*) = nullptr;
   bool (*AddItemToPrivateStash)(void*, unsigned, unsigned, bool) = nullptr;
-  bool (*RemoveItemFromPrivateStash)(void*, unsigned) = nullptr;
+  bool (*Sack_RemoveItem)(void*, unsigned) = nullptr;
+  bool (*Sack_Sort)(void*, unsigned) = nullptr;
+  void (*SortPrimarySack)(void*, unsigned) = nullptr;
+  void (*SortSecondarySack)(void*, unsigned) = nullptr;
+  void (*DepositReagents)(void*) = nullptr;
+  bool (*AddItemToReagents)(void*, unsigned) = nullptr;
+  int (*TakeItemFromReagents)(void*, unsigned, int) = nullptr;
+  const void* (*GetPlayerReagents)(const void*) = nullptr;
+  void (*SaveReagents)(void*) = nullptr;
+  bool (*Item_IsReagentCompatible)(const void*) = nullptr;
   unsigned (*GetSelectedStashSackNumber)(const void*) = nullptr;
   bool (*AddItemToTransfer)(void*, unsigned, unsigned, bool) = nullptr;
-  bool (*RemoveItemFromTransfer)(void*, unsigned) = nullptr;
   unsigned (*GetSelectedTransferSackNumber)(const void*) = nullptr;
   bool (*IsTransferOpen)(const void*) = nullptr;
   // Item virtuals (base implementations; slots found in the vftables)
@@ -182,10 +190,18 @@ void load_items() {
   GAPI_LOAD(g, GetShrineUIDs, Player_GetShrineUIDs);
   GAPI_LOAD(g, GetPlayerTransfer, GameEngine_GetPlayerTransfer);
   GAPI_LOAD(g, AddItemToPrivateStash, Player_AddItemToPrivateStash);
-  GAPI_LOAD(g, RemoveItemFromPrivateStash, Player_RemoveItemFromPrivateStash);
+  GAPI_LOAD(g, Sack_RemoveItem, InventorySack_RemoveItem);
+  GAPI_LOAD(g, Sack_Sort, InventorySack_Sort);
+  GAPI_LOAD(g, SortPrimarySack, InvCtrl_SortPrimarySack);
+  GAPI_LOAD(g, SortSecondarySack, InvCtrl_SortSecondarySack);
+  GAPI_LOAD(g, DepositReagents, InvCtrl_DepositReagents);
+  GAPI_LOAD(g, AddItemToReagents, GameEngine_AddItemToReagents);
+  GAPI_LOAD(g, TakeItemFromReagents, GameEngine_TakeItemFromReagents);
+  GAPI_LOAD(g, GetPlayerReagents, GameEngine_GetPlayerReagents);
+  GAPI_LOAD(g, SaveReagents, GameEngine_SaveReagents);
+  GAPI_LOAD(g, Item_IsReagentCompatible, Item_IsReagentCompatible);
   GAPI_LOAD(g, GetSelectedStashSackNumber, Player_GetSelectedStashSackNumber);
   GAPI_LOAD(g, AddItemToTransfer, GameEngine_AddItemToTransfer);
-  GAPI_LOAD(g, RemoveItemFromTransfer, GameEngine_RemoveItemFromTransfer);
   GAPI_LOAD(g, GetSelectedTransferSackNumber, GameEngine_GetSelectedTransferSackNumber);
   GAPI_LOAD(g, IsTransferOpen, GameEngine_IsTransferOpen);
   GAPI_LOAD(g, Item_GetUIDisplayText, Item_GetUIDisplayText);
@@ -1035,17 +1051,25 @@ std::vector<Bag> stash_sacks() {
   if (e && g.GetPlayerTransfer) guarded("GetPlayerTransfer", [&] { std::vector<void*> sacks = vec_items<void*>(g.GetPlayerTransfer(e), 16); for (size_t i = 0; i < sacks.size(); ++i) out.push_back(read_sack(sacks[i], 100 + (int)i)); });
   return out;
 }
-// The stash grid's shift-click (exe+0x12f1c2): out of the stash, into the bag, and the controller told.
-bool stash_to_bag(int sack_index, unsigned item_id) {
+// The stash grid's shift-click (exe+0x12f1c2): out of the stash, into the bag, and the controller told. The sack is
+// addressed directly: Player::RemoveItemFromPrivateStash and GameEngine::RemoveItemFromTransfer only look in the SELECTED
+// tab, and our list shows every tab, so taking from any other tab used to fail and read "no room in your bags" with the
+// bags empty (player reports; 2026-11-01). *no_room is true only when the game really said there is no room.
+bool stash_to_bag(int sack_index, unsigned item_id, bool* no_room) {
+  if (no_room) *no_room = false;
   void* p = player(); void* e = engine(); void* ic = inv_ctrl(); void* c = controller();
-  if (!p || !e || !ic || !c || !g.Inv_AddItem) return false;
+  if (!p || !e || !ic || !c || !g.Inv_AddItem || !g.Sack_RemoveItem) return false;
+  const bool shared = sack_index >= 100;
+  const void* vec = stash_sack_vector(shared);
+  std::vector<void*> sacks = vec ? vec_items<void*>((const MemVec*)vec, 16) : std::vector<void*>{};
+  const size_t i = (size_t)(shared ? sack_index - 100 : sack_index);
+  if (i >= sacks.size() || !sacks[i]) return false;
   bool ok = false;
   guarded("stash to bag", [&] {
     void* item = object_by_id(item_id);
-    if (g.Inv_IsSpaceAvailable && item && !g.Inv_IsSpaceAvailable(ic, item)) return;
-    bool removed = sack_index >= 100 ? (g.RemoveItemFromTransfer && g.RemoveItemFromTransfer(e, item_id)) : (g.RemoveItemFromPrivateStash && g.RemoveItemFromPrivateStash(p, item_id));
-    if (!removed) return;
-    if (!g.Inv_AddItem(ic, item_id, true, false)) return;
+    if (g.Inv_IsSpaceAvailable && item && !g.Inv_IsSpaceAvailable(ic, item)) { if (no_room) *no_room = true; return; }
+    if (!g.Sack_RemoveItem(sacks[i], item_id)) return;
+    if (!g.Inv_AddItem(ic, item_id, true, false)) { log::writef("gameapi: stash item {} left the sack but the bag refused it", item_id); return; }
     if (g.SendAddItemToInventory) g.SendAddItemToInventory(c, item_id);
     ok = true;
   });
@@ -1075,23 +1099,37 @@ bool buy_stash_sack(bool shared, unsigned cost) {
   log::writef("gameapi: buy {} stash sack for {} ok={}", shared ? "transfer" : "private", cost, ok);
   return ok;
 }
-// Into the stash from the bag, whichever sack has room: the game's selected sack first (what its shift-click uses),
-// then the others in order. Same three calls as bag_to_stash per attempt.
-bool bag_to_stash_any(unsigned item_id, bool shared) {
+// Can this item go to the shared stash? The game's own test before a transfer drop (CursorHandlerItemMove::
+// QuickDropInTransfer, Game.dll+0x18557f: item vtable +0x408; false = "That item cannot be placed there"). AddItemToTransfer
+// does not test it. Virtual, so through the object's table; a hardcoded slot, check it with vtcmp on a patch.
+static bool transfer_allowed(void* item) {
+  if (!item) return false;
+  bool yes = false;
+  guarded("transfer capable", [&] { yes = (*(bool (***)(void*))item)[0x408 / 8](item); });
+  return yes;
+}
+// Into the stash from the bag: into one sack, or (sack < 0) whichever has room, the game's selected sack first (what its
+// shift-click uses), then the others in order. Same three calls as bag_to_stash per attempt.
+StashMove bag_to_stash_sack(unsigned item_id, bool shared, int sack_wanted) {
   void* p = player(); void* e = engine(); void* ic = inv_ctrl(); void* c = controller();
-  if (!p || !e || !ic || !c || !g.Inv_RemoveItem || !g.SendRemoveItemFromInventory) return false;
+  if (!p || !e || !ic || !c || !g.Inv_RemoveItem || !g.SendRemoveItemFromInventory) return StashMove::NoRoom;
+  if (shared && !transfer_allowed(object_by_id(item_id))) return StashMove::NotAllowed;
   const void* vec = stash_sack_vector(shared);
   size_t n = vec ? vec_items<void*>((const MemVec*)vec, 16).size() : 0;
-  if (n == 0) return false;
+  if (n == 0) return StashMove::NoRoom;
   std::vector<unsigned> order;
-  unsigned sel = 0;
-  guarded("selected stash sack", [&] { sel = shared ? (g.GetSelectedTransferSackNumber ? g.GetSelectedTransferSackNumber(e) : 0) : (g.GetSelectedStashSackNumber ? g.GetSelectedStashSackNumber(p) : 0); });
-  if (sel < n) order.push_back(sel);
-  for (unsigned i = 0; i < n; ++i) if (i != sel) order.push_back(i);
+  if (sack_wanted >= 0) {
+    if ((size_t)sack_wanted < n) order.push_back((unsigned)sack_wanted);
+  } else {
+    unsigned sel = 0;
+    guarded("selected stash sack", [&] { sel = shared ? (g.GetSelectedTransferSackNumber ? g.GetSelectedTransferSackNumber(e) : 0) : (g.GetSelectedStashSackNumber ? g.GetSelectedStashSackNumber(p) : 0); });
+    if (sel < n) order.push_back(sel);
+    for (unsigned i = 0; i < n; ++i) if (i != sel) order.push_back(i);
+  }
   bool ok = false;
   for (unsigned sack : order) {
     bool added = false;
-    guarded("bag to stash any", [&] {
+    guarded("bag to stash", [&] {
       added = shared ? (g.AddItemToTransfer && g.AddItemToTransfer(e, item_id, sack, true))
                      : (g.AddItemToPrivateStash && g.AddItemToPrivateStash(p, sack, item_id, true));
       if (!added) return;
@@ -1102,7 +1140,138 @@ bool bag_to_stash_any(unsigned item_id, bool shared) {
     if (ok) break;
   }
   invalidate_objects();
-  log::writef("gameapi: bag item {} to {} stash (any sack) ok={}", item_id, shared ? "transfer" : "private", ok);
+  log::writef("gameapi: bag item {} to {} stash sack {} ok={}", item_id, shared ? "transfer" : "private", sack_wanted, ok);
+  return ok ? StashMove::Moved : StashMove::NoRoom;
+}
+// ---- the Materials and Relics store (docs/stash.md) ----
+// GameEngine::GetPlayerReagents: mem::map<std::string record, ReagentData> with node +0x40 = the object id of the store's
+// one item per record, whose stack size IS the count (node +0x44 mirrors it). Saved beside the transfer stash under
+// GetSharedSavePath, so it is shared between characters. A record that was emptied keeps its node at count 0.
+bool is_reagent(unsigned id) {
+  load_items();
+  void* item = object_by_id(id);
+  if (!item || !g.Item_IsReagentCompatible) return false;
+  bool yes = false;
+  guarded("IsReagentCompatible", [&] { yes = g.Item_IsReagentCompatible(item); });
+  return yes;
+}
+std::vector<BagItem> reagent_store() {
+  std::vector<BagItem> out;
+  void* e = engine(); load_items();
+  if (!e || !g.GetPlayerReagents) return out;
+  guarded("reagent store", [&] {
+    for (void* node : map_nodes(g.GetPlayerReagents(e), 256)) {
+      BagItem it{rd_or<unsigned>(node, 0x40, 0)};
+      it.p = it.id ? object_by_id(it.id) : nullptr;
+      if (!it.p) continue;
+      it.stack = item_stack(it.p);
+      if (it.stack == 0) continue;
+      it.name = item_name(it.p);
+      out.push_back(std::move(it));
+    }
+    std::stable_sort(out.begin(), out.end(), [](const BagItem& a, const BagItem& c) { return a.name < c.name; });
+  });
+  return out;
+}
+// CursorHandlerItemMove::PrimaryReagentActivate (Game.dll+0x186cd0) with the item not on a cursor: the store takes a copy
+// of the stack, the bag gives it up, the controller is told, the store is saved.
+bool bag_to_reagents(unsigned item_id) {
+  void* e = engine(); void* ic = inv_ctrl(); void* c = controller(); load_items();
+  if (!e || !ic || !c || !g.AddItemToReagents || !g.Inv_RemoveItem || !g.SendRemoveItemFromInventory) return false;
+  bool ok = false;
+  guarded("bag to reagents", [&] {
+    if (!g.AddItemToReagents(e, item_id)) return;
+    g.Inv_RemoveItem(ic, item_id, true);
+    g.SendRemoveItemFromInventory(c, item_id);
+    if (g.SaveReagents) g.SaveReagents(e);
+    ok = true;
+  });
+  invalidate_objects();
+  log::writef("gameapi: bag item {} to the reagent store ok={}", item_id, ok);
+  return ok;
+}
+// The store panel's shift-click (exe+0x132c7a): room checked against the store's item, a new item from a copy of its replica
+// (+0 = 0 allocates an id, +0x178 = count capped at the game's max stack), into the bag, the store's count reduced. The count
+// goes through GameEngine::TakeItemFromReagents, the game's own decrement.
+static constexpr size_t kStoreReplicaOff = 0x538, kStoreReplicaSize = 0x190, kStoreReplicaCountOff = 0x178;
+bool reagents_to_bag(unsigned store_item_id, bool* no_room) {
+  if (no_room) *no_room = false;
+  void* e = engine(); void* ic = inv_ctrl(); void* c = controller(); load_items();
+  if (!e || !ic || !c || !g.TakeItemFromReagents || !g.Item_CreateItem || !g.Inv_AddItem || !g.SendAddItemToInventory) return false;
+  void* item = object_by_id(store_item_id);
+  unsigned have = item ? item_stack(item) : 0;
+  if (!have) return false;
+  bool room = true;
+  guarded("store room", [&] { room = !g.Inv_IsSpaceAvailable || g.Inv_IsSpaceAvailable(ic, item); });
+  if (!room) { if (no_room) *no_room = true; return false; }
+  unsigned replica_id = 0;
+  if (!read_mem((const char*)item + kStoreReplicaOff, &replica_id, sizeof replica_id) || replica_id != store_item_id) {
+    log::writef("gameapi: store item {}: replica id {} does not match (layout changed?)", store_item_id, replica_id);
+    return false;
+  }
+  alignas(8) unsigned char info[kStoreReplicaSize];
+  if (!read_mem((const char*)item + kStoreReplicaOff, info, kStoreReplicaSize)) return false;
+  unsigned cap = g.GetItemMaxStackSize ? g.GetItemMaxStackSize(e) : have;
+  unsigned take = have < cap ? have : cap;
+  *(unsigned*)(info + 0) = 0;
+  *(unsigned*)(info + kStoreReplicaCountOff) = take;
+  bool ok = false;
+  guarded("reagents to bag", [&] {
+    void* fresh = g.Item_CreateItem(info);
+    if (!fresh) return;
+    unsigned new_id = object_id(fresh);
+    g.SendAddItemToInventory(c, new_id);
+    if (!g.Inv_AddItem(ic, new_id, true, false)) { log::writef("gameapi: the bag refused store item {}", new_id); return; }
+    int taken = g.TakeItemFromReagents(e, store_item_id, (int)take);
+    if ((unsigned)taken != take) log::writef("gameapi: store took {} of {}", taken, take);
+    if (g.SaveReagents) g.SaveReagents(e);
+    ok = true;
+  });
+  invalidate_objects();
+  log::writef("gameapi: store item {} x{} to bag ok={}", store_item_id, take, ok);
+  return ok;
+}
+// The inventory's Move Reagents button (exe+0x2667d4), its option's confirmation left out: every eligible stack in every
+// bag. Returns how many stacks moved.
+int deposit_reagents() {
+  void* ic = inv_ctrl(); load_items();
+  if (!ic || !g.DepositReagents) return 0;
+  int n = 0;
+  for (const Bag& b : bags()) for (const BagItem& it : b.items) if (is_reagent(it.id)) ++n;
+  if (n == 0) return 0;
+  if (!guarded("DepositReagents", [&] { g.DepositReagents(ic); })) return 0;
+  invalidate_objects();
+  log::writef("gameapi: deposited {} stacks to the reagent store", n);
+  return n;
+}
+// The sort buttons. Each press passes a rising number (window+0x1c8b8 in the exe), which picks the arrangement tried first;
+// InventorySack::Sort returns false when that arrangement does not fit and the exe's stash button tries the next four.
+static unsigned g_sort_mode = 0;
+bool sort_bag(int index) {
+  void* ic = inv_ctrl(); load_items();
+  if (!ic || !g.SortPrimarySack || !g.SortSecondarySack || index < 0) return false;
+  const unsigned mode = g_sort_mode++;
+  if (index == 0) return guarded("SortPrimarySack", [&] { g.SortPrimarySack(ic, mode); });
+  // SortSecondarySack sorts the game's selected bag: select this one for the call, then put the selection back.
+  const int was = selected_bag();
+  if (!select_bag(index)) return false;
+  bool ok = guarded("SortSecondarySack", [&] { g.SortSecondarySack(ic, mode); });
+  if (was >= 0) select_bag(was);
+  return ok;
+}
+// Every tab of a stash (we list them as one column; the game's button sorts the tab it shows).
+bool sort_stash(bool shared) {
+  load_items();
+  const void* vec = stash_sack_vector(shared);
+  if (!vec || !g.Sack_Sort) return false;
+  const unsigned mode = g_sort_mode++;
+  bool ok = true;
+  for (void* sack : vec_items<void*>((const MemVec*)vec, 16)) {
+    bool sorted = false;
+    guarded("InventorySack::Sort", [&] { for (unsigned i = 0; i < 5 && !sorted; ++i) sorted = g.Sack_Sort(sack, mode + i); });
+    ok = ok && sorted;
+  }
+  invalidate_objects();
   return ok;
 }
 // The bag's shift-click while the caravan is open (exe+0x1eabd5): into the selected stash / transfer sack.

@@ -1771,6 +1771,36 @@ inline constexpr const char* GameEngine_GetSelectedTransferSackNumber = "?GetSel
 // public: bool __cdecl GAME::GameEngine::IsTransferOpen(void)const __ptr64
 inline constexpr const char* GameEngine_IsTransferOpen_DLL = "Game.dll";
 inline constexpr const char* GameEngine_IsTransferOpen = "?IsTransferOpen@GameEngine@GAME@@QEBA_NXZ";
+// public: bool __cdecl GAME::InventorySack::RemoveItem(unsigned int) __ptr64
+inline constexpr const char* InventorySack_RemoveItem_DLL = "Game.dll";
+inline constexpr const char* InventorySack_RemoveItem = "?RemoveItem@InventorySack@GAME@@QEAA_NI@Z";
+// public: bool __cdecl GAME::InventorySack::Sort(unsigned int) __ptr64
+inline constexpr const char* InventorySack_Sort_DLL = "Game.dll";
+inline constexpr const char* InventorySack_Sort = "?Sort@InventorySack@GAME@@QEAA_NI@Z";
+// public: void __cdecl GAME::PlayerInventoryCtrl::SortPrimarySack(unsigned int) __ptr64
+inline constexpr const char* InvCtrl_SortPrimarySack_DLL = "Game.dll";
+inline constexpr const char* InvCtrl_SortPrimarySack = "?SortPrimarySack@PlayerInventoryCtrl@GAME@@QEAAXI@Z";
+// public: void __cdecl GAME::PlayerInventoryCtrl::SortSecondarySack(unsigned int) __ptr64
+inline constexpr const char* InvCtrl_SortSecondarySack_DLL = "Game.dll";
+inline constexpr const char* InvCtrl_SortSecondarySack = "?SortSecondarySack@PlayerInventoryCtrl@GAME@@QEAAXI@Z";
+// public: void __cdecl GAME::PlayerInventoryCtrl::DepositReagents(void) __ptr64
+inline constexpr const char* InvCtrl_DepositReagents_DLL = "Game.dll";
+inline constexpr const char* InvCtrl_DepositReagents = "?DepositReagents@PlayerInventoryCtrl@GAME@@QEAAXXZ";
+// public: bool __cdecl GAME::GameEngine::AddItemToReagents(unsigned int) __ptr64
+inline constexpr const char* GameEngine_AddItemToReagents_DLL = "Game.dll";
+inline constexpr const char* GameEngine_AddItemToReagents = "?AddItemToReagents@GameEngine@GAME@@QEAA_NI@Z";
+// public: int __cdecl GAME::GameEngine::TakeItemFromReagents(unsigned int,int) __ptr64
+inline constexpr const char* GameEngine_TakeItemFromReagents_DLL = "Game.dll";
+inline constexpr const char* GameEngine_TakeItemFromReagents = "?TakeItemFromReagents@GameEngine@GAME@@QEAAHIH@Z";
+// public: class mem::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct GAME::ReagentData> const & __ptr64 __cdecl GAME::GameEngine::GetPlayerReagents(void)const __ptr64
+inline constexpr const char* GameEngine_GetPlayerReagents_DLL = "Game.dll";
+inline constexpr const char* GameEngine_GetPlayerReagents = "?GetPlayerReagents@GameEngine@GAME@@QEBAAEBV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UReagentData@GAME@@@mem@@XZ";
+// public: void __cdecl GAME::GameEngine::SaveReagents(void) __ptr64
+inline constexpr const char* GameEngine_SaveReagents_DLL = "Game.dll";
+inline constexpr const char* GameEngine_SaveReagents = "?SaveReagents@GameEngine@GAME@@QEAAXXZ";
+// public: bool __cdecl GAME::Item::IsReagentCompatible(void)const __ptr64
+inline constexpr const char* Item_IsReagentCompatible_DLL = "Game.dll";
+inline constexpr const char* Item_IsReagentCompatible = "?IsReagentCompatible@Item@GAME@@QEBA_NXZ";
 // class GAME::Engine * __ptr64 __ptr64 GAME::gEngine
 inline constexpr const char* gEngine_DLL = "Engine.dll";
 inline constexpr const char* gEngine = "?gEngine@GAME@@3PEAVEngine@1@EA";

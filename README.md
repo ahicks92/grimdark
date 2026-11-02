@@ -188,7 +188,7 @@ move them, bad things happen.  What bad things? It depends; don't go find out.
 | Tab / Shift+Tab | Next / previous panel (for example a window's tab row and its column) |
 | Ctrl+Tab / Ctrl+Shift+Tab | Switch tabs from anywhere in a window. On the tab row itself, Left / Right open the tab you land on |
 | Enter | Activate |
-| Backspace | Secondary action: unequip an item; reclaim a skill point at a spirit guide |
+| Backspace | Secondary action: unequip an item; reclaim a skill point at a spirit guide; in the stash, on one of your items, a menu of everywhere it can go |
 | \ (backslash) | On an item in a bag, a vendor or the stash: what you have equipped in the slot it would go to -- the slot, the item and its tooltip ("nothing equipped" for an empty slot). The game's side-by-side comparison, spoken. Works on gear whose level or attribute requirements you do not meet yet (the slot is taken from the item's kind) |
 | Delete | On an item in a bag: drop it on the ground around you (a whole stack drops together). Pick it back up as loot. An item that can't be dropped (soulbound or untradeable) asks whether to destroy it instead |
 | Space | The game's tooltip for the item; Ctrl+Space the detailed one |
@@ -309,7 +309,7 @@ hotbar manager and works against the locked target like any aimed skill.
 
 | Key | Description |
 |---|---|
-| Ctrl+C or Ctrl+I | Inventory, equipment, and stats |
+| Ctrl+C or Ctrl+I | Inventory, equipment, and stats. Tab to its actions: swap weapon set, auto sort this bag, move materials and components to the stash |
 | Ctrl+N | Skills: one tab per mastery, then constellations |
 | Ctrl+Q | Codex |
 | Ctrl+J | Factions |

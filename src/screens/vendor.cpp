@@ -6,6 +6,7 @@
 #include "gameapi.h"
 #include "hooks.h"
 #include "screens/count_prompt.h"
+#include "screens/list_picker.h"
 #include "screens/window_base.h"
 
 namespace gd::screens {
@@ -13,12 +14,13 @@ using namespace gd::core;
 
 namespace {
 void add_item_rows(GraphBuilder& b, const std::string& prefix, const std::vector<gameapi::BagItem>& items, std::function<std::string(const gameapi::BagItem&)> value,
-                   std::function<void(unsigned)> activate) {
+                   std::function<void(unsigned)> activate, std::function<void(unsigned)> secondary = {}) {
   if (items.empty()) { b.add_item(ControlId::structural(prefix + ".empty"), line_item(std::string(strings::kEmpty))); return; }
   for (const gameapi::BagItem& it : items) {
     unsigned id = it.id;
     std::string extra = value ? value(it) : std::string();
-    auto v = row_item(item_label(it), extra.empty() ? std::function<std::string()>{} : [extra] { return extra; }, [activate, id] { activate(id); }, item_tip(id, false), {}, item_tip(id, true));
+    auto v = row_item(item_label(it), extra.empty() ? std::function<std::string()>{} : [extra] { return extra; }, [activate, id] { activate(id); }, item_tip(id, false),
+                      secondary ? std::function<void()>([secondary, id] { secondary(id); }) : std::function<void()>{}, item_tip(id, true));
     v->on_compare = item_compare(id);   // Backslash: the equipped item in the slot this one fits
     b.add_item(ControlId::structural(std::format("{}.{}", prefix, id)), v);
   }
@@ -143,20 +145,23 @@ class VendorScreen : public WindowScreen {
   unsigned pending_clone_ = 0, pending_market_ = 0; int pending_ticks_ = 0;
 };
 
-// The caravan window as three tabs (decided 2026-09-04): "your stash" and "shared stash" each hold two Tab stops --
-// your items (Enter puts one into the first sack with room) and what the stash holds across all its sacks (Enter takes
-// one back into your bags) -- and "manage stash" carries the two buy-a-tab rows with the game's own prices (the caravan
-// window's cost arrays). Moves are the game's shift-click sequences; buying is its buy handler minus the UI, followed
-// by the game's own tab-list rebuild so its window agrees. Not partial stacks (vanilla drags whole stacks here too).
+// The caravan window as four tabs: "your stash" and "shared stash" each hold your items (Enter puts a material or a
+// component into the store, anything else into the first sack with room; Backspace is the menu of every destination) and
+// what that stash holds across all its sacks (Enter takes one back into your bags), then an actions stop; "materials and
+// components" is the store (docs/stash.md): what you can put in, and what it holds; "manage stash" carries the two buy-a-tab
+// rows with the game's own prices (the caravan window's cost arrays). Moves are the game's shift-click sequences; buying is
+// its buy handler minus the UI, followed by the game's own tab-list rebuild so its window agrees. Not partial stacks (vanilla
+// drags whole stacks here too).
 class StashScreen : public WindowScreen {
  public:
   StashScreen() : WindowScreen("stash", std::string(strings::kStash), exe_ui::ingame::kCaravan, 14) {}
   void on_tab_changed(int) override { invalidate(); }
   void on_focus() override { invalidate(); WindowScreen::on_focus(); }
   void build(GraphBuilder& b) override {
-    add_tabs(b, {std::string(strings::kYourStash), std::string(strings::kSharedStash), std::string(strings::kManageStash)});
+    add_tabs(b, {std::string(strings::kYourStash), std::string(strings::kSharedStash), std::string(strings::kMaterialStore), std::string(strings::kManageStash)});
     int t = tab();
-    if (t == 2) { build_manage(b); return; }
+    if (t == 2) { build_store(b); return; }
+    if (t == 3) { build_manage(b); return; }
     bool shared = t == 1;
     const std::vector<gameapi::Bag>& sacks = sacks_.get([] { return gameapi::stash_sacks(); }, 30);
     const std::vector<gameapi::Bag>& bags = bags_.get([] { return gameapi::bags(); }, 30);
@@ -166,7 +171,8 @@ class StashScreen : public WindowScreen {
     std::vector<gameapi::BagItem> mine;
     for (const gameapi::Bag& bag : bags) mine.insert(mine.end(), bag.items.begin(), bag.items.end());
     add_item_rows(b, std::format("stash.mine{}", t), mine, {},
-                  [this, shared](unsigned id) { speech::speak(gameapi::bag_to_stash_any(id, shared) ? std::string(strings::kMoved) : std::string(strings::kStashFull), true); invalidate(); });
+                  [this, shared](unsigned id) { if (gameapi::is_reagent(id)) to_store(id); else to_stash(id, shared, -1); },
+                  [this](unsigned id) { open_destinations(id); });
     b.pop_context();
     // ---- in the stash ----
     b.begin_stop("stash");
@@ -175,7 +181,7 @@ class StashScreen : public WindowScreen {
     std::vector<std::string> sack_names;
     for (const gameapi::Bag& s : sacks) {
       if ((s.index >= 100) != shared) continue;
-      std::string nm = s.name.empty() ? std::format("{} {}", shared ? strings::kSharedStash : strings::kYourStash, (s.index % 100) + 1) : s.name;
+      std::string nm = sack_name(s);
       for (const gameapi::BagItem& it : s.items) { held.push_back(it); sack_of.push_back(s.index); sack_names.push_back(nm); }
     }
     size_t k = 0;
@@ -184,12 +190,81 @@ class StashScreen : public WindowScreen {
                   [this, held, sack_of](unsigned id) {
                     int sack = -1;
                     for (size_t i = 0; i < held.size(); ++i) if (held[i].id == id) sack = sack_of[i];
-                    speech::speak(sack >= 0 && gameapi::stash_to_bag(sack, id) ? std::string(strings::kMoved) : std::string(strings::kBagFull), true);
+                    bool no_room = false;
+                    bool ok = sack >= 0 && gameapi::stash_to_bag(sack, id, &no_room);
+                    speech::speak(ok ? strings::kMoved : no_room ? strings::kBagFull : strings::kCannot, true);
                     invalidate();
                   });
     b.pop_context();
+    // ---- actions ----
+    b.begin_stop("actions");
+    b.push_context(strings::kActions, strings::kList);
+    b.add_item(ControlId::structural(std::format("stash.sort{}", t)), row_item(std::string(strings::kAutoSort), {}, [this, shared] {
+      speech::speak(gameapi::sort_stash(shared) ? strings::kSorted : strings::kCannot, true);
+      invalidate();
+    }));
+    b.pop_context();
   }
  private:
+  static std::string sack_name(const gameapi::Bag& s) {
+    return s.name.empty() ? std::format("{} {}", s.index >= 100 ? strings::kSharedStash : strings::kYourStash, (s.index % 100) + 1) : s.name;
+  }
+  void to_store(unsigned id) {
+    std::string name = gameapi::item_name(gameapi::object_by_id(id));
+    bool ok = gameapi::bag_to_reagents(id);
+    MessageBuilder m;
+    if (ok) m.fragment(name).list_item().fragment(strings::kMovedTo).fragment(strings::kMaterialStore);
+    else m.fragment(strings::kCannot);
+    speech::speak(m.build(), true);
+    invalidate();
+  }
+  void to_stash(unsigned id, bool shared, int sack) {
+    gameapi::StashMove r = gameapi::bag_to_stash_sack(id, shared, sack);
+    speech::speak(r == gameapi::StashMove::Moved ? strings::kMoved : r == gameapi::StashMove::NotAllowed ? strings::kNotAllowedInStash : strings::kStashFull, true);
+    invalidate();
+  }
+  // Backspace on one of your items: every place it can go. Picker ids: 1 = the store, 10 + a sack's index.
+  void open_destinations(unsigned id) {
+    std::vector<PickerItem> items;
+    if (gameapi::is_reagent(id)) items.push_back({1, std::string(strings::kMaterialStore), {}});
+    for (const gameapi::Bag& s : gameapi::stash_sacks()) items.push_back({(unsigned)s.index + 10, sack_name(s), {}});
+    if (items.empty()) { speech::speak(strings::kCannot, true); return; }
+    MessageBuilder t; t.fragment(strings::kMoveTo).list_item().fragment(gameapi::item_name(gameapi::object_by_id(id)));
+    open_picker(t.build(), std::move(items), [this, id](unsigned pick) {
+      if (pick == 1) { to_store(id); return; }
+      int sack = (int)pick - 10;
+      to_stash(id, sack >= 100, sack % 100);
+    });
+  }
+  void build_store(GraphBuilder& b) {
+    const std::vector<gameapi::Bag>& bags = bags_.get([] { return gameapi::bags(); }, 30);
+    b.begin_stop("mine");
+    b.push_context(strings::kYourItems, strings::kList);
+    std::vector<gameapi::BagItem> mine;
+    for (const gameapi::Bag& bag : bags) for (const gameapi::BagItem& it : bag.items) if (gameapi::is_reagent(it.id)) mine.push_back(it);
+    add_item_rows(b, "stash.storemine", mine, {}, [this](unsigned id) { to_store(id); });
+    b.pop_context();
+    b.begin_stop("stash");
+    b.push_context(strings::kInTheStash, strings::kList);
+    const std::vector<gameapi::BagItem>& held = store_.get([] { return gameapi::reagent_store(); }, 30);
+    add_item_rows(b, "stash.store", held, {}, [this](unsigned id) {
+      bool no_room = false;
+      bool ok = gameapi::reagents_to_bag(id, &no_room);
+      speech::speak(ok ? strings::kMoved : no_room ? strings::kBagFull : strings::kCannot, true);
+      invalidate();
+    });
+    b.pop_context();
+    b.begin_stop("actions");
+    b.push_context(strings::kActions, strings::kList);
+    b.add_item(ControlId::structural("stash.deposit"), row_item(std::string(strings::kMoveReagents), {}, [this] {
+      int n = gameapi::deposit_reagents();
+      if (n == 0) { speech::speak(strings::kNothingToMove, true); return; }
+      MessageBuilder m; m.fragment(std::to_string(n)).fragment(strings::kStacksMoved);
+      speech::speak(m.build(), true);
+      invalidate();
+    }));
+    b.pop_context();
+  }
   void build_manage(GraphBuilder& b) {
     { MessageBuilder m; strings::push_stat(m, strings::kIronBits, std::format("{}", gameapi::money())); b.add_item(ControlId::structural("stash.money"), line_item(m.build())); }
     const std::vector<gameapi::Bag>& sacks = sacks_.get([] { return gameapi::stash_sacks(); }, 30);
@@ -223,9 +298,10 @@ class StashScreen : public WindowScreen {
       b.add_item(ControlId::structural(std::format("stash.buy{}", shared ? 1 : 0)), row_item(label.build(), value, act));
     }
   }
-  void invalidate() { sacks_.invalidate(); bags_.invalidate(); }
+  void invalidate() { sacks_.invalidate(); bags_.invalidate(); store_.invalidate(); }
   Snapshot<std::vector<gameapi::Bag>> sacks_;
   Snapshot<std::vector<gameapi::Bag>> bags_;
+  Snapshot<std::vector<gameapi::BagItem>> store_;
 };
 
 std::unique_ptr<Screen> make_vendor() { return std::make_unique<VendorScreen>(); }

@@ -657,6 +657,17 @@ ENTRIES = [
     ("GameEngine_RemoveItemFromTransfer", "Game", r"GAME::GameEngine::RemoveItemFromTransfer\(unsigned int\)"),
     ("GameEngine_GetSelectedTransferSackNumber", "Game", r"GAME::GameEngine::GetSelectedTransferSackNumber\("),
     ("GameEngine_IsTransferOpen", "Game", r"GAME::GameEngine::IsTransferOpen\("),
+    # the Materials and Relics store + the sort buttons (docs/stash.md)
+    ("InventorySack_RemoveItem", "Game", r"GAME::InventorySack::RemoveItem\(unsigned int\)"),
+    ("InventorySack_Sort", "Game", r"GAME::InventorySack::Sort\(unsigned int\)"),
+    ("InvCtrl_SortPrimarySack", "Game", r"GAME::PlayerInventoryCtrl::SortPrimarySack\("),
+    ("InvCtrl_SortSecondarySack", "Game", r"GAME::PlayerInventoryCtrl::SortSecondarySack\("),
+    ("InvCtrl_DepositReagents", "Game", r"GAME::PlayerInventoryCtrl::DepositReagents\("),
+    ("GameEngine_AddItemToReagents", "Game", r"GAME::GameEngine::AddItemToReagents\(unsigned int\)"),
+    ("GameEngine_TakeItemFromReagents", "Game", r"GAME::GameEngine::TakeItemFromReagents\(unsigned int,int\)"),
+    ("GameEngine_GetPlayerReagents", "Game", r"GAME::GameEngine::GetPlayerReagents\(void\)"),
+    ("GameEngine_SaveReagents", "Game", r"GAME::GameEngine::SaveReagents\(void\)"),
+    ("Item_IsReagentCompatible", "Game", r"GAME::Item::IsReagentCompatible\(void\)"),
     # Lua (dev probe): the engine's LuaManager sits at gEngine+0x68 (GameEngine::PostLuaInitialize)
     ("gEngine", "Engine", r"^class GAME::Engine \* __ptr64 __ptr64 GAME::gEngine$"),
     # Painted damage sectors (docs/hazards.md): the tick's own lookup chain, Level -> layers -> UniqueId -> SectorData

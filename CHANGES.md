@@ -1,3 +1,14 @@
+# Unreleased
+
+- New in the stash: a "materials and components" tab. This is the game's own store for crafting materials and components. It is shared between your characters and crafting already uses it, but until now you could neither see it nor take anything out of it.
+  - Enter on a material or component in your stash tabs now puts it in this store instead of a normal stash tab.
+  - Anything already in there shows up now, even if you never put it there through the mod.
+- New in the stash: `backspace` on one of your items opens a menu of everywhere it can go, including each tab of both stashes.
+- New in the stash: auto sort, as a new actions stop you reach with `tab`.
+- New in the inventory: an actions stop you reach with `tab`. It can swap your weapon set without closing the window, auto sort the open bag, and move all your materials and components to the stash from anywhere.
+- Fix: taking an item out of the stash could say "no room in your bags" when your bags had plenty of room. It happened with any item that wasn't in the tab the game had selected.
+- Fix: the shared stash no longer accepts items the game forbids there, such as soulbound gear. You now hear "that item can't go there" instead of the item moving, or of hearing that the stash is full.
+
 # 0.6.0 (2026-10-26)
 
 - Telegraph cues are more accurate:

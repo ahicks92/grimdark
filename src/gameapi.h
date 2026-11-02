@@ -147,9 +147,18 @@ struct UniqueId { uint8_t b[16] = {}; bool operator==(const UniqueId&) const = d
 struct ShrineUids { std::vector<UniqueId> discovered, restored; };
 ShrineUids shrine_uids();                                // Player::GetDiscoveredShrineUIDs / GetShrineUIDs
 std::vector<Bag> stash_sacks();                          // private stash sacks (index 0..) then transfer sacks (index 100..)
-bool stash_to_bag(int sack_index, unsigned item_id);     // the stash grid's shift-click: to the bag
+bool stash_to_bag(int sack_index, unsigned item_id, bool* no_room = nullptr);   // the stash grid's shift-click: to the bag; *no_room = the game said no room
 bool bag_to_stash(unsigned item_id);                     // the bag's shift-click while the caravan is open
-bool bag_to_stash_any(unsigned item_id, bool shared);    // into the first sack with room (the selected one first)
+enum class StashMove { Moved, NoRoom, NotAllowed };      // NotAllowed: the game refuses this item in the shared stash
+StashMove bag_to_stash_sack(unsigned item_id, bool shared, int sack = -1);   // into one sack, or (-1) the first with room (the selected one first)
+// The Materials and Relics store (docs/stash.md): one count per record, shared between characters, read by crafting.
+bool is_reagent(unsigned item_id);                       // Item::IsReagentCompatible: does the store take this item?
+std::vector<BagItem> reagent_store();                    // what it holds, by name; `id` is the store's item for that record
+bool bag_to_reagents(unsigned item_id);                  // a whole stack in
+bool reagents_to_bag(unsigned store_item_id, bool* no_room = nullptr);   // up to a full stack out
+int deposit_reagents();                                  // the inventory's Move Reagents button: every eligible stack in the bags; returns the count
+bool sort_bag(int index);                                // the inventory's Auto Sort for one bag
+bool sort_stash(bool shared);                            // Auto Sort on every tab of a stash
 const void* stash_sack_vector(bool shared);              // Player::GetPrivateStash / GameEngine::GetPlayerTransfer (mem::vector<InventorySack*>)
 bool buy_stash_sack(bool shared, unsigned cost);         // SubtractMoney + AddSack / AddTransferSack (the exe's buy handler minus its UI)
 // Quickbar layout (47 slots per weapon config): bars 1..4 start at 0, 14, 26, 36; left mouse 10 (config A) / 11

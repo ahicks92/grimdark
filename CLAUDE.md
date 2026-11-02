@@ -172,7 +172,9 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   T / Ctrl+T settings overlays, the F1 mod menu. Shipping: `gdlaunch.exe`, the Rust installer, CI releases with a
   rolling `ci-latest`, the version gate.
 - Not modelled: key rebinding, the Multiplayer / Network screens, the Illusionist (transmute), the inventor's Convert /
-  Reroll tabs, a remote stash, attribute reclaim, aiming at open ground for point-target skills (runtime target type 4).
+  Reroll tabs, attribute reclaim, aiming at open ground for point-target skills (runtime target type 4), the Ascendant Altar and
+  Item Ascension windows, the potions window, the stash and vendor search boxes, stash tab customization, most of the character
+  stat tabs (speeds, damage by type, retaliation, kill counts). A control found in a survey and not built goes on this list.
 - Open threads: sonar tuning by ear (the stagger rework is kept, the crowd compression was rejected by testers), the
   telegraph ramp-to-hit, real-key Ctrl-chord dispatch (synthetic keys cannot verify it), rooms authoring for the
   remaining regions, the game-patch relocation tool (needs a second exe build to exist first).
@@ -219,6 +221,8 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   start (`hooks.cpp` refuses bare stubs and duplicate targets). Never detour the exe's widget-handler vtable slots
   that are import thunks or `return false` stubs. Detours transactions must update every thread (`ThreadUpdater`).
   Never tear down from DllMain.
+- Stash: `RemoveItemFromPrivateStash` / `RemoveItemFromTransfer` only search the SELECTED tab, and `AddItemToTransfer` does not
+  check that the item is allowed (`docs/stash.md`).
 - Item handling: never hand an item to a game control the exe itself gates by class or state without mirroring the
   gate first (`UseItem` destroyed a crafting material; `is_usable`). Never `PlayerInventoryCtrl::AddItem` a split clone
   (merges back and is destroyed). `EquipmentCtrl::RemoveItem` only detaches: AddItem to the bag first. A by-value
