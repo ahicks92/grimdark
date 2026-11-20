@@ -1,6 +1,6 @@
 # Unreleased
 
-- Works with Grim Dawn 1.3.1.2 (the November 17 update). The previous game version is no longer supported.
+- Works with Grim Dawn 1.3.1.2. The previous game version is no longer supported.
 - New in the stash: a "materials and components" tab. This is the game's own store for crafting materials and components. It is shared between your characters and crafting already uses it, but until now you could neither see it nor take anything out of it.
   - Enter on a material or component in your stash tabs now puts it in this store instead of a normal stash tab.
   - Anything already in there shows up now, even if you never put it there through the mod.

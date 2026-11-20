@@ -147,7 +147,7 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   17/18 wheel, 0 = per-frame idle with position.** Verified: a click on the main menu's "Create" opens the
   Create Character dialog.
 - The engine dispatches events to `Engine::AddWidget` registrants (vector at Engine+0x3e8, vtable +0x10 key /
-  +0x18 mouse). The exe's real mouse handler is `exe+0xbef10`; several slots are import thunks or
+  +0x18 mouse). The exe's real mouse handler is `exe+0xbeff0`; several slots are import thunks or
   `return false` stubs — **never detour those** (it crashed the game; `GRIMDARK_HOOK_WIDGETS=1` re-enables the
   experimental handler hooks). The exe is SteamStub-packed on disk: `tools/dump_exe.py` dumps the unpacked
   image from the live process and `tools/exe_dis.py <rva>` disassembles it with Engine/Game export names.
@@ -262,7 +262,7 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   on BOTH working dbs, then `rooms_pack.py pack` each world. Never re-tag to fix titles: the pipeline does not
   reproduce them. The dbs are build products since 2026-09-20 (`data/rooms/` is the source; never commit a db).
 - Alt+Enter (`WinWindow::OnToggleFullscreen`, the game's own toggle) crashes the vanilla game in the world when the pause
-  menu's Options was never opened (the InGameUI rebuild restores Options tab -1 unchecked, exe+0xcd300): the export is
+  menu's Options was never opened (the InGameUI rebuild restores Options tab -1 unchecked, exe+0xcd6e0): the export is
   refused in `hooks.cpp`. Any display-mode change in the world goes through that rebuild; never trigger one.
 - Process: every player-facing KEY goes in README.md and docs/controls.md in the same change. Ask before launching or
   driving the game when the user may be at the keyboard. Archive a game build the mod works on before Steam patches.

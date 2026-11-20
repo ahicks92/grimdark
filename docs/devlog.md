@@ -1353,3 +1353,7 @@ true)` then the drop or (after our own no/yes picker) the destroy. Verified live
   vtables are verified statically only), riftgate travel, devotion.
 - Mistake: the first Start was pressed with the user's real character still selected (Shift+Tab did not move back to the list,
   the Up went nowhere on Start). It stood in Devil's Crossing a few seconds and was exited untouched; rule added to CLAUDE.md.
+- Follow-up check: seven CHANGED exports are ones the mod calls (EquipmentCtrl `CanItemBePlaced`, `PlaceItem`, `GetItemId`,
+  `SmartAutoInsert`, `GetEquipmentLocationTag`; `FactionPack::GetFactionTag`; `InputDevice::GetDefaultButtonName`). Each was
+  read in full, with `ValidateItemType` and the `EquipManagerContainer` ctor: one moved switch-table address plus table bytes,
+  no logic change. No old exe address survives anywhere in `src` (every moved address grepped as a whole word).
