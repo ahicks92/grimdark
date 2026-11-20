@@ -353,7 +353,7 @@ uv run tools/gd.py kill
 ```
 
 Do not restore or click the game window during a dev session: it activates itself and takes the keyboard. `gd.py`
-without arguments lists every command; the dev routes and the hot-reload loop are in `CLAUDE.md`, the dated
+without arguments lists every command; the dev routes and the hot-reload loop are in `AGENTS.md`, the dated
 implementation notes in `docs/devlog.md`, the mechanisms in `docs/*.md`.
 
 Environment variables read by the DLL: `GRIMDARK_ANY_VERSION=1` (skip the version gate on an unknown game build -- for

@@ -1357,3 +1357,7 @@ true)` then the drop or (after our own no/yes picker) the destroy. Verified live
   `SmartAutoInsert`, `GetEquipmentLocationTag`; `FactionPack::GetFactionTag`; `InputDevice::GetDefaultButtonName`). Each was
   read in full, with `ValidateItemType` and the `EquipManagerContainer` ctor: one moved switch-table address plus table bytes,
   no logic change. No old exe address survives anywhere in `src` (every moved address grepped as a whole word).
+
+## 2026-11-19: CLAUDE.md -> AGENTS.md
+The project instructions are one file, `AGENTS.md`, read by both Claude Code and Codex (a Codex copy had drifted a patch
+behind). Older entries here that say CLAUDE.md mean that file.

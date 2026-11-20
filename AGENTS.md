@@ -387,8 +387,8 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
 - All engine calls on the game thread (inside `Display::Update` or a hook). Speech may be called from anywhere.
 - Localize every string the mod speaks (rule inherited from wotr-access; not yet wired up).
 - The user is blind: no focus stealing, no synthesized input to the real desktop.
-- **Who owns the game.** Only one party drives the game at a time, and both must know which. Codex launching
+- **Who owns the game.** Only one party drives the game at a time, and both must know which. The agent (Claude, Codex) launching
   and driving the game through the dev loop (`gd.py launch`: unfocused, muted, dev-server input only) is what
   the scripts are for and is expected -- but ask first unless the user has made approval clear for this stretch
   of work (an explicit "go ahead", or an ongoing task the user handed over). If the user is at the keyboard in
-  the game, do not launch, kill, inject or send input; if Codex owns it, the user will say before taking over.
+  the game, do not launch, kill, inject or send input; if the agent owns it, the user will say before taking over.

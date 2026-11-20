@@ -23,7 +23,7 @@ template <class F> F fn(const char* dll, const char* name) {
   (api).field = ::gd::gameapi::detail::fn<decltype((api).field)>(ID##_DLL, ID); \
   if (!(api).field) ::gd::log::writef("gameapi: export {} not found", #ID)
 
-// mem::vector<T>: std-like {begin, end, cap} (read from Engine.dll; CLAUDE.md).
+// mem::vector<T>: std-like {begin, end, cap} (read from Engine.dll; AGENTS.md).
 struct MemVec { void* begin = nullptr; void* end = nullptr; void* cap = nullptr; };
 
 // ---- SEH-guarded memory access (no C++ objects with destructors inside these frames) ----

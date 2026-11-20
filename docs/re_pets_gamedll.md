@@ -288,7 +288,7 @@ Stance is per SUMMONING SKILL, so a mod readout that says "Skeleton, aggressive"
 stance of `Summon Skeletons`; setting it on one skeleton is expected to move all of them.
 
 Only the world layer (exports + Engine/Game object offsets) is involved in all of the above except the
-F2-F6 action ids and the pet-bar offsets, which are exe-layer and die on any exe relink (see CLAUDE.md
+F2-F6 action ids and the pet-bar offsets, which are exe-layer and die on any exe relink (see AGENTS.md
 "Game patches"). The mod does not need the exe layer for pets.
 
 ## 7. Still unknown / unverified

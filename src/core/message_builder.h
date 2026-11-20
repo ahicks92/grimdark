@@ -10,7 +10,7 @@ namespace gd::core {
 // list-item boundaries with a comma. A chain of collaborating functions can each append its piece
 // without coordinating spacing. Single use: build() may be called once.
 //
-// Rules (see CLAUDE.md): anything spoken with more than one part goes through this; never hand-build
+// Rules (see AGENTS.md): anything spoken with more than one part goes through this; never hand-build
 // ", " in a speech path; composed shapes become push_* helpers in strings.h, not call-site concatenation.
 class MessageBuilder {
  public:

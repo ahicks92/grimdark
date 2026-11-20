@@ -424,7 +424,7 @@ reasons+0x0c (w+0x16c) = w[0x135]        (dependency failed)
 `GameEngine::GenerateUIDevotionSearchText(Skill const*, mem::vector<GameTextLine>&, GameTextClass)`
 0x2d2b40 takes only the star and is used for the window's search box (section 5).
 
-## 10. exe-side layout reference (dies on any exe relink -- see CLAUDE.md "Game patches")
+## 10. exe-side layout reference (dies on any exe relink -- see AGENTS.md "Game patches")
 
 Devotion window pane (`hudDevotionWindow`):
 ```

@@ -416,7 +416,7 @@ craft     : build CreateArtifactConfigInfo (§4.1) and ControllerCharacter::Send
             ** only if GetMaximumCraftable(player) >= 1 -- Execute validates nothing **
 ```
 Everything above is the export-driven world layer except the window offsets (window+0x3168/0x3178/0x335c/
-0x335d) and the Combine site, which are exe-layer and die on any exe relink (CLAUDE.md "Game patches").
+0x335d) and the Combine site, which are exe-layer and die on any exe relink (AGENTS.md "Game patches").
 A mod that models the crafting screen from Game.dll exports only — reading `GetRecipes` + `GetPlayerFormulas`
 itself and building the info struct itself — needs **no** exe offsets at all.
 

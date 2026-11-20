@@ -9,7 +9,7 @@ below has been exercised live yet. RVAs are `exe+`; window offsets are from `InG
 
 - **`GameEngine` IS an exported data symbol**: `?gGameEngine@GAME@@3PEAVGameEngine@1@EA` (Game.dll) and
   `?gEngine@GAME@@3PEAVEngine@1@EA` (Engine.dll). `GetProcAddress` + one dereference; the per-frame
-  `GameEngine::Update` hook is then only a tick, not a pointer source. (CLAUDE.md's "not an exported singleton"
+  `GameEngine::Update` hook is then only a tick, not a pointer source. (AGENTS.md's "not an exported singleton"
   is wrong; fix when switching.)
 - **Localization needs no hook**: `LocalizationManager::Instance()` and `LocalizeWithoutParams(char const*)`
   (returns `unsigned short const*`, no hidden pointer) are public exports; also `Localize(tag, ...)`,
@@ -35,7 +35,7 @@ below has been exercised live yet. RVAs are `exe+`; window offsets are from `InG
   `window+0x90` (its slot 0 = the same OnControlEvent); buttons register with `exe+0x12a800(registry,
   control, window+0x90)`. `InGameUI`'s real ctor is `exe+0x205a70` (constructs every member window);
   `Init` `exe+0x213840` hands each its `.dbr` path (field names of `records/ui/hud/hud_mastertable.dbr`).
-- `Engine::GetAreaNameTag()` (via `gEngine`) is the minimap's area name (CLAUDE.md lists it as uncaptured).
+- `Engine::GetAreaNameTag()` (via `gEngine`) is the minimap's area name (AGENTS.md lists it as uncaptured).
 
 ## Which key opens which window (`InGameUI::HandleKeyAction` exe+0x211980, jump table on action id)
 

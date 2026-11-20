@@ -159,7 +159,7 @@ For every id in the list: resolve, is-a Monster, `Monster::RemoveControlBanner`;
 ## What a selection changes downstream (verified)
 
 In the exe's world cursor/click function **exe+0x21010** (the same one that does `SetCombatEnemy(0)` at
-exe+0x218eb / `SetCombatEnemy(id)` at exe+0x21b9c -- see CLAUDE.md), at the point where a click would be
+exe+0x218eb / `SetCombatEnemy(id)` at exe+0x21b9c -- see AGENTS.md), at the point where a click would be
 turned into a player action:
 
 ```

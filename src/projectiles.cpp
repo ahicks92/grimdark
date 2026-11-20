@@ -218,7 +218,7 @@ float g_cue_vol = 0.6f, g_cue_interval = 0.15f, g_accent_miss = 2.5f, g_accent_s
 float g_fast_speed = 25.0f, g_fast_vol = 0.6f;
 // Projectiles that appear in the same frame (a nova: Rolderathis's 14 ice spikes) start their ticks g_stagger apart,
 // wrapped within one g_cue_interval: in lockstep, 14 identical ticks from nearly one place fused into what sounded like
-// a single projectile (the user, 2026-10-22). Timing only -- a per-projectile pitch flanged in a pack (CLAUDE.md).
+// a single projectile (the user, 2026-10-22). Timing only -- a per-projectile pitch flanged in a pack (AGENTS.md).
 float g_stagger = 0.02f;
 // The near-miss zone: a projectile hurts the player when its blast reaches the body, so the zone is its own blast
 // radius plus g_body; g_accent_miss when the radius is not readable. Rolderathis's freeze blast is 2.5 u: the fixed

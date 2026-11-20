@@ -86,7 +86,7 @@ static InputManager::Typematic os_typematic() {
   return t;
 }
 
-// Key codes in the game's Button enum (DIK for plain keys; extended keys measured -- see CLAUDE.md).
+// Key codes in the game's Button enum (DIK for plain keys; extended keys measured -- see AGENTS.md).
 namespace keys {
 constexpr int Escape = 0x01, Tab = 0x0f, Enter = 0x1c, Backspace = 0x0e, Space = 0x39, F1 = 0x3b, Backslash = 0x2b;
 constexpr int Home = 0x78, Up = 0x79, PageUp = 0x7a, Left = 0x7b, Right = 0x7c, End = 0x7d, Down = 0x7e, PageDown = 0x7f;  // from the game's own key names (tools/exports/keynames.txt)

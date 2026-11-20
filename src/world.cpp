@@ -439,7 +439,7 @@ void load_api() {
 
 void* player() { return g_game_engine && g_api.GetMainPlayer ? g_api.GetMainPlayer(g_game_engine) : nullptr; }
 
-// Layouts measured 2026-08-21 (see CLAUDE.md): WorldCoords = Region* (8) + origin Vec3 (12) + 3x3 axes;
+// Layouts measured 2026-08-21 (see AGENTS.md): WorldCoords = Region* (8) + origin Vec3 (12) + 3x3 axes;
 // Coords = 3x3 axes then origin (offset 36); WorldVec3 = Region* + Vec3.
 constexpr size_t kWorldCoordsOriginOffset = 8;
 constexpr size_t kCoordsOriginOffset = 36;
@@ -720,7 +720,7 @@ static void* region_containing_xz(void* from, float wx, float wz);   // defined 
 // rate * max life straight through CombatManager::ApplyDamage -- no resistance (Aether Act3 Boss 0.12, Aether01
 // 0.15, Aether02 0.30, poisons 0.02..0.20). This is that lookup, for any world point: region containing the
 // point -> its Level -> SectorLayers -> UniqueId at (x, z) -> SectorData (+0x58 rate, +0x5c type). Cheap (pointer
-// hops), no caching. Region+0x68 = Level (CLAUDE.md). SEH-guarded: an unloaded chunk has no layers.
+// hops), no caching. Region+0x68 = Level (AGENTS.md). SEH-guarded: an unloaded chunk has no layers.
 namespace {
 constexpr int kDamageLayer = 7;
 constexpr size_t kRegionLevelOffset = 0x68;
