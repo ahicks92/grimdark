@@ -382,7 +382,7 @@ def main():
     if a[2] == "--apply":
         # Rewrite the RVA constants and the exe+0x evidence of FILEs to the new build in one pass (no chained
         # substitution), refuse when anything is unmapped, and re-check every byte signature at its new RVA.
-        items = scan(a[3:]); m = {}; bad = []
+        items = scan([x for x in a[3:] if x != "--force"]); m = {}; bad = []
         for rva, kind, where in items:
             nr, st = r.map(rva)
             if nr is None: bad.append(f"{rva:#x} [{kind} {where}] {st}")

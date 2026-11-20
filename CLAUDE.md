@@ -4,7 +4,7 @@ Injected DLL that hooks the game's own engine exports. Design lineage: `../wotr-
 project by the same author) — see `docs/design-notes-from-wotr.md` for the decisions we carry over.
 
 ## Game facts
-- Grim Dawn v1.3.1.1 (x64), Steam build (relocated from 1.3.0.8 on 2026-10-08). Install: `C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn`.
+- Grim Dawn v1.3.1.2 (x64), Steam build (relocated from 1.3.1.1 on 2026-11-19; the main menu draws the version string, `/text`). Install: `C:\Program Files (x86)\Steam\steamapps\common\Grim Dawn`.
   The 64-bit game is `x64\Grim Dawn.exe`; **its working directory must be the install root** (where
   `database.arz` and the `.arc` archives live) or it starts with no data and crashes in a string compare.
 - Closed-source C++ (Titan Quest engine lineage), split into DLLs that **export named, MSVC-decorated C++
@@ -193,7 +193,7 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   signature fails loudly), then `uv run tools/exe_reloc.py - - --scan <every src file with exe+0x>`: functions are
   matched by normalized body + vote propagation over .pdata, data/vtables through the refs of matched pairs, every
   `exe+0x` evidence instruction is re-checked at its new address and every vtable slot by slot. Clean -> `--apply`
-  on the same files (rewrites constants + evidence in one pass, re-checks the byte signatures). The world layer:
+  on the same files (rewrites constants + evidence in one pass, re-checks the byte signatures). A leaf thunk can come back UNMAPPED (2026-11-19, the node->DisplayWidget thunk): map its jump target, find the same bytes jumping there in the new dump, `--apply ... --force` and fix that one constant by hand. "CHANGED" functions that differ only in their inline switch tables are relocation noise (the same in the DLLs' `exports` listing). The world layer:
   `exe_reloc.py <old dll> <new dll> exports|xdiff <regex>|vtcmp <regex>` -- a class whose ctor is unchanged kept
   its layout; check the hardcoded vtable slots with vtcmp. Ctors to xdiff (the classes whose raw fields we read; the
   2026-10-08 list plus later additions): Character, Player, ControllerPlayer, Item, ItemEquipment, Skill, SkillManager,
@@ -245,7 +245,7 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
   one request at a time; git bash rewrites `/player`-style paths unless `MSYS2_ARG_CONV_EXCL="*"`; a hot reload in the
   world can leave the game paused (`/pause?set=0`); the first `/keydown` after a reload may not register; the linker
   cannot overwrite a loaded DLL (reload = eject first). Dev routes that outlive the 8 s job timeout must own their
-  state. The main menu preselects the user's last-played REAL character: check `/ui?chars=1` before Start.
+  state. The main menu preselects the user's last-played REAL character: check `/ui?chars=1` before Start. Select the dev character as a player would (Tab to the list, Up / Down, Enter = "selected"), re-check `/ui?chars=1`, THEN Tab to Start; put the selection back afterwards (Start pressed blind loaded the real character, 2026-11-19).
 - Audio: cue levels are matched by ear, not by meter (the dB(A) match made set 2 too quiet); a per-id pitch shift on
   cues flanges in a pack (rejected); mean power of a staggered pulse train = sum gain^2 / period (incoherent), but
   below ~5-10 pulses/s the ear hears per-pulse level, not mean power. Sound files live in the repo, never referenced

@@ -1800,6 +1800,8 @@ public: virtual void __cdecl GAME::SpawnActorPacket::CopyInbound(unsigned char *
 public: virtual void __cdecl GAME::SteamAuthRequestPacket::CopyInbound(unsigned char * __ptr64,int) __ptr64	?CopyInbound@SteamAuthRequestPacket@GAME@@UEAAXPEAEH@Z
 public: virtual void __cdecl GAME::SteamAuthResponsePacket::CopyInbound(unsigned char * __ptr64,int) __ptr64	?CopyInbound@SteamAuthResponsePacket@GAME@@UEAAXPEAEH@Z
 public: virtual void __cdecl GAME::VoiceChatPacket::CopyInbound(unsigned char * __ptr64,int) __ptr64	?CopyInbound@VoiceChatPacket@GAME@@UEAAXPEAEH@Z
+public: void __cdecl GAME::Effect::CorrectParticles(bool) __ptr64	?CorrectParticles@Effect@GAME@@QEAAX_N@Z
+public: void __cdecl GAME::Emitter::CorrectParticles(bool) __ptr64	?CorrectParticles@Emitter@GAME@@QEAAX_N@Z
 public: bool __cdecl GAME::SoundPak::CouldPossiblyHear(class GAME::WorldVec3 const & __ptr64,float)const __ptr64	?CouldPossiblyHear@SoundPak@GAME@@QEBA_NAEBVWorldVec3@2@M@Z
 private: void __cdecl GAME::CPUCoreDetector::CpuId(int,int * __ptr64) __ptr64	?CpuId@CPUCoreDetector@GAME@@AEAAXHPEAH@Z
 public: void __cdecl GAME::Engine::Crash(void) __ptr64	?Crash@Engine@GAME@@QEAAXXZ
@@ -4688,6 +4690,7 @@ public: bool __cdecl GAME::Region::RebuildMapData(void) __ptr64	?RebuildMapData@
 public: void __cdecl GAME::Decal::RebuildMesh(void) __ptr64	?RebuildMesh@Decal@GAME@@QEAAXXZ
 public: void __cdecl GAME::ImpassableData::RecalculateRegionBox(void) __ptr64	?RecalculateRegionBox@ImpassableData@GAME@@QEAAXXZ
 protected: class GAME::NetPacket * __ptr64 __cdecl GAME::ConnectionManager::ReceiveControlPacket(class GAME::Socket * __ptr64 & __ptr64) __ptr64	?ReceiveControlPacket@ConnectionManager@GAME@@IEAAPEAVNetPacket@2@AEAPEAVSocket@2@@Z
+public: void __cdecl GAME::Engine::RecheckExpansion3Status(void) __ptr64	?RecheckExpansion3Status@Engine@GAME@@QEAAXXZ
 protected: void __cdecl GAME::TerrainPatch::RecreateGrassBlocks(void) __ptr64	?RecreateGrassBlocks@TerrainPatch@GAME@@IEAAXXZ
 public: void __cdecl GAME::GraphicsMTRenderer::RecreateRenderTargets(unsigned int,unsigned int,unsigned int,unsigned int) __ptr64	?RecreateRenderTargets@GraphicsMTRenderer@GAME@@QEAAXIIII@Z
 public: void __cdecl GAME::GraphicsCanvas::RecreateSceneRenderTargets(unsigned int,unsigned int,unsigned int,unsigned int) __ptr64	?RecreateSceneRenderTargets@GraphicsCanvas@GAME@@QEAAXIIII@Z

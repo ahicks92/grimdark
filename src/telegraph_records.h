@@ -24,6 +24,10 @@ inline constexpr RecordShape kRecordShapes[] = {
   {"records/skills/itemskills/item_vilebrew.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
   {"records/skills/itemskills/pets/petskill_chthonianfiend_chaosblast.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
   {"records/skills/itemskills/pets/petskill_prawnpoison_acidspit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/itemskillsgdx1/legendary/magmaorb.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/itemskillsgdx1/relics/spectralorb.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/itemskillsgdx2/legendary/icespread.dbr", "ring"},   // Skill_AttackProjectileFan, 210 degrees
+  {"records/skills/itemskillsgdx2/relics/virecascade.dbr", "frontal"},   // Skill_AttackProjectileFan, 90 degrees
   {"records/skills/nonplayerskills/attackprojectile/aetherorb.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
   {"records/skills/nonplayerskills/attackprojectile/chaosbolt_riftscourge.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
   {"records/skills/nonplayerskills/attackprojectile/chthonianleech_vilespit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
@@ -136,10 +140,94 @@ inline constexpr RecordShape kRecordShapes[] = {
   {"records/skills/nonplayerskills/heroskills/saboteur_molotov.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
   {"records/skills/nonplayerskills/heroskills/saboteur_smokegrenade.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
   {"records/skills/nonplayerskills/heroskills/uglak_hurlslime.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/aetherialfleshshaper_aetherburst.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/aetherialworm_aetherspit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/aetherialworm_firespit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/aetherialworm_icespit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/aetherialworm_lightningspit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/aetherialworm_poisonspit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/basilisk_acidspit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/basilisk_aetherspit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/chthonianservitor_bloodspit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/chthonianservitor_triplespit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/chthonianwretch_poisonorb.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/ghostcrab_ectoplasmspit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/humanascendant_elementalbolt.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/attackprojectile/wraith_sappingorbs.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/ancientgrove/swampcrabroguelike_ectoplasmfirespit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/carraxus_triplespit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/dravisminion_fireball.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/dravisminion_necroticmissile.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/factoryguardian_violentbarf.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/final/p1_aetherboltboomerangcone.dbr", "frontal"},   // Skill_AttackProjectileFan, 180 degrees
+  {"records/skills/nonplayerskillsgdx1/bossskills/final/p1_aetherbolts.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/final/turretskill_aethergrenadering.dbr", "area"},   // Skill_AttackProjectileFan, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/kraken_barf.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/kraken_waterbarrage.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/malmouthcouncil_shatteringice.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/malmouthenclave_aetherburst.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/malmouthenclave_aethershard.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/mindthief_shatteringice.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/nemesis/ravagerminds_nulltotem_elementalbolt.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/pets/turret_krakententacle_inversewaterorbnova.dbr", "frontal"},   // Skill_AttackProjectileFan, 120 degrees
+  {"records/skills/nonplayerskillsgdx1/bossskills/pets/turret_krakententacle_waterorbnova.dbr", "frontal"},   // Skill_AttackProjectileFan, 120 degrees
+  {"records/skills/nonplayerskillsgdx1/bossskills/pets/turret_krieg_aetherboltnova.dbr", "ring"},   // Skill_AttackProjectileFan, 350 degrees
+  {"records/skills/nonplayerskillsgdx1/bossskills/pets/turret_witchaetherboltnova_skill.dbr", "frontal"},   // Skill_AttackProjectileFan, 180 degrees
+  {"records/skills/nonplayerskillsgdx1/bossskills/pets/turret_witchnecroticoozenova_skill.dbr", "ring"},   // Skill_AttackProjectileFan, 350 degrees
+  {"records/skills/nonplayerskillsgdx1/bossskills/special/livingplant_poisonnova_01.dbr", "area"},   // Skill_AttackProjectileFan, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/sylvarria_triplespit.dbr", "area"},   // Skill_AttackProjectileFan, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/sylvarria_vine_poisonnova_01.dbr", "area"},   // Skill_AttackProjectileFan, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/bossskills/witch_necroticmissiles.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/factionskills/malmouth_blackwater.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/factionskills/malmouth_canisterbomb.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/factionskills/malmouth_fireblast_01.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/factionskills/malmouth_grenado.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/factionskills/malmouth_stunjacks.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/heroskills/archetypes/arcane_elementalbolt.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx1/heroskills/archetypes/timewarped_petrifyingburst.dbr", "frontal"},   // Skill_AttackProjectileBurst, 90 degrees
+  {"records/skills/nonplayerskillsgdx1/path/aetherialbloater_violentbarf.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/beetle_flingdung.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/eldritchwraith_burningorbs.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/korvaakascended_firebellow.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/korvaakascended_lightningbellow.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/korvaakservant_doublebolt.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/korvaakservant_doublefirebolt.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/korvaakservant_firestream.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/korvaakservant_lightningstream.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/scorpion_acidspit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/statue_eldritchbolt.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/viper_spit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/viper_spitcone.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/wormmaw_acidspit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/attackprojectile/wormmaw_vilespit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/bossskills/boundspirits_shatteringiceslow.dbr", "area"},   // Skill_AttackProjectileFan, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/bossskills/duskreaper_spit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/bossskills/fatherkymon_volcanicbellow.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/bossskills/final/turretskill_eldritchbarrage.dbr", "ring"},   // Skill_AttackProjectileFan, 210 degrees
+  {"records/skills/nonplayerskillsgdx2/bossskills/messenger_01_burningorbs.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/bossskills/pets/turret_mummyosyr_lightningspark.dbr", "ring"},   // Skill_AttackProjectileFan, 350 degrees
+  {"records/skills/nonplayerskillsgdx2/bossskills/pvp/stunjacks1.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/bossskills/roguelike/finalboss_shadowskull_sparks.dbr", "ring"},   // Skill_AttackProjectileFan, 210 degrees
+  {"records/skills/nonplayerskillsgdx2/bossskills/roguelike/riggscollector_blackwater1.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/bossskills/roguelike/riggscollector_canisterbomb1.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/bossskills/roguelike/riggscollector_flashbang1.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/bossskills/roguelike/shade_aetherorbs.dbr", "frontal"},   // Skill_AttackProjectileFan, 180 degrees
+  {"records/skills/nonplayerskillsgdx2/bossskills/roguelike/shade_bloodorbs.dbr", "frontal"},   // Skill_AttackProjectileFan, 180 degrees
+  {"records/skills/nonplayerskillsgdx2/bossskills/roguelike/statue_coldbolt.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/bossskills/roguelike/turret_celestialcrystal_skullbarrage.dbr", "ring"},   // Skill_AttackProjectileBurst, 350 degrees
+  {"records/skills/nonplayerskillsgdx2/bossskills/roguelike/turret_celestialcrystal_skullburst.dbr", "ring"},   // Skill_AttackProjectileBurst, 270 degrees
+  {"records/skills/nonplayerskillsgdx2/bossskills/statueminiboss_eldritchbolt.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/bossskills/witchusurper_poisonprojectile.dbr", "area"},   // Skill_AttackProjectileFan, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/factionskills/solael_darkflamebolt.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/roguelike/leech_celestial_cold_spit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/roguelike/leech_celestial_coldsludge.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/roguelike/leech_celestial_coldsludge_spit.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
+  {"records/skills/nonplayerskillsgdx2/roguelike/statue_celestial_coldbolt.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
   {"records/skills/playerclass02/blackwater1.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
   {"records/skills/playerclass02/canisterbomb1.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
   {"records/skills/playerclass02/flashbang1.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
   {"records/skills/playerclass02/grenado1.dbr", "area"},   // Skill_AttackProjectile, lobbed at a point
   {"records/skills/playerclass02/stunjacks1.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
+  {"records/skills/playerclass08/pets/petskill_skeleton_undeathmissiles.dbr", "area"},   // Skill_AttackProjectileBurst, lobbed at a point
 };
 }  // namespace gd::telegraph

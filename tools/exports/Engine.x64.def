@@ -1802,6 +1802,8 @@ EXPORTS
     ?CopyInbound@SteamAuthRequestPacket@GAME@@UEAAXPEAEH@Z
     ?CopyInbound@SteamAuthResponsePacket@GAME@@UEAAXPEAEH@Z
     ?CopyInbound@VoiceChatPacket@GAME@@UEAAXPEAEH@Z
+    ?CorrectParticles@Effect@GAME@@QEAAX_N@Z
+    ?CorrectParticles@Emitter@GAME@@QEAAX_N@Z
     ?CouldPossiblyHear@SoundPak@GAME@@QEBA_NAEBVWorldVec3@2@M@Z
     ?CpuId@CPUCoreDetector@GAME@@AEAAXHPEAH@Z
     ?Crash@Engine@GAME@@QEAAXXZ
@@ -4690,6 +4692,7 @@ EXPORTS
     ?RebuildMesh@Decal@GAME@@QEAAXXZ
     ?RecalculateRegionBox@ImpassableData@GAME@@QEAAXXZ
     ?ReceiveControlPacket@ConnectionManager@GAME@@IEAAPEAVNetPacket@2@AEAPEAVSocket@2@@Z
+    ?RecheckExpansion3Status@Engine@GAME@@QEAAXXZ
     ?RecreateGrassBlocks@TerrainPatch@GAME@@IEAAXXZ
     ?RecreateRenderTargets@GraphicsMTRenderer@GAME@@QEAAXIIII@Z
     ?RecreateSceneRenderTargets@GraphicsCanvas@GAME@@QEAAXIIII@Z

@@ -27,7 +27,7 @@ class EditSession {
     if (!box) return;
     editing_ = true;
     exe_ui::Rect r = box.abs_rect();
-    hooks::click(r.x + r.w / 2, r.y + r.h / 2);  // the edit box's mouse handler (exe+0xed5a0) takes focus
+    hooks::click(r.x + r.w / 2, r.y + r.h / 2);  // the edit box's mouse handler (exe+0xed980) takes focus
     speech::speak(strings::kEditing, true);
   }
   void stop() {

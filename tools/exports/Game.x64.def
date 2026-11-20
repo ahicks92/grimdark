@@ -9394,8 +9394,6 @@ EXPORTS
     ?CalculateNewChanceToRun@GameEngine@GAME@@QEAAIIMM@Z
     ?CalculateOffensiveAbility@SkillManager@GAME@@UEBA?BMM@Z
     ?CalculateOffensiveAbility@SkillManagerLite@GAME@@UEBA?BMM@Z
-    ?CalculatePetCharAttributeBonus@Player@GAME@@QEAAXAEAMW4CharAttributeType@2@@Z
-    ?CalculatePetDamageBonus@Player@GAME@@QEAAXAEAMW4CombatAttributeType@2@W4DamageType@CombatAttribute@2@_N@Z
     ?CalculateRetaliationValues@Player@GAME@@QEAAXXZ
     ?CalculateSkillDps@Player@GAME@@QEAAXIAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAUSkillAttackInfo@2@AEAMAEAVCombatAttributeAccumulator@2@3I@Z
     ?CalculateSkillValues@Player@GAME@@QEAAXAEAMW4SkillAttributeType@2@_N@Z
@@ -12257,7 +12255,7 @@ EXPORTS
     ?GetCharAttributes@ItemEnchantment@GAME@@UEBAXAEAVCharAttributeAccumulator@2@@Z
     ?GetCharAttributes@ItemEquipment@GAME@@UEBAXAEAVCharAttributeAccumulator@2@@Z
     ?GetCharAttributes@ItemRelic@GAME@@UEBAXAEAVCharAttributeAccumulator@2@@Z
-    ?GetCharAttributes@SkillManager@GAME@@QEBAXAEAVCharAttributeAccumulator@2@@Z
+    ?GetCharAttributes@SkillManager@GAME@@QEBAXAEAVCharAttributeAccumulator@2@_N@Z
     ?GetCharAttributes@SkillProfile@GAME@@QEBAXAEAVCharAttributeAccumulator@2@IM@Z
     ?GetCharAttributesPenalty@SkillProfile@GAME@@QEBAXAEAVCharAttributeAccumulator@2@I@Z
     ?GetCharAttributesPenaltyReduction@SkillProfile@GAME@@QEBAXAEAVCharAttributeAccumulator@2@I@Z
@@ -14581,6 +14579,8 @@ EXPORTS
     ?GetMinMaxValues@CombatAttributeDurDefense@GAME@@UEAAXAEAM0@Z
     ?GetMinMaxValues@CombatAttributeInfluenceDamage@GAME@@UEAAXAEAM0@Z
     ?GetMinMaxValues@CombatAttributeReflexDamage@GAME@@UEAAXAEAM0@Z
+    ?GetMinMaxValues@CombatAttributeTotalDamageMod@GAME@@UEAAXAEAM0@Z
+    ?GetMinMaxValues@CombatAttribute_DamageCritBonus@GAME@@UEAAXAEAM0@Z
     ?GetMinMaxValues@CombatAttribute_DamageMultiplier@GAME@@UEAAXAEAM0@Z
     ?GetMinPatrolIdleTime@ControllerMonster@GAME@@QEBAHXZ
     ?GetMinPlayerRotationSpeed@GameEngine@GAME@@QEBAMXZ
@@ -14914,7 +14914,7 @@ EXPORTS
     ?GetOffensiveModifierAttributes@ItemEnchantment@GAME@@UEBAXAEAVCombatAttributeAccumulator@2@@Z
     ?GetOffensiveModifierAttributes@ItemEquipment@GAME@@UEBAXAEAVCombatAttributeAccumulator@2@@Z
     ?GetOffensiveModifierAttributes@ItemRelic@GAME@@UEBAXAEAVCombatAttributeAccumulator@2@@Z
-    ?GetOffensiveModifierAttributes@SkillManager@GAME@@QEBAXAEAVCombatAttributeAccumulator@2@I@Z
+    ?GetOffensiveModifierAttributes@SkillManager@GAME@@QEBAXAEAVCombatAttributeAccumulator@2@I_N@Z
     ?GetOffensiveModifierAttributes@SkillProfile@GAME@@QEBAXAEAVCombatAttributeAccumulator@2@IM@Z
     ?GetOffensiveReduction@Character@GAME@@QEBAMXZ
     ?GetOffering1DisplayName@StaticShrine@GAME@@QEBA?AV?$basic_string@GU?$char_traits@G@std@@V?$allocator@G@2@@std@@XZ
@@ -15217,6 +15217,7 @@ EXPORTS
     ?GetPetDisplayable@SkillProfile@GAME@@QEBA_NXZ
     ?GetPetExtents@Skill@GAME@@IEBAMXZ
     ?GetPetLimit@Skill@GAME@@UEBAII@Z
+    ?GetPetList@PetPen@GAME@@QEBAAEBV?$list@UPetPenInfo@PetPen@GAME@@@mem@@XZ
     ?GetPetMutators@Pet@GAME@@QEBAXAEAV?$vector@PEAVMutator@GAME@@@mem@@@Z
     ?GetPetOwner@PetPen@GAME@@QEBAII@Z
     ?GetPetPen@Character@GAME@@QEAAAEAVPetPen@2@XZ
@@ -16193,6 +16194,7 @@ EXPORTS
     ?GetSpawnWeight2@SkillProfile@GAME@@QEBA?BII@Z
     ?GetSpawnWeight3@SkillProfile@GAME@@QEBA?BII@Z
     ?GetSpawnWeight4@SkillProfile@GAME@@QEBA?BII@Z
+    ?GetSpecialAnimationName@Skill@GAME@@QEBA?BVName@2@XZ
     ?GetSpecialAnimationName@SkillProfile@GAME@@QEBAAEBVName@2@XZ
     ?GetSpecialAttackSkillId@ControllerMonster@GAME@@QEBAII@Z
     ?GetSpecialAttackSkillInfo@ControllerMonster@GAME@@QEAAAEBUSpecialAttackSkill@2@I@Z
@@ -20128,6 +20130,7 @@ EXPORTS
     ?PlayWarningFx@FixedItemSkill@GAME@@QEAAXXZ
     ?PlayWeaponSwipeSound@Skill@GAME@@UEAAXAEAVCharacter@2@AEBVName@2@@Z
     ?PlayerExperienceRedemption@GameEngine@GAME@@QEAAXI_N@Z
+    ?PlayerOnly@Destructible@GAME@@QEBA_NXZ
     ?PlayerPurchaseRequest@GameEngine@GAME@@QEAA_NII@Z
     ?PlayerSaleRequest@GameEngine@GAME@@QEAA_NII_N@Z
     ?PoolComplete@Proxy@GAME@@MEAAXPEAVProxyPool@2@AEBV?$vector@VWorldCoords@GAME@@@mem@@@Z
@@ -23543,7 +23546,7 @@ EXPORTS
     ?SkillUsed@?$ControllerMonsterState@VControllerTerracotta@GAME@@VMonster@2@@GAME@@MEAAXI@Z
     ?SkillUsed@?$ControllerMonsterState@VControllerTyphonChained@GAME@@VMonster@2@@GAME@@MEAAXI@Z
     ?SkillUsed@PlayStats@GAME@@QEAAXV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-    ?SkillWarmUp@Character@GAME@@QEAAXIII_N@Z
+    ?SkillWarmUp@Character@GAME@@QEAAXIII_N0@Z
     ?SkillWarmUp@SkillManager@GAME@@QEAA_NIII@Z
     ?SkillWarmUpBeforeAttack@SkillManager@GAME@@QEAA_NI@Z
     ?SmartAutoInsert@EquipmentCtrl@GAME@@QEAA_NIAEAV?$vector@I@mem@@_N@Z

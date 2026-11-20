@@ -150,7 +150,7 @@ class InventorScreen : public WindowScreen {
     return t.empty() ? fallback : t;
   }
   void invalidate() { rows_.invalidate(); }
-  // The chamber's accept test, per tab (the exe's box filters exe+0x1afa30 / exe+0x1b0000 + the drop's quality gate):
+  // The chamber's accept test, per tab (the exe's box filters exe+0x1afcb0 / exe+0x1b0280 + the drop's quality gate):
   // salvage = equipment with a component or an augment; dismantle = equipment above common.
   static std::vector<Row> load_rows(int exe_tab) {
     std::vector<Row> out;

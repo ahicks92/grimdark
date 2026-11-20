@@ -5,14 +5,16 @@
 namespace gd::projectiles {
 struct WaveEffect { const char* skill; const char* effect; };
 inline constexpr WaveEffect kWaveEffects[] = {
+  {"records/skills/devotion/pets/petskill_arcanecurrent.dbr", "records/fx/skillsdevotion/attakseru_arcanecurrent_fx01.dbr"},   // lineEffectName
   {"records/skills/devotion/tier1_18e_skill.dbr", "records/fx/skillsother/path/tidalwave_fxpak01.dbr"},   // fxPakName
   {"records/skills/devotion/tier2_18f_skill.dbr", "records/fx/skillsother/path/acidwave_fx01.dbr"},   // lineEffectName
+  {"records/skills/devotion/tier2_38e_skill.dbr", "records/fx/skillsdevotion/coneoflight_fxpak.dbr"},   // fxPakName
   {"records/skills/itemskills/componentskills/compb_demonfire_proc_01.dbr", "records/fx/skillsother/path/demonfirewave_fx01.dbr"},   // lineEffectName
   {"records/skills/itemskills/granted/item_firewave.dbr", "records/fx/skillsother/path/firewave_fx01.dbr"},   // lineEffectName
   {"records/skills/itemskills/granted/item_flamer.dbr", "records/fx/skillsother/path/firewave_fx01.dbr"},   // lineEffectName
   {"records/skills/itemskills/granted/item_groundripper.dbr", "records/fx/skillsother/path/groundripper_fx01.dbr"},   // lineEffectName
   {"records/skills/itemskills/granted/item_spectralwave.dbr", "records/fx/skillsother/path/spectralwave_fx01.dbr"},   // lineEffectName
-  {"records/skills/itemskills/granted/item_tidalwave.dbr", "records/fx/skillsother/path/tidalwave_fx01.dbr"},   // lineEffectName
+  {"records/skills/itemskills/granted/item_tidalwave.dbr", "records/fx/skillsother/path/tidalwave_fxpak01.dbr"},   // fxPakName
   {"records/skills/itemskills/item_aethersmash.dbr", "records/fx/skillsother/path/aetherhulk_pathsmash_fx01.dbr"},   // lineEffectName
   {"records/skills/itemskills/item_aethersmash_shard.dbr", "records/fx/skillsother/path/aetherhulk_pathsmash_fx01.dbr"},   // lineEffectName
   {"records/skills/itemskills/item_chaoswave.dbr", "records/fx/skillsother/path/chaoswave_fx01.dbr"},   // lineEffectName
@@ -21,7 +23,7 @@ inline constexpr WaveEffect kWaveEffects[] = {
   {"records/skills/itemskills/item_lifewave.dbr", "records/fx/skillsother/path/spectralwave_fx01.dbr"},   // lineEffectName
   {"records/skills/itemskills/legendary/item_firewave.dbr", "records/fx/skillsother/path/firewave_fx01.dbr"},   // lineEffectName
   {"records/skills/itemskills/legendary/item_flamebreath.dbr", "records/fx/skillsother/path/firewave_fx01.dbr"},   // lineEffectName
-  {"records/skills/itemskills/legendary/item_greattide.dbr", "records/fx/skillsother/path/tidalwave_fx01.dbr"},   // lineEffectName
+  {"records/skills/itemskills/legendary/item_greattide.dbr", "records/fx/skillsother/path/tidalwave_fxpak01.dbr"},   // fxPakName
   {"records/skills/itemskills/legendary/item_greattide_proc.dbr", "records/fx/skillsother/path/tidalwave_fxpak01.dbr"},   // fxPakName
   {"records/skills/itemskills/legendary/item_lifewave.dbr", "records/fx/skillsother/path/spectralwave_fx01.dbr"},   // lineEffectName
   {"records/skills/itemskills/legendary/item_wyrmbreath.dbr", "records/fx/skillsother/path/icewave_fxpak01.dbr"},   // fxPakName
@@ -33,6 +35,17 @@ inline constexpr WaveEffect kWaveEffects[] = {
   {"records/skills/itemskills/relics/relic_judgement_path.dbr", "records/fx/skillsother/itemrelics/judgement_waveloop_fx01.dbr"},   // lineEffectName
   {"records/skills/itemskills/relics/relic_oblivion.dbr", "records/fx/skillsother/path/chaoswave_fx01.dbr"},   // lineEffectName
   {"records/skills/itemskills/test/item_firewave.dbr", "records/fx/skillsother/path/firewave_fx01.dbr"},   // lineEffectName
+  {"records/skills/itemskillsgdx1/aethershockwave.dbr", "records/fx/skillsother/path/aetherhulk_pathsmash_fx01.dbr"},   // lineEffectName
+  {"records/skills/itemskillsgdx1/legendary/kriegfury.dbr", "records/fx/skillsother/path/aetherhulk_pathsmash_fx01.dbr"},   // lineEffectName
+  {"records/skills/itemskillsgdx1/legendary/lifewave_2h.dbr", "records/fx/skillsother/path/spectralwave_fx01.dbr"},   // lineEffectName
+  {"records/skills/itemskillsgdx1/relics/vitalitywave.dbr", "records/fx/skillsother/path/spectralwave_fx01.dbr"},   // lineEffectName
+  {"records/skills/itemskillsgdx2/bonechill.dbr", "records/fx/skillclass08/soulscytheice_fxpak.dbr"},   // fxPakName
+  {"records/skills/itemskillsgdx2/legendary/crimsonwake.dbr", "records/fx/skillsother/path/crimsonwave_fxpak01.dbr"},   // fxPakName
+  {"records/skills/itemskillsgdx2/legendary/hyrianclaw.dbr", "records/fx/skillclass01/forcewaveelementalwaveloop_fxpak.dbr"},   // fxPakName
+  {"records/skills/itemskillsgdx2/legendary/veilripple.dbr", "records/fx/skillsothergdx1/path/theoden_aetherspines_fxpak.dbr"},   // fxPakName
+  {"records/skills/itemskillsgdx2/legendary/wakeofbones.dbr", "records/fx/skillclass08/soulscytheaether_fxpak.dbr"},   // fxPakName
+  {"records/skills/itemskillsgdx2/legendary/wakeofsouls.dbr", "records/fx/skillsother/path/spectralwave_fx01.dbr"},   // lineEffectName
+  {"records/skills/itemskillsgdx2/relics/flamewave.dbr", "records/fx/skillsother/path/firewave_fxpak02.dbr"},   // fxPakName
   {"records/skills/nonplayerskills/bossskills/aetherialabomination_aetherwaves.dbr", "records/fx/skillsother/path/aetherhulk_pathsmash_fx01.dbr"},   // lineEffectName
   {"records/skills/nonplayerskills/bossskills/aldritch_flamewave.dbr", "records/fx/skillsother/path/aetherfirewave_fx01.dbr"},   // lineEffectName
   {"records/skills/nonplayerskills/bossskills/backbreaker_aethersmash.dbr", "records/fx/skillsother/path/aetherhulk_pathsmash_fx01.dbr"},   // lineEffectName
@@ -98,6 +111,44 @@ inline constexpr WaveEffect kWaveEffects[] = {
   {"records/skills/nonplayerskills/path/trog_crimsonwave.dbr", "records/fx/skillsother/path/vampiricwave_fx01.dbr"},   // lineEffectName
   {"records/skills/nonplayerskills/path/voidfiend_warpbreath.dbr", "records/fx/skillsother/path/chaoswave_fx01.dbr"},   // lineEffectName
   {"records/skills/nonplayerskills/path/yeti_groundbreaker.dbr", "records/fx/skillsother/path/groundripper_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/dravisthrall_boneharvest.dbr", "records/fx/skillclass08/soulscythe_fxpak.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx1/bossskills/final/p2_legslam_groundspines.dbr", "records/fx/skillsothergdx1/path/theoden_aetherspines_fxpak.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx1/bossskills/final/p3_aetherpincer.dbr", "records/fx/skillsothergdx1/path/theoden_aetherspines_fxpak.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx1/bossskills/fleshshaperharaxis_aetherfirewave.dbr", "records/fx/skillsother/path/aetherfirewave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/fleshshaperharaxis_aetherfirewavetriple.dbr", "records/fx/skillsother/path/aetherfirewave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/fleshshaperhinissius_stormfirewave.dbr", "records/fx/skillsothergdx1/path/lightningwave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/fleshshaperhinissius_stormfirewavetriple.dbr", "records/fx/skillsothergdx1/path/lightningwave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/krieg_aetherwave.dbr", "records/fx/skillsother/path/aetherhulk_pathsmash_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/lunalvalgoth_triplechaoswave.dbr", "records/fx/skillsother/path/chaoswave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/nemesis/aetherialvanguard_aetherbreath.dbr", "records/fx/skillsother/path/aetherfirewave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/nemesis/beast_bonespines.dbr", "records/fx/skillclass08/soulscythe_fxpak.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx1/bossskills/nemesis/beast_bonespines_02.dbr", "records/fx/skillclass08/soulscythe_fxpak.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx1/bossskills/nemesis/beast_bonespines_03.dbr", "records/fx/skillclass08/soulscythe_fxpak.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx1/bossskills/packla_devouringwave.dbr", "records/fx/skillsother/path/spectralwave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/pets/turret_ekketzul_firewave.dbr", "records/fx/skillsother/path/firewave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/pets/turret_krakententacle_waterwave.dbr", "records/fx/skillsother/path/tidalwave_fxpak01.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx1/bossskills/pets/turret_krieg_aetherwave.dbr", "records/fx/skillsother/path/aetherhulk_pathsmash_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/special/special_flamebreath.dbr", "records/fx/skillsother/path/firewave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/sylvarria_groundspines.dbr", "records/fx/skillsothergdx1/projectile/vines_groundfxpak01.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx1/bossskills/wardwraith_flamewave.dbr", "records/fx/skillsother/path/aetherfirewave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/wardwraith_freezewave.dbr", "records/fx/skillsother/path/icewave_fxpak01.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx1/bossskills/wardwraith_vitalitywave.dbr", "records/fx/skillsother/path/spectralwave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/bossskills/wendigoancient_bonepath.dbr", "records/fx/skillclass08/soulscythe_fxpak.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx1/bossskills/wendigostorm_stormwave.dbr", "records/fx/skillsothergdx1/path/lightningwave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/heroskills/archetypes/vampiric_vitalitywave.dbr", "records/fx/skillsother/path/spectralwave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/path/aetherialfleshshaper_aetherfirewave.dbr", "records/fx/skillsother/path/aetherfirewave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/path/aetherialfleshshaper_aetherfirewavetriple.dbr", "records/fx/skillsother/path/aetherfirewave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx1/path/swampgolem_vineslam.dbr", "records/fx/skillsothergdx1/projectile/vines_groundfxpak01.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx1/path/swampyeti_acidshockwave.dbr", "records/fx/skillsothergdx1/path/groundripperpoison_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx2/bossskills/final/p1_groundstomp.dbr", "records/fx/skillsothergdx2/path/korvaak_groundstomp_fxpak.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx2/bossskills/madwitch_spikesscythe.dbr", "records/fx/skillsothergdx2/projectileboss/madwitch_spines_groundfxpak01.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx2/bossskills/mindreaper_02_flamewave.dbr", "records/fx/skillsother/path/firewave_fx01.dbr"},   // lineEffectName
+  {"records/skills/nonplayerskillsgdx2/bossskills/pets/dravisthrall_boneharvest.dbr", "records/fx/skillclass08/soulscythe_fxpak.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx2/bossskills/pvp/shieldhammer1.dbr", "records/fx/skillclass01/forcewavewaveloop_fxpak.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx2/bossskills/roguelike/riggscollector_shieldhammer1.dbr", "records/fx/skillclass01/forcewavewaveloop_fxpak.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx2/factionskills/bysmiel_boneharvest.dbr", "records/fx/skillclass08/soulscythe_fxpak.dbr"},   // fxPakName
+  {"records/skills/nonplayerskillsgdx2/path/eldritchwraith_flamewave.dbr", "records/fx/skillsother/path/firewave_fx01.dbr"},   // lineEffectName
   {"records/skills/playerclass01/shieldhammer1.dbr", "records/fx/skillclass01/forcewavewaveloop_fxpak.dbr"},   // fxPakName
+  {"records/skills/playerclass08/soulscythe1.dbr", "records/fx/skillclass08/soulscythe_fxpak.dbr"},   // fxPakName
 };
 }  // namespace gd::projectiles

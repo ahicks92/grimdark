@@ -780,7 +780,7 @@ static void remove_existing_game_hook(HMODULE di) {
 // mode and, in the world, rebuilds the whole InGameUI (exe+0x20880 from the main loop's resize block) "restoring" the
 // Options screen's tab: it reads the OLD Options screen's tab index (-1 when that screen was never created, i.e. the
 // pause menu's Options was never opened this session), re-shows the new host (which constructs a fresh Options screen
-// whose ctor ends with SetCurrentTab(0)), then calls SetCurrentTab(-1): exe+0xcd300 has no bounds check and takes
+// whose ctor ends with SetCurrentTab(0)), then calls SetCurrentTab(-1): exe+0xcd6e0 has no bounds check and takes
 // pages[-1], the heap block header, as a page pointer -> access violation at exe+0xa2efc. A vanilla crash (no mod frame
 // on the stack, verified 2026-09-21); the toggle has no accessibility value, so it never reaches the game.
 typedef void (*OnToggleFullscreen_t)(void*);

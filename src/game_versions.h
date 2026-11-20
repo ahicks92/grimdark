@@ -15,6 +15,6 @@ struct GameBuild {
   uint32_t game_ts;      // Game.dll
 };
 inline constexpr GameBuild kSupportedBuilds[] = {
-  {"1.3.1.1 Steam", 0x6ac7f680, 0x6ac7f5f7, 0x6ac7f64b},   // relocated from 1.3.0.8-6a85fbec 2026-10-08 (tools/exe_reloc.py)
+  {"1.3.1.2 Steam", 0x6af77535, 0x6af7742e, 0x6af774a6},   // relocated from 1.3.1.1-6ac7f680 2026-11-19 (tools/exe_reloc.py)
 };
 }  // namespace gd::version
