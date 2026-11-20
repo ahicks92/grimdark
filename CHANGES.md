@@ -1,4 +1,4 @@
-# Unreleased
+# 0.7.0 (2026-11-19)
 
 - Works with Grim Dawn 1.3.1.2. The previous game version is no longer supported.
 - New in the stash: a "materials and components" tab. This is the game's own store for crafting materials and components. It is shared between your characters and crafting already uses it, but until now you could neither see it nor take anything out of it.
