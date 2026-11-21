@@ -61,10 +61,9 @@ jobs:
         working-directory: installer
       - uses: actions/cache@v6
         with:
-          path: |
-            installer/target
-            ~/.cargo/registry
-          key: installer-${{ runner.os }}-${{ hashFiles('installer/Cargo.lock', 'installer/rust-toolchain.toml') }}
+          # CMake caches absolute MSVC paths; runner upgrades invalidate installer/target.
+          path: ~/.cargo/registry
+          key: installer-deps-${{ runner.os }}-${{ hashFiles('installer/Cargo.lock', 'installer/rust-toolchain.toml') }}
       - name: Installer tests
         shell: cmd
         run: cargo test --release
