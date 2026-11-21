@@ -297,7 +297,9 @@ developer's screen reader. Client: `uv run tools/gd.py <cmd>` (add `--with pillo
 - `tools/package.py [--out dist/grimdark.zip] [--version v]` — the player zip in its final layout (`grimdark/` folder:
   gdlaunch, DLL, prism, injector, assets, README, licenses, `version.txt`) + the PDB beside it. `.github/workflows/build.yml`:
   job `mod` (build -> `gdcore_tests` -> package), job `installer` (cargo test + build in `installer/`), job `publish`
-  (a `v*` tag = a GitHub release with zip + installer + pdb; every main push recreates the `ci-latest` pre-release).
+  (a `v*` tag = a GitHub release with zip + installer + pdb; main refreshes the same `ci-latest` pre-release via
+  `tools/publish_ci.py`). Main runs serialize without automatic cancellation; a failed asset swap stays draft until
+  a later main push repairs it. Reusing a release avoids repeated creation, but does not guarantee email silence.
 - **Installer** (`installer/`, Rust + wxdragon = native wx controls, modelled on wotr-access's; 2026-09-19): per-user
   install to `%LOCALAPPDATA%\Programs\Grimdark` (replaced wholesale; `%LOCALAPPDATA%\Grimdark` data untouched),
   Desktop + Start Menu `Grimdark.lnk` via IShellLink, HKCU Uninstall key `Grimdark` (`paths::APP_NAME` is the one

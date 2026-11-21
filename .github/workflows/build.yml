@@ -13,13 +13,11 @@ on:
   pull_request:
   workflow_dispatch:
 
-# One run per ref at a time. A newer push to main cancels the older run outright: for a rolling `ci-latest` the
-# older build is worthless, and two publish steps racing each other could otherwise republish the OLDER commit
-# last (a rollback) or collide inside the delete-then-create window. Tags and PRs get their own groups, so a
-# `v*` release run is never cancelled by a push to main.
+# Serialize main without cancelling a release halfway through its draft/asset swap. The publisher skips stale
+# commits. Tags and PRs retain their own groups and cancellation behavior.
 concurrency:
   group: build-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   mod:
@@ -93,6 +91,9 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           path: dist
+      - name: Rolling publisher tests (no network or release mutations)
+        if: github.ref == 'refs/heads/main'
+        run: python -m unittest discover -s tools -p "test_publish_ci.py" -v
       - name: Release (semver tag)
         if: startsWith(github.ref, 'refs/tags/v')
         env: { GH_TOKEN: "${{ github.token }}" }
@@ -103,15 +104,4 @@ jobs:
         if: github.ref == 'refs/heads/main'
         env: { GH_TOKEN: "${{ github.token }}" }
         run: |
-          # Never move ci-latest backwards: if an older run is already inside this step when a newer one
-          # starts, cancellation may land too late, so also refuse to replace a release whose commit
-          # descends from ours. Unknown / unreadable target = publish.
-          existing=$(gh release view ci-latest --json targetCommitish -q .targetCommitish 2>/dev/null || true)
-          if [[ -n "$existing" && "$existing" != "$GITHUB_SHA" ]] && git merge-base --is-ancestor "$GITHUB_SHA" "$existing" 2>/dev/null; then
-            echo "ci-latest is at ${existing::7}, which is newer than ${GITHUB_SHA::7}; leaving it alone"
-            exit 0
-          fi
-          gh release delete ci-latest --yes --cleanup-tag || true
-          gh release create ci-latest dist/grimdark/grimdark.zip dist/GrimdarkInstaller/GrimdarkInstaller.exe dist/grimdark-pdb/grimdark.pdb \
-            --prerelease --target "$GITHUB_SHA" --title "Latest CI build" \
-            --notes "Automatic build of main at ${GITHUB_SHA::7}. Untested; the installer lists it last. Tagged releases are the ones to use."
+          python tools/publish_ci.py
