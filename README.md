@@ -45,10 +45,15 @@ APIs in very odd ways, the net effect of which is to break the JAWS / NVDA key. 
 injected at launch by our launcher.  If you make this mistake, close the game, restart your screen reader, and go
 through the launcher.
 
-If Steam has never started the game on this computer, Windows may be missing Microsoft files the game needs (the error
-is "VCOMP120.DLL was not found"). The launcher notices this and offers to install them from the copy Steam already
-downloaded: answer Yes, approve the Windows permission prompt, and the game starts when it is done. If it cannot find
-that copy it tells you which Microsoft Visual C++ Redistributable to download instead.
+The one exception is a new install of the game. If Steam has never started Grim Dawn on this computer, running
+Grimdark gives a Windows error: "The code execution cannot proceed because VCOMP120.DLL was not found". Steam installs
+that file the first time it starts the game. To fix it:
+
+1. Start Grim Dawn from Steam.
+2. Once the game opens, close it with alt F4.
+3. Restart your screen reader, to get its keys back.
+
+Then run Grimdark as normal. You only need to do this once.
 
 Download `GrimdarkInstaller.exe` from the newest release on GitHub and run it. Install lists the released versions
 newest first and, last, "latest successful CI build", which is the untested build of the current source and is there for
