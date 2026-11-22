@@ -248,6 +248,17 @@ int wmain(int argc, wchar_t** argv) {
   if (find_pid(L"Grim Dawn.exe")) return fail(L"Grim Dawn is already running", L"Close the running game first (the mod has to be loaded before the game starts), then run Grimdark again.");
   printf("Steam is running.\n");
 
+  // The game needs Microsoft runtimes that are not in its folder (vcomp120 = VC++ 2013 OpenMP, for its freeimage.dll;
+  // the VC++ 2015+ runtime for everything else). Steam installs them the first time the game is started with Play,
+  // which a launch through the mod skips: a player who installs the mod before ever running the game gets the
+  // loader's "VCOMP120.DLL was not found" box instead of a game (bug report 2026-11-21).
+  for (const wchar_t* name : {L"vcomp120.dll", L"msvcp140.dll", L"vcruntime140.dll"}) {
+    if (SearchPathW(nullptr, name, nullptr, 0, nullptr, nullptr)) continue;
+    return fail(L"Grim Dawn has not finished installing",
+                std::wstring(L"Windows is missing ") + name + L", a file Grim Dawn needs. Steam installs it the first time the game is started from Steam itself. "
+                L"Start Grim Dawn once from your Steam library with Play, wait until Steam's first-time setup is done and the game's window appears, then close the game with alt F4 and run Grimdark again.");
+  }
+
   force_game_settings(dry);
   if (dry) { printf("Dry run: would start the game with %ls\n", dll.c_str()); return 0; }
 

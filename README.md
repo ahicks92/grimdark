@@ -18,9 +18,9 @@ get what you get; hopefully you have fun, but it might also explode on you in wa
 
 ## What you need
 
-- Grim Dawn **v1.3.0.8, 64-bit, Steam build**. The mod reaches into the game's private UI objects by code layout; any
+- Grim Dawn **v1.3.1.2, 64-bit, Steam build**. The mod reaches into the game's private UI objects by code layout; any
   other build (a GOG build, a Steam patch) gets one spoken line -- "unsupported game build, exe timestamp <hex>,
-  supported 1.3.0.8 Steam, the mod is off" -- and the mod installs nothing. Report that timestamp when you ask about a
+  supported 1.3.1.2 Steam, the mod is off" -- and the mod installs nothing. Report that timestamp when you ask about a
   new build. Any install path works; the launcher asks Steam where the game is (see Setup).
 - Windows 10/11 x64.
 - A screen reader (NVDA, JAWS, or any that prism supports). Menu and window text goes to the screen reader.
@@ -28,6 +28,9 @@ get what you get; hopefully you have fun, but it might also explode on you in wa
   States)). These carry the in-world speech: Mark speaks at the enemy's position, Zira is the player and the room
   announcer. If they are missing the default OneCore voice is used for both.
 - Steam running (the launcher starts the game outside Steam's Play button, but the game still talks to Steam).
+- Grim Dawn started **once from Steam itself** (Play in your library) after installing it. That first start is when
+  Steam installs the Microsoft files the game needs; without it Windows says "VCOMP120.DLL was not found" when you run
+  Grimdark. Wait for the game's window, close it with alt F4, and use Grimdark from then on.
 - Visual Studio 2022 only if you build it yourself (see Building, at the end); the CI zip needs nothing else.
 
 ## Setup
