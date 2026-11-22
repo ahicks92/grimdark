@@ -15,6 +15,7 @@
 // and steam_api connects to the running client over IPC as usual (achievements, cloud saves). Steam must be
 // running for that, which is checked first.
 #include <windows.h>
+#include <shellapi.h>
 #include <shlobj.h>
 #include <cstdio>
 #include <cstring>
@@ -251,12 +252,46 @@ int wmain(int argc, wchar_t** argv) {
   // The game needs Microsoft runtimes that are not in its folder (vcomp120 = VC++ 2013 OpenMP, for its freeimage.dll;
   // the VC++ 2015+ runtime for everything else). Steam installs them the first time the game is started with Play,
   // which a launch through the mod skips: a player who installs the mod before ever running the game gets the
-  // loader's "VCOMP120.DLL was not found" box instead of a game (bug report 2026-11-21).
-  for (const wchar_t* name : {L"vcomp120.dll", L"msvcp140.dll", L"vcruntime140.dll"}) {
-    if (SearchPathW(nullptr, name, nullptr, 0, nullptr, nullptr)) continue;
-    return fail(L"Grim Dawn has not finished installing",
-                std::wstring(L"Windows is missing ") + name + L", a file Grim Dawn needs. Steam installs it the first time the game is started from Steam itself. "
-                L"Start Grim Dawn once from your Steam library with Play, wait until Steam's first-time setup is done and the game's window appears, then close the game with alt F4 and run Grimdark again.");
+  // loader's "VCOMP120.DLL was not found" box instead of a game (bug report 2026-11-21). Sending the player to
+  // Steam's Play is the wrong cure (the unmodded game kills the screen reader's keys), so we offer to run the
+  // installer Steam already downloaded beside the game: <library>\steamapps\common\Steamworks Shared.
+  struct Runtime { const wchar_t* dll; const wchar_t* folder; const wchar_t* installer; const wchar_t* name; };
+  const Runtime runtimes[] = {
+    {L"vcomp120.dll", L"2013", L"vcredist_x64.exe", L"Microsoft Visual C++ 2013 Redistributable (x64)"},
+    {L"msvcp140.dll", L"2022", L"VC_redist.x64.exe", L"Microsoft Visual C++ 2015-2022 Redistributable (x64)"},
+    {L"vcruntime140.dll", L"2022", L"VC_redist.x64.exe", L"Microsoft Visual C++ 2015-2022 Redistributable (x64)"},
+  };
+  auto have = [](const wchar_t* dll) { return SearchPathW(nullptr, dll, nullptr, 0, nullptr, nullptr) != 0; };
+  for (const Runtime& r : runtimes) {
+    if (have(r.dll)) continue;
+    const wchar_t* title = L"Grim Dawn needs a Microsoft component";
+    std::wstring what = std::wstring(L"Windows is missing ") + r.dll + L", which Grim Dawn needs. It is part of the " + r.name + L". ";
+    std::wstring manual = std::wstring(L"Download the ") + r.name + L" from Microsoft, install it, and run Grimdark again. "
+                          L"Do not start the game from Steam's Play button to fix this: without the mod the game breaks your screen reader's keys.";
+    std::wstring root = install_root_of(exe);
+    std::wstring setup = root.substr(0, root.find_last_of(L"\\/")) + L"\\Steamworks Shared\\_CommonRedist\\vcredist\\" + r.folder + L"\\" + r.installer;
+    if (dry) { printf("Dry run: %ls is missing; installer %ls %ls\n", r.dll, setup.c_str(), file_exists(setup) ? L"found" : L"NOT found"); continue; }
+    if (!file_exists(setup)) return fail(title, what + manual);
+    printf("\n%ls\nSteam's copy of the installer: %ls\n", what.c_str(), setup.c_str());
+    fflush(stdout);
+    if (MessageBoxW(nullptr, (what + L"Steam normally installs it the first time the game is started from Steam, which has not happened on this computer. "
+                              L"Install it now? Windows will ask for permission, the installation takes under a minute, and the game starts afterwards.").c_str(),
+                    title, MB_YESNO | MB_ICONQUESTION | MB_SETFOREGROUND) != IDYES)
+      return fail(title, what + manual);
+    SHELLEXECUTEINFOW sei{};
+    sei.cbSize = sizeof sei;
+    sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+    sei.lpFile = setup.c_str();
+    sei.lpParameters = L"/install /passive /norestart";
+    sei.nShow = SW_SHOWNORMAL;
+    if (ShellExecuteExW(&sei) && sei.hProcess) {
+      printf("Installing...\n");
+      fflush(stdout);
+      WaitForSingleObject(sei.hProcess, INFINITE);
+      CloseHandle(sei.hProcess);
+    }
+    if (!have(r.dll)) return fail(title, std::wstring(L"The installation did not finish, and ") + r.dll + L" is still missing. " + manual);
+    printf("Installed.\n");
   }
 
   force_game_settings(dry);

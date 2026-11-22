@@ -1,6 +1,6 @@
 # Unreleased
 
-- Fix: on a computer where Grim Dawn had never been started from Steam, running Grimdark gave a Windows error saying "VCOMP120.DLL was not found". Grimdark now tells you what to do instead: start the game once from Steam with Play, close it, then run Grimdark again.
+- Fix: on a computer where Grim Dawn had never been started from Steam, running Grimdark gave a Windows error saying "VCOMP120.DLL was not found". The launcher now offers to install the missing Microsoft files itself. Answer Yes, approve the Windows permission prompt, and the game starts when it is done.
 
 # 0.7.0 (2026-11-19)
 

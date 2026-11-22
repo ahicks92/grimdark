@@ -28,9 +28,6 @@ get what you get; hopefully you have fun, but it might also explode on you in wa
   States)). These carry the in-world speech: Mark speaks at the enemy's position, Zira is the player and the room
   announcer. If they are missing the default OneCore voice is used for both.
 - Steam running (the launcher starts the game outside Steam's Play button, but the game still talks to Steam).
-- Grim Dawn started **once from Steam itself** (Play in your library) after installing it. That first start is when
-  Steam installs the Microsoft files the game needs; without it Windows says "VCOMP120.DLL was not found" when you run
-  Grimdark. Wait for the game's window, close it with alt F4, and use Grimdark from then on.
 - Visual Studio 2022 only if you build it yourself (see Building, at the end); the CI zip needs nothing else.
 
 ## Setup
@@ -47,6 +44,11 @@ the key hooks will be dropped.  This manifests as capslock/insert not working as
 APIs in very odd ways, the net effect of which is to break the JAWS / NVDA key. The mod fixes this, but only when it is
 injected at launch by our launcher.  If you make this mistake, close the game, restart your screen reader, and go
 through the launcher.
+
+If Steam has never started the game on this computer, Windows may be missing Microsoft files the game needs (the error
+is "VCOMP120.DLL was not found"). The launcher notices this and offers to install them from the copy Steam already
+downloaded: answer Yes, approve the Windows permission prompt, and the game starts when it is done. If it cannot find
+that copy it tells you which Microsoft Visual C++ Redistributable to download instead.
 
 Download `GrimdarkInstaller.exe` from the newest release on GitHub and run it. Install lists the released versions
 newest first and, last, "latest successful CI build", which is the untested build of the current source and is there for
